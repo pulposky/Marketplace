@@ -1,20 +1,13 @@
 const mysql = require('mysql2');
-
 const dotenv = require('dotenv');
-dotenv.config();
-
-const host = process.env.DB_HOST;
-const user = process.env.DB_USER;
-const password = process.env.DB_PASSWORD;
-const bd = process.env.DB_NAME;
-const port = process.env.DB_PORT;
+const path = require('path');
 
 const conexion = mysql.createConnection({
-    host: host,
-    user: user,
-    password: password,
-    database: bd,
-    port: port
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.BD_DATABASE,
+    port: process.env.DB_PORT || 3306
 });
 
 conexion.connect((error) => {
@@ -22,5 +15,7 @@ conexion.connect((error) => {
         console.error('Error de conexión a la base de datos:', error);
         return;
     }
-    console.log('Conexión a la base de datos establecida');
+    console.log('Conexión a la base de datos establecida correctamente');
 });
+
+module.exports = conexion;

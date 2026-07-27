@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const PaginasController = require('../controllers/productosController');
 
-// Ruta de la página de inicio
-router.get('/', (req, res) => {
-    res.render('index');
-});
+router.get('/', PaginasController.mostrarHome);
+
+router.get('/productos', PaginasController.mostrarProductos);
 
 module.exports = router;
