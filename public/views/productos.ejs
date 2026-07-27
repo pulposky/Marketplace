@@ -2,45 +2,35 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Productos</title>
-    <link rel="stylesheet" href="/css/estilos.css">
+    <title>Productos</title>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 
-    <div class="contenedor">
-        <h1>Catálogo de Productos</h1>
+    <h1>Lista de Productos</h1>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Unidad</th>
-                    <th>Lugar</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (typeof productos !== 'undefined' && productos.length > 0) { %>
-                    <% productos.forEach(producto => { %>
-                        <tr>
-                            <td><%= producto.id_producto %></td>
-                            <td><%= producto.nombre %></td>
-                            <td><%= producto.unidad %></td>
-                            <td><%= producto.lugar %></td>
-                            <td>$<%= producto.precio %></td>
-                            <td><%= producto.stock %></td>
-                        </tr>
-                    <% }); %>
-                <% } else { %>
-                    <tr>
-                        <td colspan="6">No hay productos registrados.</td>
-                    </tr>
-                <% } %>
-            </tbody>
-        </table>
-    </div>
+    <!-- Botón con el evento onclick -->
+    <button type="button" onclick="obtenerProductos()">Mostrar Productos</button>
 
+    <br><br>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Unidad</th>
+                <th>Lugar</th>
+                <th>Precio</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-productos">
+            <!-- Aquí se insertarás los productos al dar clic -->
+        </tbody>
+    </table>
+
+    <!-- Vinculamos el archivo JS -->
+    <script src="/js/producto.js"></script>
 </body>
 </html>
