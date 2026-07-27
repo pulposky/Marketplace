@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/pulposky/Marketplace#readme",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "mysql2": "^3.23.1"
