@@ -1,26 +1,293 @@
-.btn-principal {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: #27ae60;
-    color: white;
+:root {
+    --verde-sena: #39A900;
+    --verde-sena-oscuro: #2E8600;
+    --verde-oscuro: #006837;
+    --violeta: #71277B;
+    --azul-oscuro: #003B4C;
+    --azul-claro: #00A1DE;
+    --amarillo: #FFD100;
+
+    --blanco: #FFFFFF;
+    --gris-claro: #F2F2F2;
+    --gris-borde: #E3E5E1;
+    --gris-texto: #6B7269;
+    --negro: #000000;
+
+    --fuente-display: 'Space Grotesk', sans-serif;
+    --fuente-texto: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--blanco);
+    font-family: var(--fuente-texto);
+    color: var(--negro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* Textura de fondo sutil: una sola línea diagonal que evoca
+   el trazo del pictograma SENA, sin competir con el contenido */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(135deg, transparent 49.6%, var(--gris-borde) 49.6%, var(--gris-borde) 50.4%, transparent 50.4%);
+    background-size: 64px 64px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.contenedor {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+/* Marca */
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.marca-icono {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.marca-texto {
+    font-family: var(--fuente-display);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    color: var(--negro);
+}
+
+/* Tarjeta de login */
+.login {
+    width: 100%;
+    background: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: 16px;
+    padding: 40px 32px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.login-encabezado {
+    margin-bottom: 28px;
+}
+
+.login-encabezado h1 {
+    font-family: var(--fuente-display);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    color: var(--negro);
+    margin-bottom: 6px;
+}
+
+.login-encabezado p {
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.campo label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--negro);
+    letter-spacing: 0.01em;
+}
+
+.campo input {
+    height: 44px;
+    padding: 0 14px;
+    background: var(--gris-claro);
+    border: 1.5px solid transparent;
+    border-radius: 9px;
+    font-family: var(--fuente-texto);
+    font-size: 14.5px;
+    color: var(--negro);
+    outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.campo input::placeholder {
+    color: #9AA098;
+}
+
+.campo input:hover {
+    background: #ECEDEA;
+}
+
+.campo input:focus {
+    background: var(--blanco);
+    border-color: var(--verde-sena);
+}
+
+.login-opciones {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: -4px;
+}
+
+.recordar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--gris-texto);
+    cursor: pointer;
+}
+
+.recordar input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--verde-sena);
+    cursor: pointer;
+}
+
+.enlace-sutil {
+    font-size: 13px;
+    color: var(--gris-texto);
     text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    margin-top: 15px;
+    transition: color 0.15s ease;
+}
+
+.enlace-sutil:hover {
+    color: var(--verde-oscuro);
+}
+
+.btn-principal {
+    height: 46px;
+    margin-top: 6px;
+    background: var(--verde-sena);
+    color: var(--blanco);
+    border: none;
+    border-radius: 9px;
+    font-family: var(--fuente-texto);
+    font-weight: 600;
+    font-size: 14.5px;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background 0.15s ease, transform 0.1s ease;
 }
 
 .btn-principal:hover {
-    background-color: #219150;
+    background: var(--verde-sena-oscuro);
 }
 
-.btn-secundario {
-    display: inline-block;
-    margin-bottom: 15px;
-    color: #2c3e50;
+.btn-principal:active {
+    transform: scale(0.98);
+}
+
+.btn-principal:focus-visible,
+.campo input:focus-visible,
+.enlace-sutil:focus-visible,
+.enlace-fuerte:focus-visible {
+    outline: 2px solid var(--azul-claro);
+    outline-offset: 2px;
+}
+
+.login-pie {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 13.5px;
+    color: var(--gris-texto);
+}
+
+.enlace-fuerte {
+    color: var(--verde-oscuro);
+    font-weight: 600;
     text-decoration: none;
-    font-weight: bold;
 }
 
-.btn-secundario:hover {
+.enlace-fuerte:hover {
     text-decoration: underline;
+}
+
+/* Pie de página */
+.pie-pagina {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--gris-texto);
+    letter-spacing: 0.02em;
+}
+
+.mensaje-error {
+    display: none;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+
+.mensaje-rojo {
+    display: block;
+    color: #dc3545;
+    background-color: #f8d7da;
+}
+
+
+.mensaje-naranja {
+    display: block;
+    color: #d97706;
+    background-color: #ffedd5;
+}
+
+.pie-punto {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--verde-sena);
+}
+
+/* Responsive */
+@media (max-width: 420px) {
+    .login {
+        padding: 32px 24px;
+    }
+}
+
+/* Movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
 }

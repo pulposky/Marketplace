@@ -13,6 +13,9 @@ app.use(express.static('public'))
 app.set('views', path.join(__dirname, 'public', 'views'));
 app.set('view engine', 'ejs');
 
+app.use(express.urlencoded({ extended: true })); // para <form method="post">
+app.use(express.json()); // para peticiones fetch/AJAX con JSON
+
 const PORT = process.env.PORT;
 
 const misRutas = require('./src/router'); 

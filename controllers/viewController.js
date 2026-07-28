@@ -1,7 +1,7 @@
 const ViewController = {
     // Renderiza la vista del Home
-    mostrarHome: (req, res) => {
-        res.render('home');
+    mostrarLogin: (req, res) => {
+        res.render('login');
     },
 
     // Renderiza la vista del catálogo

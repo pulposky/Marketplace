@@ -3,16 +3,15 @@ const router = express.Router();
 
 const ViewController = require('../controllers/viewController');
 const ProductoController = require('../controllers/productosController');
+const UsuarioController = require('../controllers/usuarioController');
 
-// ------------------------------------
-// 1. RUTAS DE VISTAS (Navegación HTML)
-// ------------------------------------
-router.get('/', ViewController.mostrarHome);
+// Vista Login
+router.get('/', ViewController.mostrarLogin);
+
+// Catálogo
 router.get('/productos', ViewController.mostrarCatalogo);
-
-// ------------------------------------
-// 2. RUTAS DE PETICIONES (API / Datos)
-// ------------------------------------
+router.post('/login', UsuarioController.loginUsuarioController);
+// API
 router.get('/api/productos', ProductoController.obtenerTodos);
 
 module.exports = router;
