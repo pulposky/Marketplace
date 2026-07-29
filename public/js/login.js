@@ -7,8 +7,8 @@ formulario.addEventListener('submit', async (e)=>{
 
     const usuario = document.getElementById('usuario').value;
     const password = document.getElementById('password').value;
-    console.log(usuario);
-    console.log(password);
+    // console.log(usuario);
+    // console.log(password);
 
     const respuesta = await fetch('/login', {
         method: 'POST',
@@ -33,7 +33,7 @@ formulario.addEventListener('submit', async (e)=>{
         mensaje.textContent = "";
         mensaje.className = "mensaje-error";
 
-        window.location.href = '/productos';
+        window.location.href = '/';
     }else{
         mensaje.textContent = datos.mensaje;
 

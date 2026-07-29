@@ -5,7 +5,7 @@ const UsuarioModel = require('../model/usuariosModel');
 
 const loginUsuarioController = async(req,res)=>{
 
-    console.log(req.body);
+    // console.log(req.body);
 
     let usuario = req.body.usuario
     let password = req.body.password
@@ -32,9 +32,9 @@ const loginUsuarioController = async(req,res)=>{
 
         const usuarioBD = resultado[0]
         // validar contraseña
-        console.log("Usuario BD:", usuarioBD);
-        console.log("Password BD:", usuarioBD.password);
-        console.log("Password recibido:", password);
+        // console.log("Usuario BD:", usuarioBD);
+        // console.log("Password BD:", usuarioBD.password);
+        // console.log("Password recibido:", password);
 
         if(usuarioBD.password !== password){
             return res.json({

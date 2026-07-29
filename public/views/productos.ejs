@@ -2,35 +2,151 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Productos</title>
-    <link rel="stylesheet" href="/css/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAEMPRESA Marketplace</title>
+    <link rel="stylesheet" href="/css/productos.css">
 </head>
 <body>
 
-    <h1>Lista de Productos</h1>
+    <div class="contenedor-panel">
+        <!-- BARRA LATERAL -->
+        <div class="barra-lateral">
+            <div class="encabezado-lateral">
+                <h2>SENAEMPRESA</h2>
+                <p>Marketplace</p>
+            </div>
 
-    <!-- Botón con el evento onclick -->
-    <button type="button" onclick="obtenerProductos()">Mostrar Productos</button>
+            <div class="navegacion-lateral">
+                <div class="lista-menu">
+                    <div class="item-menu activo"><a href="#">Inicio</a></div>
+                    <div class="item-menu"><a href="#">Productos</a></div>
+                    <div class="item-menu"><a href="#">Mis Apartados</a></div>
+                    <div class="item-menu"><a href="#">Pedidos</a></div>
+                    <div class="item-menu"><a href="#">Mis Datos</a></div>
+                    <div class="item-menu"><a href="#">Ayuda</a></div>
+                    <div class="item-menu"><a href="#">Cerrar Sesión</a></div>
+                </div>
+            </div>
+        </div>
 
-    <br><br>
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="contenido-principal">
+            
+            <!-- ENCABEZADO / BUSCADOR -->
+            <div class="encabezado-superior">
+                <div class="barra-busqueda">
+                    <input type="text" placeholder="Buscar productos...">
+                </div>
+                <div class="caja-carrito">
+                    <span>Carrito</span>
+                </div>
+            </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Unidad</th>
-                <th>Lugar</th>
-                <th>Precio</th>
-                <th>Stock</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-productos">
-            <!-- Aquí se insertarás los productos al dar clic -->
-        </tbody>
-    </table>
+            <!-- BANNER BIENVENIDA -->
+            <div class="banner-bienvenida">
+                <h2>Bienvenido...</h2>
+                <p>Encuentra los mejores productos para tu negocio.</p>
+            </div>
 
-    <!-- Vinculamos el archivo JS -->
+            <!-- TARJETAS DE ESTADÍSTICAS -->
+            <div class="cuadricula-estadisticas">
+                <div class="tarjeta-estadistica">
+                    <div class="detalles-estadistica">
+                        <span class="titulo-estadistica">Productos disponibles</span>
+                        <h3 class="valor-estadistica">128</h3>
+                        <a href="#" class="enlace-estadistica">Ver catálogo</a>
+                    </div>
+                </div>
+
+                <div class="tarjeta-estadistica">
+                    <div class="detalles-estadistica">
+                        <span class="titulo-estadistica">Apartados activos</span>
+                        <h3 class="valor-estadistica">3</h3>
+                        <a href="#" class="enlace-estadistica">Ver mis apartados</a>
+                    </div>
+                </div>
+
+                <div class="tarjeta-estadistica">
+                    <div class="detalles-estadistica">
+                        <span class="titulo-estadistica">Pedidos realizados</span>
+                        <h3 class="valor-estadistica">12</h3>
+                        <a href="#" class="enlace-estadistica">Ver historial</a>
+                    </div>
+                </div>
+
+                <div class="tarjeta-estadistica">
+                    <div class="detalles-estadistica">
+                        <span class="titulo-estadistica">Ofertas activas</span>
+                        <h3 class="valor-estadistica">5</h3>
+                        <a href="#" class="enlace-estadistica">Ver ofertas</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN PRODUCTOS DESTACADOS -->
+            <div class="seccion-productos">
+                <div class="encabezado-seccion">
+                    <h3>Productos Destacados</h3>
+                    <a href="#" class="ver-todos">Ver todos</a>
+                </div>
+
+                <div class="cuadricula-productos">
+                    <!-- Producto 1 -->
+                    <div class="tarjeta-producto">
+                        <div class="imagen-producto"></div>
+                        <div class="info-producto">
+                            <h4></h4>
+                            <p class="unidad"></p>
+                            <span class="precio"></span>
+                            <div class="boton-apartar">Apartar</div>
+                            <span class="inventario"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-fondo" id="modalLogin">
+            <div class="modal-contenido">
+                <!-- Botón para cerrar -->
+                <span class="cerrar-modal" id="cerrarModal">&times;</span>
+                <div class="contenedor-login">
+                    <div class="marca">
+                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                        <span class="marca-texto">Marketplace</span>
+                    </div>
+                    <main class="login" role="main">
+                        <div class="login-encabezado">
+                            <h1>Bienvenido</h1>
+                            <p>Ingresa tus credenciales para continuar</p>
+                        </div>
+                        <form class="login-form" id="formLogin">
+                            <div class="campo">
+                                <label for="usuario">Usuario</label>
+                                <input type="text" id="usuario" name="usuario" placeholder="Nombre de usuario" required>
+                            </div>
+                            <div class="campo">
+                                <label for="password">Contraseña</label>
+                                <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                            </div>
+                            <button type="submit" class="btn-principal">Iniciar sesión</button>
+                        </form>
+                        <p class="login-pie">
+                            ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
+                        </p>
+                        <p id="mensaje" class="mensaje-error"></p>
+                    </main>
+                    <footer class="pie-pagina">
+                        <span class="pie-punto" aria-hidden="true"></span>
+                        SENA · Colombia
+                    </footer>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script src="/js/login.js"></script>
     <script src="/js/producto.js"></script>
 </body>
 </html>

@@ -6,12 +6,11 @@ const ProductoController = require('../controllers/productosController');
 const UsuarioController = require('../controllers/usuarioController');
 
 // Vista Login
-router.get('/', ViewController.mostrarLogin);
+router.get('/login', ViewController.mostrarLogin);
+router.post('/login', UsuarioController.loginUsuarioController);
 
 // Catálogo
-router.get('/productos', ViewController.mostrarCatalogo);
-router.post('/login', UsuarioController.loginUsuarioController);
-// API
+router.get('/', ViewController.mostrarCatalogo);
 router.get('/api/productos', ProductoController.obtenerTodos);
 
 module.exports = router;
