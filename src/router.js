@@ -17,7 +17,7 @@ router.get('/', ViewController.mostrarMain);
 router.get('/apartar',protegerRuta, ViewController.mostrarApartado);
 
 // Catálogo de productos
-router.get('/catalogo',protegerRuta, ViewController.mostrarCatalogo);
+router.get('/catalogo', ViewController.mostrarCatalogo);
 
 
 // Rutas verificar sesión

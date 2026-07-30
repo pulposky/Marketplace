@@ -24,16 +24,26 @@
         </div>
     </div>
 
-    <div class="rejilla-productos">
-        <div class="tarjeta-producto">
-        <div class="imagen-producto"></div>
-        <div class="nombre-producto"></div>
-        <div class="presentacion-producto"></div>
-        <div class="precio-producto"></div>
-        <div class="boton-apartar"></div>
-        <div class="inventario-producto"></div>
+        <div class="rejilla-productos">
+            <% productos.forEach(producto => { %>
+                <div class="tarjeta-producto">
+                    <div class="imagen-producto"></div>
+                    <div class="nombre-producto">
+                        <%= producto.nombre %>
+                    </div>
+                    <div class="presentacion-producto">
+                        <%= producto.unidad %>
+                    </div>
+                    <div class="precio-producto">
+                        $<%= Number(producto.precio).toLocaleString("es-CO") %>
+                    </div>
+                    <div class="boton-apartar">
+                        Apartar
+                    </div>
+                </div>
+            <% }) %>
+
         </div>
-    </div>
     </div>
     </div>
 </body>

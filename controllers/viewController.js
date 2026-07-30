@@ -28,17 +28,14 @@ const ViewController = {
 
     // Renderiza la vista de catálogo
     mostrarCatalogo: (req, res) => {
-
-        ProductoModel.obtenerDestacados((error, productos) => {
+        ProductoModel.obtenerTodos((error, productos) => {
             if (error) {
                 return res.render("productos", {
-                    destacados: [],
-                    usuario: req.session.usuario || null
+                    productos: [],
                 });
             }
             res.render("productos", {
-                destacados: productos,
-                usuario: req.session.usuario || null
+                productos
             });
         });
     }

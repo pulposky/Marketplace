@@ -2,7 +2,7 @@ const conexion = require('../database/conexion');
 
 const ProductoModel = {
     obtenerTodos: (callback) => {
-        conexion.query('SELECT * FROM producto', callback);
+        conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' ORDER BY nombre ASC", callback);
     },
     obtenerDestacados: (callback) => {
     const sql = `
