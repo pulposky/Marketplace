@@ -10,6 +10,7 @@ const ProductoController = {
             res.json(resultados);
         });
     }
+    
 };
 
 module.exports = ProductoController;

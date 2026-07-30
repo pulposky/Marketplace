@@ -1,3 +1,5 @@
+const ProductoModel = require("../model/productoModel")
+
 const ViewController = {
     // Renderiza la vista del Home
     mostrarLogin: (req, res) => {
@@ -5,10 +7,41 @@ const ViewController = {
     },
 
     // Renderiza la vista del catálogo
-    mostrarCatalogo: (req, res) => {
-        res.render('productos');
+    mostrarMain: (req, res) => {
+        ProductoModel.obtenerDestacados((error, productos) => {
+            if (error) {
+                return res.render("main", {
+                    destacados: []
+                });
+            }
+            res.render("main", {
+                destacados: productos,
+                usuario: req.session?.usuario || null
+            });
+        });
     },
     
+    // Renderiza la vista de apartar productos
+    mostrarApartado: (req, res) => {
+        res.render('apartarProductos');
+    },
+
+    // Renderiza la vista de catálogo
+    mostrarCatalogo: (req, res) => {
+
+        ProductoModel.obtenerDestacados((error, productos) => {
+            if (error) {
+                return res.render("productos", {
+                    destacados: [],
+                    usuario: req.session.usuario || null
+                });
+            }
+            res.render("productos", {
+                destacados: productos,
+                usuario: req.session.usuario || null
+            });
+        });
+    }
 };
 
 module.exports = ViewController;

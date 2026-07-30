@@ -18,6 +18,13 @@ app.use(express.json()); // para peticiones fetch/AJAX con JSON
 
 const PORT = process.env.PORT;
 
+const session = require("express-session");
+app.use(session({
+    secret: "mi_clave_secreta",
+    resave: false,
+    saveUninitialized: false,
+}));
+
 const misRutas = require('./src/router'); 
 app.use('/', misRutas);
 

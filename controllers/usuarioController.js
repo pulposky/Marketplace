@@ -42,15 +42,33 @@ const loginUsuarioController = async(req,res)=>{
                 tipo:'incorrecto',
                 mensaje:'Contraseña incorrecta'
             });
-
         }
-        return res.json({
-            ok:true,
-            mensaje:'Login correcto'
-        });
+    
+    req.session.usuario = {
+        id: usuarioBD.id,
+        usuario: usuarioBD.usuario
+    };
+
+    return res.json({
+        ok:true,
+        mensaje:'Login correcto'
+    });
 
 }
 
+const logoutUsuarioController = (req, res) => {
+
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send("Error al cerrar sesión");
+        }
+        res.clearCookie("connect.sid");
+        res.redirect("/");
+    });
+
+};
+
 module.exports = {
-    loginUsuarioController
+    loginUsuarioController,
+    logoutUsuarioController
 }

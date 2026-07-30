@@ -4,13 +4,32 @@ const router = express.Router();
 const ViewController = require('../controllers/viewController');
 const ProductoController = require('../controllers/productosController');
 const UsuarioController = require('../controllers/usuarioController');
+const protegerRuta = require('../middleware/verificarUsuario');
 
 // Vista Login
-router.get('/login', ViewController.mostrarLogin);
 router.post('/login', UsuarioController.loginUsuarioController);
+router.get('/logout', UsuarioController.logoutUsuarioController);
 
-// Catálogo
-router.get('/', ViewController.mostrarCatalogo);
-router.get('/api/productos', ProductoController.obtenerTodos);
+// Vista principal
+router.get('/', ViewController.mostrarMain);
+
+// Apartar productos
+router.get('/apartar',protegerRuta, ViewController.mostrarApartado);
+
+// Catálogo de productos
+router.get('/catalogo',protegerRuta, ViewController.mostrarCatalogo);
+
+
+// Rutas verificar sesión
+router.get("/api/verificar-sesion", (req, res) => {
+    if(req.session && req.session.usuario){
+        return res.json({
+            login:true
+        });
+    }
+    res.json({
+        login:false
+    });
+});
 
 module.exports = router;
