@@ -8,15 +8,17 @@ const ViewController = {
 
     // Renderiza la vista del catálogo
     mostrarMain: (req, res) => {
-        ProductoModel.obtenerDestacados((error, productos) => {
-            if (error) {
-                return res.render("main", {
-                    destacados: []
+        ProductoModel.obtenerDestacados((error, destacados) => {
+            const listaDestacados = error ? [] : destacados;
+
+            ProductoModel.obtenerTodos((errorTodos, todosLosProductos) => {
+                const listaProductos = errorTodos ? [] : todosLosProductos;
+
+                res.render("main", {
+                    destacados: listaDestacados,
+                    productos: listaProductos, 
+                    usuario: req.session?.usuario || null
                 });
-            }
-            res.render("main", {
-                destacados: productos,
-                usuario: req.session?.usuario || null
             });
         });
     },

@@ -1,50 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Catálogo | SENAEMPRESA</title>
+    <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/productos.css">
 </head>
 <body>
     <div class="contenedor-principal">
-    <div class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</div>
-
-    <div class="barra-superior">
-    <div class="campo-busqueda"></div>
-    <div class="ordenar-por"></div>
-    </div>
-
-    <div class="contenido-principal">
-    <div class="panel-lateral">
-        <div class="seccion-categorias">
-        <div class="titulo-categoria"></div>
-        <div class="linea-divisora"></div>
-        <div class="boton-filtrar"></div>
+        
+        <!-- BOTÓN REGRESAR -->
+        <div style="padding: 15px 0 0 15px;">
+            <a href="/" class="btn-regresar">
+                ← Regresar
+            </a>
         </div>
-    </div>
 
-        <div class="rejilla-productos">
-            <% productos.forEach(producto => { %>
-                <div class="tarjeta-producto">
-                    <div class="imagen-producto"></div>
-                    <div class="nombre-producto">
-                        <%= producto.nombre %>
-                    </div>
-                    <div class="presentacion-producto">
-                        <%= producto.unidad %>
-                    </div>
-                    <div class="precio-producto">
-                        $<%= Number(producto.precio).toLocaleString("es-CO") %>
-                    </div>
-                    <div class="boton-apartar">
-                        Apartar
-                    </div>
+        <div class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</div>
+
+        <div class="barra-superior">
+            <div class="campo-busqueda"></div>
+            <div class="ordenar-por"></div>
+        </div>
+
+        <div class="contenido-principal">
+            <div class="panel-lateral">
+                <div class="seccion-categorias">
+                    <div class="titulo-categoria"></div>
+                    <div class="linea-divisora"></div>
+                    <div class="boton-filtrar"></div>
                 </div>
-            <% }) %>
+            </div>
 
+            <!-- REJILLA DE PRODUCTOS -->
+            <div class="rejilla-productos">
+                <% productos.forEach(producto => { %>
+                    <div class="tarjeta-producto">
+                        <div class="imagen-producto"></div>
+                        <div class="nombre-producto">
+                            <%= producto.nombre %>
+                        </div>
+                        <div class="presentacion-producto">
+                            <%= producto.unidad %>
+                        </div>
+                        <div class="precio-producto">
+                            $<%= Number(producto.precio).toLocaleString("es-CO") %>
+                        </div>
+                        
+                        <!-- BOTÓN ÚNICO DE APARTAR -->
+                        <button class="boton-apartar btn-accion-apartar" 
+                                data-id="<%= producto.id %>"
+                                data-nombre="<%= producto.nombre %>" 
+                                data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>">
+                            Apartar
+                        </button>
+                    </div>
+                <% }) %>
+            </div>
         </div>
     </div>
+
+    <!-- MODAL APARTAR PRODUCTO -->
+    <div class="modal-fondo" id="modalApartarProducto">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
+
+            <main class="card-container">
+                <div class="product-image-placeholder">
+                    <span>Imagen del Producto</span>
+                </div>
+
+                <div class="card-body">
+                    <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
+
+                    <div class="product-info">
+                        <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
+                    </div>
+
+                    <!-- FORMULARIO DIRECTO DE APARTADO -->
+                    <form id="formConfirmarApartado" style="width: 100%; margin-top: 15px;">
+                        <input type="hidden" id="apartarProductoId" name="productoId">
+                        
+                        <div class="campo" style="margin-bottom: 12px;">
+                            <label for="cantidadApartar" style="display:block; margin-bottom:5px;">Cantidad:</label>
+                            <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" required style="width: 100%; padding: 8px;">
+                        </div>
+
+                        <button type="submit" class="btn-principal" style="width: 100%;">Confirmar Apartado</button>
+                    </form>
+                </div>
+            </main>
+        </div>
     </div>
+
+    <!-- MODAL LOGIN -->
+    <div class="modal-fondo" id="modalLogin">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" id="cerrarModal">&times;</span>
+            <div class="contenedor-login">
+                <div class="marca">
+                    <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                    <span class="marca-texto">Marketplace</span>
+                </div>
+                <main class="login" role="main">
+                    <div class="login-encabezado">
+                        <h1>Bienvenido</h1>
+                        <p>Ingresa tus credenciales para continuar</p>
+                    </div>
+                    <form class="login-form" id="formLogin">
+                        <div class="campo">
+                            <label for="usuario">Usuario</label>
+                            <input type="text" id="usuario" name="usuario" placeholder="Nombre de usuario" required>
+                        </div>
+                        <div class="campo">
+                            <label for="password">Contraseña</label>
+                            <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                        </div>
+                        <button type="submit" class="btn-principal">Iniciar sesión</button>
+                    </form>
+                    <p class="login-pie">
+                        ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
+                    </p>
+                    <p id="mensaje" class="mensaje-error"></p>
+                </main>
+                <footer class="pie-pagina">
+                    <span class="pie-punto" aria-hidden="true"></span>
+                    SENA · Colombia
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/login.js"></script>
+    <script src="/js/productos.js"></script>
 </body>
 </html>

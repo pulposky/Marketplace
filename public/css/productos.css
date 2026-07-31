@@ -166,6 +166,87 @@ body {
     text-align: center;
 }
 
+/* ESTILOS DEL MODAL */
+.modal-fondo {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.65); /* Fondo oscuro */
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-contenido {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 30px 25px;
+    width: 90%;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    animation: abrirModal 0.25s ease-out;
+}
+
+.cerrar-modal {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 26px;
+    font-weight: bold;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.cerrar-modal:hover {
+    color: #000;
+}
+
+.requiere-login{
+    cursor: pointer;
+}
+
+.btn-regresar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #333333;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.btn-regresar:hover {
+    background-color: #f3f4f6;
+    color: #000000;
+    border-color: #9ca3af;
+    transform: translateX(-2px); /* Efecto sutil hacia la izquierda */
+}
+
+/* Animación de entrada */
+@keyframes abrirModal {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 768px) {
     .contenido-principal {
         grid-template-columns: 1fr;

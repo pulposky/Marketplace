@@ -2,7 +2,7 @@ const conexion = require('../database/conexion');
 
 const ProductoModel = {
     obtenerTodos: (callback) => {
-        conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' ORDER BY nombre ASC", callback);
+        conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC", callback);
     },
     obtenerDestacados: (callback) => {
     const sql = `
@@ -14,7 +14,7 @@ const ProductoModel = {
             'HUEVOS DE GALLINA AA',
             'HUEVOS DE GALLINA AAA'
         )
-        AND unidad <> '25 KG'
+        AND unidad <> '25 KG' AND precio <> 0
     `;
     conexion.query(sql, callback);
 }

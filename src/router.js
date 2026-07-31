@@ -13,9 +13,6 @@ router.get('/logout', UsuarioController.logoutUsuarioController);
 // Vista principal
 router.get('/', ViewController.mostrarMain);
 
-// Apartar productos
-router.get('/apartar',protegerRuta, ViewController.mostrarApartado);
-
 // Catálogo de productos
 router.get('/catalogo', ViewController.mostrarCatalogo);
 
