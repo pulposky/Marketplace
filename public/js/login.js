@@ -1,4 +1,5 @@
-// Variable global para capturar la respuesta del login desde otros scripts
+// Login.js controla el inicio de sesión desde los modales de la vista
+// Se usa en main.ejs y productos.ejs para autenticar al usuario
 window.resultadoLoginUltimo = null;
 
 async function procesarLogin(documento) {
@@ -15,32 +16,29 @@ async function procesarLogin(documento) {
         window.resultadoLoginUltimo = datos;
 
         if (datos.ok) {
+            // Oculta cualquier mensaje anterior y reporta éxito
             if (etiquetaMensaje) {
-                etiquetaMensaje.style.display = "none";
-                etiquetaMensaje.textContent = "";
-                etiquetaMensaje.className = "mensaje-error";
+                etiquetaMensaje.style.display = 'none';
+                etiquetaMensaje.textContent = '';
+                etiquetaMensaje.className = 'mensaje-error';
             }
-            return true; // Login exitoso
+            return true;
         } else {
+            // Muestra el mensaje de error en el modal
             if (etiquetaMensaje) {
-                etiquetaMensaje.style.display = "block";
+                etiquetaMensaje.style.display = 'block';
                 etiquetaMensaje.textContent = datos.mensaje;
-
-                if (datos.tipo === "vacio") {
-                    etiquetaMensaje.className = "mensaje-error mensaje-naranja";
-                } else {
-                    etiquetaMensaje.className = "mensaje-error mensaje-rojo";
-                }
+                etiquetaMensaje.className = datos.tipo === 'vacio' ? 'mensaje-error mensaje-naranja' : 'mensaje-error mensaje-rojo';
             }
             document.getElementById('doc').value = '';
-            return false; // Credenciales incorrectas
+            return false;
         }
     } catch (error) {
         console.error('Error en login:', error);
         if (etiquetaMensaje) {
-            etiquetaMensaje.style.display = "block";
+            etiquetaMensaje.style.display = 'block';
             etiquetaMensaje.textContent = 'Error de conexión con el servidor';
-            etiquetaMensaje.className = "mensaje-error mensaje-rojo";
+            etiquetaMensaje.className = 'mensaje-error mensaje-rojo';
         }
         return false;
     }

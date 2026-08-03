@@ -1,12 +1,13 @@
+// Controlador de vistas principales del marketplace
 const ProductoModel = require("../model/productoModel")
 
 const ViewController = {
-    // Renderiza la vista del Home
+    // Muestra el formulario de login
     mostrarLogin: (req, res) => {
         res.render('login');
     },
 
-    // Renderiza la vista del catálogo
+    // Muestra la página principal con destacados y listado de productos
     mostrarMain: (req, res) => {
         ProductoModel.obtenerDestacados((error, destacados) => {
             const listaDestacados = error ? [] : destacados;
@@ -16,19 +17,19 @@ const ViewController = {
 
                 res.render("main", {
                     destacados: listaDestacados,
-                    productos: listaProductos, 
+                    productos: listaProductos,
                     usuario: req.session?.usuario || null
                 });
             });
         });
     },
-    
-    // Renderiza la vista de apartar productos
+
+    // Renderiza la vista para apartar productos (si se usa)
     mostrarApartado: (req, res) => {
         res.render('apartarProductos');
     },
 
-    // Renderiza la vista de catálogo
+    // Renderiza la página de catálogo con todos los productos
     mostrarCatalogo: (req, res) => {
         ProductoModel.obtenerTodos((error, productos) => {
             if (error) {

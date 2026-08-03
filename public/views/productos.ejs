@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Página de catálogo con la lista completa de productos y el modal de apartado -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo | SENAEMPRESA</title>
@@ -10,6 +11,8 @@
 </head>
 <body>
 
+    <!-- Vista de catálogo de productos -->
+    <!-- Muestra todos los productos y permite abrir el modal para apartar -->
     <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
     <header class="header-catalogo">
         <div class="contenedor-header">
@@ -48,6 +51,7 @@
             </aside>
 
             <!-- REJILLA DE PRODUCTOS -->
+            <!-- Cada tarjeta muestra información del producto y un botón para apartar -->
             <section class="rejilla-productos">
                 <% productos.forEach(producto => { %>
                     <div class="tarjeta-producto">

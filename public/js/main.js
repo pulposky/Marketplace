@@ -1,3 +1,5 @@
+// Script de la página principal del marketplace.
+// Controla los modales de login y apartado, la verificación de sesión y el envío de apartados.
 document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 1. REFERENCIAS A ELEMENTOS DEL DOM

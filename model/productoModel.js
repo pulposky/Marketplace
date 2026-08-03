@@ -1,26 +1,32 @@
 const conexion = require('../database/conexion');
 
+// Modelo de productos con consultas SQL para la aplicación
 const ProductoModel = {
+    // Devuelve todos los productos disponibles ordenados por nombre
     obtenerTodos: (callback) => {
         conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC", callback);
     },
+
+    // Devuelve los productos destacados según una lista fija de nombres
     obtenerDestacados: (callback) => {
-    const sql = `
-        SELECT nombre, unidad, lugar, precio, id_producto
-        FROM producto
-        WHERE nombre IN (
-            'PLATANO HARTON 1A',
-            'PLATANO HARTON 2A',
-            'HUEVOS DE GALLINA A',
-            'HUEVOS DE GALLINA AA'
-        )
-        AND unidad <> '25 KG' AND precio <> 0
-    `;
-    conexion.query(sql, callback);
+        const sql = `
+            SELECT nombre, unidad, lugar, precio, id_producto
+            FROM producto
+            WHERE nombre IN (
+                'PLATANO HARTON 1A',
+                'PLATANO HARTON 2A',
+                'HUEVOS DE GALLINA A',
+                'HUEVOS DE GALLINA AA'
+            )
+            AND unidad <> '25 KG' AND precio <> 0
+        `;
+        conexion.query(sql, callback);
     },
+
+    // Inserta un nuevo registro de apartado en la tabla apartados
     crearApartado: (datosApartado, callback) => {
         const sql = `
-            INSERT INTO apartados (nombre_cliente, producto, cantidad) 
+            INSERT INTO apartados (nombre_cliente, producto, cantidad)
             VALUES (?, ?, ?)
         `;
         const valores = [

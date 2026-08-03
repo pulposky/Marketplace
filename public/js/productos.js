@@ -1,3 +1,8 @@
+// Script para la página de catálogo y el modal de apartado de producto
+// Aquí se controla el login, el modal de apartado y el envío del formulario
+
+// Script de la vista de catálogo.
+// Muestra el modal de apartado, verifica la sesión y envía el apartado al backend.
 document.addEventListener('DOMContentLoaded', () => {
     const ventanaApartar = document.getElementById('modalApartarProducto');
     const ventanaLogin = document.getElementById('modalLogin');
@@ -11,15 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const formularioApartado = document.getElementById('formConfirmarApartado');
     const formularioLogin = document.getElementById('formLogin');
 
+    // Muestra el modal de apartado con los datos seleccionados del producto
     function mostrarVentanaApartado(datosProducto) {
         if (textoNombreProducto) textoNombreProducto.textContent = datosProducto.nombre;
         if (textoPrecioProducto) textoPrecioProducto.textContent = datosProducto.precio;
         if (campoIdProducto) campoIdProducto.value = datosProducto.id;
-        
+
         if (ventanaApartar) ventanaApartar.style.display = 'flex';
     }
 
-    // Botones de apartar en la rejilla del catálogo
+    // Verifica si el usuario ya está autenticado antes de abrir el modal
     document.querySelectorAll('.btn-accion-apartar').forEach(botonApartar => {
         botonApartar.addEventListener('click', async () => {
             const infoProducto = {
@@ -29,22 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const respuestaSesion = await fetch("/api/verificar-sesion");
+                const respuestaSesion = await fetch('/api/verificar-sesion');
                 const estadoSesion = await respuestaSesion.json();
 
                 if (estadoSesion.login) {
                     mostrarVentanaApartado(infoProducto);
                 } else {
-                    // Si no ha iniciado sesión, despliega el modal de login
                     if (ventanaLogin) ventanaLogin.style.display = 'flex';
                 }
             } catch (error) {
-                console.error("Error al verificar la sesión:", error);
+                console.error('Error al verificar la sesión:', error);
             }
         });
     });
 
-    // Delegación del formulario de Login
+    // Login desde el modal de catálogo
     if (formularioLogin) {
         formularioLogin.addEventListener('submit', async (evento) => {
             evento.preventDefault();
@@ -55,13 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const esExitoso = await procesarLogin(usuarioIngresado, claveIngresada);
 
             if (esExitoso) {
-                // Recarga la vista mediante tu ruta para que EJS habilite la sesión y la barra lateral
                 window.location.reload();
             }
         });
     }
 
-    // Formulario de Apartado
+    // Envío del formulario de apartado al backend
     if (formularioApartado) {
         formularioApartado.addEventListener('submit', async (evento) => {
             evento.preventDefault();
@@ -72,9 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const respuestaApartar = await fetch("/api/apartar-producto", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                const respuestaApartar = await fetch('/api/apartar-producto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
                     body: JSON.stringify(datosApartado)
                 });
@@ -87,19 +91,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (respuestaApartar.ok) {
-                    alert(datosRespuesta.mensaje || "¡Producto apartado con éxito!");
+                    alert(datosRespuesta.mensaje || '¡Producto apartado con éxito!');
                     if (ventanaApartar) ventanaApartar.style.display = 'none';
                     formularioApartado.reset();
                 } else {
-                    alert(datosRespuesta.error || datosRespuesta.mensaje || "Error al procesar el apartado.");
+                    alert(datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
                 }
             } catch (error) {
-                console.error("Error al apartar producto:", error);
+                console.error('Error al apartar producto:', error);
             }
         });
     }
 
-    // Cierre de modales
+    // Cierra los modales cuando el usuario hace clic en la 'X' o fuera del contenido
     if (botonCerrarApartar) botonCerrarApartar.addEventListener('click', () => ventanaApartar.style.display = 'none');
     if (botonCerrarLogin) botonCerrarLogin.addEventListener('click', () => ventanaLogin.style.display = 'none');
 
