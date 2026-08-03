@@ -1,14 +1,14 @@
 // Variable global para capturar la respuesta del login desde otros scripts
 window.resultadoLoginUltimo = null;
 
-async function procesarLogin(usuario, password) {
+async function procesarLogin(documento) {
     const etiquetaMensaje = document.getElementById('mensaje');
 
     try {
         const respuesta = await fetch('/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario, password })
+            body: JSON.stringify({ documento })
         });
 
         const datos = await respuesta.json();
@@ -32,7 +32,7 @@ async function procesarLogin(usuario, password) {
                     etiquetaMensaje.className = "mensaje-error mensaje-rojo";
                 }
             }
-            document.getElementById('password').value = '';
+            document.getElementById('doc').value = '';
             return false; // Credenciales incorrectas
         }
     } catch (error) {

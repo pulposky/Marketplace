@@ -2,14 +2,14 @@ const conexion = require('../database/conexion');
 
 const UsuarioModel = {
     obtenerTodos: (callback) => {
-        conexion.query('SELECT * FROM usuarios', callback);
+        conexion.query('SELECT * FROM clientes', callback);
     },
 
-    login: (usuario) => {
+    login: (documento) => {
         return new Promise((resuelta, rechazada)=>{
             conexion.query(
-                'SELECT * FROM usuarios WHERE usuario = ?',
-                [usuario],
+                'SELECT * FROM clientes WHERE documento = ?',
+                [documento],
                 (error, registros)=>{
                     if(error){
                         rechazada(error)

@@ -29,4 +29,7 @@ router.get("/api/verificar-sesion", (req, res) => {
     });
 });
 
+router.get('/api/productos', ProductoController.obtenerTodos);
+router.post('/api/apartar-producto', protegerRuta, ProductoController.apartarProducto);
+
 module.exports = router;

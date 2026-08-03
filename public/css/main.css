@@ -8,67 +8,52 @@
 body {
     background-color: #f4f6f8;
     color: #333333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-}
-
-.contenedor-panel {
     display: flex;
-    width: 95%;
-    max-width: 1300px;
-    height: 90vh;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    flex-direction: column;
 }
 
-.barra-lateral {
-    width: 250px;
+/* ============================
+    NAVBAR SUPERIOR
+============================ */
+.navbar-superior {
     background-color: #0d4722;
     color: #ffffff;
     display: flex;
-    flex-direction: column;
-    padding: 20px 15px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.encabezado-lateral {
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-.encabezado-lateral h2 {
+.marca-navbar h2 {
     font-size: 1.2rem;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid #2e7d32;
-    padding-bottom: 5px;
+    color: #ffffff;
+    line-height: 1.1;
 }
 
-.encabezado-lateral p {
-    font-size: 0.85rem;
+.marca-navbar p {
+    font-size: 0.8rem;
     color: #c8e6c9;
-    margin-top: 3px;
 }
 
-.navegacion-lateral {
-    flex: 1;
-}
-
-.lista-menu {
+.navegacion-navbar .lista-menu {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    list-style: none;
+    gap: 8px;
 }
 
 .item-menu a {
     display: block;
     color: #e8f5e9;
     text-decoration: none;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
     transition: background 0.2s ease;
 }
 
@@ -79,42 +64,25 @@ body {
     font-weight: bold;
 }
 
-.perfil-usuario {
+.acciones-navbar {
     display: flex;
     align-items: center;
-    background-color: #072a13;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 10px;
+    gap: 15px;
 }
 
-.perfil-usuario .avatar {
-    width: 36px;
-    height: 36px;
-    background-color: #2e7d32;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 0.85rem;
-    margin-right: 12px;
-}
-
-.perfil-usuario .info-usuario h4 {
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-}
-
-.perfil-usuario .info-usuario span {
-    font-size: 0.75rem;
-    color: #a5d6a7;
+/* ============================
+    CONTENEDOR Y CONTENIDO
+============================ */
+.contenedor-panel {
+    display: block;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    flex: 1;
 }
 
 .contenido-principal {
-    flex: 1;
     padding: 25px 30px;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -129,8 +97,9 @@ body {
 
 .barra-busqueda {
     flex: 1;
-    max-width: 600px;
-    background-color: #f1f5f3;
+    max-width: 500px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 20px;
     padding: 8px 18px;
 }
@@ -147,7 +116,8 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #f1f5f3;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -180,6 +150,9 @@ body {
     font-size: 0.95rem;
 }
 
+/* ============================
+    ESTADÍSTICAS Y PRODUCTOS
+============================ */
 .cuadricula-estadisticas {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -193,32 +166,54 @@ body {
     padding: 18px 15px;
 }
 
+/* Alineación con Grid para separar texto e imagen */
 .detalles-estadistica {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
 }
 
 .titulo-estadistica {
+    grid-column: 1;
     font-size: 0.85rem;
     color: #6c757d;
 }
 
+/* Oculta la etiqueta si está vacía para evitar espacios en blanco extra */
+.valor-estadistica:empty {
+    display: none;
+}
+
 .valor-estadistica {
+    grid-column: 1;
     font-size: 1.2rem;
     color: #111;
-    margin: 4px 0;
+    margin: 2px 0;
 }
 
 .enlace-estadistica {
+    grid-column: 1;
     font-size: 0.85rem;
     color: #0d4722;
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
+    margin-top: 4px;
 }
 
 .enlace-estadistica:hover {
     text-decoration: underline;
+}
+
+/* Posiciona el icono a la derecha */
+.catalogoimg {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    justify-self: end;
 }
 
 .seccion-productos {
@@ -237,13 +232,6 @@ body {
     color: #222;
 }
 
-.ver-todos {
-    color: #0d4722;
-    font-size: 0.9rem;
-    text-decoration: none;
-    font-weight: 600;
-}
-
 .cuadricula-productos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -257,13 +245,6 @@ body {
     padding: 15px;
     display: flex;
     flex-direction: column;
-}
-
-.imagen-producto {
-    background-color: #eaeaea;
-    height: 120px;
-    border-radius: 6px;
-    margin-bottom: 12px;
 }
 
 .info-producto {
@@ -307,19 +288,17 @@ body {
     background-color: #1b5e20;
 }
 
-.info-producto .inventario {
-    font-size: 0.8rem;
-    color: #666;
-}
-/* ESTILOS DEL MODAL */
+/* ============================
+    MODALES
+============================ */
 .modal-fondo {
-    display: none; /* Oculto por defecto */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.65); /* Fondo oscuro */
+    background-color: rgba(0, 0, 0, 0.65);
     z-index: 2000;
     justify-content: center;
     align-items: center;
@@ -344,18 +323,23 @@ body {
     font-weight: bold;
     color: #888;
     cursor: pointer;
-    line-height: 1;
 }
 
-.cerrar-modal:hover {
-    color: #000;
+.imagen {
+    width: 90px;
+    height: 65px;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 0.85rem;   
 }
 
-.requiere-login{
+.requiere-login {
     cursor: pointer;
 }
 
-/* Animación de entrada */
 @keyframes abrirModal {
     from {
         opacity: 0;
@@ -368,132 +352,41 @@ body {
 }
 
 /* ============================
-    TABLETS
+    RESPONSIVE / DISPOSITIVOS
 ============================ */
 @media (max-width: 992px) {
-
-    .contenedor-panel{
-        width: 100%;
-        height: 100vh;
-        border-radius: 0;
+    .navbar-superior {
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px;
     }
 
-    .barra-lateral{
-        width: 210px;
+    .navegacion-navbar .lista-menu {
+        overflow-x: auto;
+        max-width: 100%;
     }
 
-    .contenido-principal{
+    .contenido-principal {
         padding: 20px;
-    }
-
-    .cuadricula-productos{
-        grid-template-columns: repeat(2,1fr);
     }
 }
 
-
-/* ============================
-    CELULARES
-============================ */
-@media (max-width: 768px){
-
-    body{
-        display: block;
-        min-height: auto;
-    }
-
-    .contenedor-panel{
-        flex-direction: column;
-        width: 100%;
-        height: auto;
-        border-radius: 0;
-    }
-
-    /* Menú */
-
-    .barra-lateral{
-        width: 100%;
-        padding: 15px;
-    }
-
-    .encabezado-lateral{
-        margin-bottom: 15px;
-    }
-
-    .lista-menu{
-        flex-direction: row;
-        overflow-x: auto;
-        gap: 8px;
-        padding-bottom: 5px;
-    }
-
-    .lista-menu::-webkit-scrollbar{
-        display: none;
-    }
-
-    .item-menu{
-        flex-shrink: 0;
-    }
-
-    .item-menu a{
-        white-space: nowrap;
-        padding: 10px 15px;
-    }
-
-    /* Contenido */
-
-    .contenido-principal{
-        padding: 15px;
-    }
-
-    .encabezado-superior{
+@media (max-width: 768px) {
+    .encabezado-superior {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .barra-busqueda{
+    .barra-busqueda {
         max-width: 100%;
     }
 
-    .caja-carrito{
+    .caja-carrito {
         justify-content: center;
     }
 
-    /* Banner */
-
-    .banner-bienvenida{
-        padding: 18px;
-    }
-
-    .banner-bienvenida h2{
-        font-size: 1.1rem;
-    }
-
-    .banner-bienvenida p{
-        font-size: .9rem;
-    }
-
-    /* Estadísticas */
-
-    .cuadricula-estadisticas{
+    .cuadricula-estadisticas,
+    .cuadricula-productos {
         grid-template-columns: 1fr;
     }
-
-    /* Productos */
-
-    .cuadricula-productos{
-        grid-template-columns: 1fr;
-    }
-
-    .tarjeta-producto{
-        width: 100%;
-    }
-
-    /* Modal */
-
-    .modal-contenido{
-        width: 95%;
-        padding: 20px;
-    }
-
 }

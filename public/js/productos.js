@@ -75,15 +75,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const respuestaApartar = await fetch("/api/apartar-producto", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: 'same-origin',
                     body: JSON.stringify(datosApartado)
                 });
 
+                let datosRespuesta = {};
+                try {
+                    datosRespuesta = await respuestaApartar.json();
+                } catch (error) {
+                    console.error('Respuesta no JSON:', error);
+                }
+
                 if (respuestaApartar.ok) {
-                    alert("¡Producto apartado con éxito!");
+                    alert(datosRespuesta.mensaje || "¡Producto apartado con éxito!");
                     if (ventanaApartar) ventanaApartar.style.display = 'none';
                     formularioApartado.reset();
                 } else {
-                    alert("Error al procesar el apartado.");
+                    alert(datosRespuesta.error || datosRespuesta.mensaje || "Error al procesar el apartado.");
                 }
             } catch (error) {
                 console.error("Error al apartar producto:", error);

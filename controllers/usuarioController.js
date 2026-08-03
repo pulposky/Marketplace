@@ -7,20 +7,17 @@ const loginUsuarioController = async(req,res)=>{
 
     // console.log(req.body);
 
-    let usuario = req.body.usuario
-    let password = req.body.password
+    const documento = req.body.documento;
 
-    // validar campos vacios
-
-    if(!usuario || !password){
+    if(!documento){
         return res.json({
             ok:false,
             tipo:'vacio',
-            mensaje:'Complete todos los campos'
+            mensaje:'El campo documento no puede estar vacío'
         });
     }
 
-    const resultado = await UsuarioModel.login(usuario)
+    const resultado = await UsuarioModel.login(documento);
         
     if(resultado.length === 0){
         return res.json({
@@ -35,19 +32,12 @@ const loginUsuarioController = async(req,res)=>{
         // console.log("Usuario BD:", usuarioBD);
         // console.log("Password BD:", usuarioBD.password);
         // console.log("Password recibido:", password);
-
-        if(usuarioBD.password !== password){
-            return res.json({
-                ok:false,
-                tipo:'incorrecto',
-                mensaje:'Contraseña incorrecta'
-            });
-        }
     
     req.session.usuario = {
         id: usuarioBD.id,
-        usuario: usuarioBD.usuario
-    };
+        documento: usuarioBD.documento,
+        nombre: usuarioBD.nombre
+    };  
 
     return res.json({
         ok:true,

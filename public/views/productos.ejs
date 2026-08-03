@@ -6,60 +6,79 @@
     <title>Catálogo | SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/productos.css">
+    <link rel="stylesheet" href="/public/css/interaccion.css">
 </head>
 <body>
-    <div class="contenedor-principal">
-        
-        <!-- BOTÓN REGRESAR -->
-        <div style="padding: 15px 0 0 15px;">
+
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
+    <header class="header-catalogo">
+        <div class="contenedor-header">
             <a href="/" class="btn-regresar">
-                ← Regresar
+                ← Regresar al Inicio
             </a>
+            <div class="marca-catalogo">
+                <span>SENAEMPRESA</span>
+            </div>
         </div>
+    </header>
 
-        <div class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</div>
-
-        <div class="barra-superior">
-            <div class="campo-busqueda"></div>
-            <div class="ordenar-por"></div>
+    <!-- CONTENEDOR PRINCIPAL DEL CATÁLOGO -->
+    <main class="contenedor-principal">
+        
+        <div class="encabezado-seccion">
+            <h1 class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</h1>
+            
+            <div class="barra-superior">
+                <div class="campo-busqueda">
+                    <input type="text" id="inputBuscar" placeholder="Buscar producto...">
+                </div>
+            </div>
         </div>
 
         <div class="contenido-principal">
-            <div class="panel-lateral">
+            
+            <!-- PANEL LATERAL DE FILTROS -->
+            <aside class="panel-lateral">
                 <div class="seccion-categorias">
-                    <div class="titulo-categoria"></div>
+                    <div class="titulo-categoria">Categorías</div>
                     <div class="linea-divisora"></div>
-                    <div class="boton-filtrar"></div>
+
+                    <button class="boton-filtrar">Aplicar Filtros</button>
                 </div>
-            </div>
+            </aside>
 
             <!-- REJILLA DE PRODUCTOS -->
-            <div class="rejilla-productos">
+            <section class="rejilla-productos">
                 <% productos.forEach(producto => { %>
                     <div class="tarjeta-producto">
-                        <div class="imagen-producto"></div>
-                        <div class="nombre-producto">
-                            <%= producto.nombre %>
+                        <div class="imagen-producto">
+                            <span>Imagen</span>
                         </div>
-                        <div class="presentacion-producto">
-                            <%= producto.unidad %>
-                        </div>
-                        <div class="precio-producto">
-                            $<%= Number(producto.precio).toLocaleString("es-CO") %>
+                        <div class="info-producto-detalles">
+                            <h3 class="nombre-producto">
+                                <%= producto.nombre %>
+                            </h3>
+                            <p class="presentacion-producto">
+                                Presentación: <%= producto.unidad %>
+                            </p>
+                            <div class="precio-producto">
+                                $<%= Number(producto.precio).toLocaleString("es-CO") %>
+                            </div>
                         </div>
                         
                         <!-- BOTÓN ÚNICO DE APARTAR -->
                         <button class="boton-apartar btn-accion-apartar" 
-                                data-id="<%= producto.id %>"
+                                data-id="<%= producto.id_producto %>"
                                 data-nombre="<%= producto.nombre %>" 
                                 data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>">
                             Apartar
                         </button>
                     </div>
                 <% }) %>
-            </div>
+            </section>
+
         </div>
-    </div>
+    </main>
 
     <!-- MODAL APARTAR PRODUCTO -->
     <div class="modal-fondo" id="modalApartarProducto">
@@ -78,7 +97,6 @@
                         <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
                     </div>
 
-                    <!-- FORMULARIO DIRECTO DE APARTADO -->
                     <form id="formConfirmarApartado" style="width: 100%; margin-top: 15px;">
                         <input type="hidden" id="apartarProductoId" name="productoId">
                         

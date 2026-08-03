@@ -9,48 +9,49 @@
 </head>
 <body>
 
-    <div class="contenedor-panel">
-        <!-- BARRA LATERAL -->
-        <div class="barra-lateral">
-            <div class="encabezado-lateral">
-                <h2>SENAEMPRESA</h2>
-                <p>Marketplace</p>
-            </div>
+    <!-- NAVBAR SUPERIOR -->
+    <header class="navbar-superior">
+        <img src="/img/Logo_SENAEMPRESA.png" alt="Logo SENAEMPRESA" class="imagen">
+        <div class="marca-navbar">
+            <h2>SENAEMPRESA</h2>
+        </div>
 
-            <% if (usuario) { %>
-            <div class="navegacion-lateral">
-                <div class="lista-menu">
-                    <div class="item-menu activo requiere-login"><a href="#">Inicio</a></div>
-                    <div class="item-menu requiere-login"><a href="#">Productos</a></div>
-                    <div class="item-menu requiere-login"><a href="#">Mis Apartados</a></div>
-                    <div class="item-menu requiere-login"><a href="#">Pedidos</a></div>
-                    <div class="item-menu requiere-login"><a href="#">Mis Datos</a></div>
-                    <div class="item-menu requiere-login"><a href="#">Ayuda</a></div>
-                    <div class="item-menu requiere-login" data-pagina="logout">
-                        <a>Cerrar Sesión</a>
-                    </div>
-                </div>
+        <% if (usuario) { %>
+        <nav class="navegacion-navbar">
+            <ul class="lista-menu">
+                <li class="item-menu activo requiere-login"><a href="#">Inicio</a></li>
+                <li class="item-menu requiere-login"><a href="#">Productos</a></li>
+                <li class="item-menu requiere-login"><a href="#">Mis Apartados</a></li>
+                <li class="item-menu requiere-login"><a href="#">Pedidos</a></li>
+                <li class="item-menu requiere-login"><a href="#">Mis Datos</a></li>
+                <li class="item-menu requiere-login"><a href="#">Ayuda</a></li>
+                <li class="item-menu requiere-login">
+                    <a href="/logout">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </nav>
+        <% } %>
+
+        <div class="acciones-navbar">
+            <div class="caja-carrito requiere-login">
+                <span>Carrito</span>
             </div>
-            <% } %>
-            </div>
+        </div>
+    </header>
+
+    <div class="contenedor-panel">
 
         <!-- CONTENIDO PRINCIPAL -->
         <div class="contenido-principal">
-            
-            <!-- ENCABEZADO / BUSCADOR -->
-            <div class="encabezado-superior">
-                <div class="barra-busqueda">
-                    <input type="text" placeholder="Buscar productos...">
-                </div>
-                <div class="caja-carrito requiere-login">
-                    <span>Carrito</span>
-                </div>
-            </div>
 
             <!-- BANNER BIENVENIDA -->
             <div class="banner-bienvenida">
-                <h2>Bienvenido...</h2>
-                <p>Encuentra los mejores productos para tu negocio.</p>
+                <% if (typeof usuario !== 'undefined' && usuario) { %>
+                    <h2>Bienvenido <%= usuario.nombre %></h2>
+                <% } else { %>
+                    <h2>Bienvenido Invitado</h2>
+                <% } %>
+                <p>Encuentra los mejores productos en SENAEMPRESA.</p>
             </div>
 
             <!-- TARJETAS DE ESTADÍSTICAS -->
@@ -58,16 +59,17 @@
                 <div class="tarjeta-estadistica">
                     <div class="detalles-estadistica">
                         <span class="titulo-estadistica">Productos disponibles</span>
-                        <h3 class="valor-estadistica"><%= productos ? productos.length : 0 %></h3>
-                        <div class="enlace-estadistica navegacion" data-pagina="catalogo">Ver catálogo</div>
+                        <h3 class="valor-estadistica"></h3>
+                        <a class="enlace-estadistica navegacion" href="/catalogo">Ver catálogo</a>
+                        <img class="catalogoimg" src="/img/catalogo.png" alt="">
                     </div>
                 </div>
-
+                <% if (usuario) { %>
                 <div class="tarjeta-estadistica">
                     <div class="detalles-estadistica requiere-login">
                         <span class="titulo-estadistica">Apartados activos</span>
                         <h3 class="valor-estadistica"></h3>
-                        <a href="#" class="enlace-estadistica">Ver mis apartados</a>
+                        <a href="#" class="enlace-estadistica enlace-protegido">Ver mis apartados</a>
                     </div>
                 </div>
 
@@ -75,15 +77,15 @@
                     <div class="detalles-estadistica requiere-login">
                         <span class="titulo-estadistica">Pedidos realizados</span>
                         <h3 class="valor-estadistica"></h3>
-                        <a href="#" class="enlace-estadistica">Ver historial</a>
+                        <a href="/catalogo" class="enlace-estadistica enlace-protegido">Ver historial</a>
                     </div>
                 </div>
-
+                <% } %>
                 <div class="tarjeta-estadistica">
                     <div class="detalles-estadistica requiere-login">
                         <span class="titulo-estadistica">Ofertas activas</span>
                         <h3 class="valor-estadistica"></h3>
-                        <a href="#" class="enlace-estadistica">Ver ofertas</a>
+                        <a href="#" class="enlace-estadistica enlace-protegido">Ver ofertas</a>
                     </div>
                 </div>
             </div>
@@ -97,6 +99,9 @@
                 <div class="cuadricula-productos">
                     <% destacados.forEach(producto => { %>
                         <div class="tarjeta-producto">
+                            <div class="imagen-producto">
+                                <span>Imagen</span>
+                            </div>
                             <div class="info-producto">
                                 <h4><%= producto.nombre %></h4>
                                 <p class="unidad"><%= producto.unidad %></p>
@@ -105,8 +110,8 @@
                                 </span>
                                 
                                 <!-- BOTÓN DE APARTAR ACTUALIZADO CON SUS ATRIBUTOS -->
-                                <div class="boton-apartar btn-accion-apartar" 
-                                        data-id="<%= producto.id %>"
+                                <div class="boton-apartar accion-apartar" 
+                                        data-id="<%= producto.id_producto %>"
                                         data-nombre="<%= producto.nombre %>" 
                                         data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>">
                                     Apartar
@@ -167,12 +172,8 @@
                         </div>
                         <form class="login-form" id="formLogin">
                             <div class="campo">
-                                <label for="usuario">Usuario</label>
-                                <input type="text" id="usuario" name="usuario" placeholder="Nombre de usuario" required>
-                            </div>
-                            <div class="campo">
-                                <label for="password">Contraseña</label>
-                                <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                                <label for="doc">Documento</label>
+                                <input type="text" id="doc" name="documento" placeholder="Documento">
                             </div>
                             <button type="submit" class="btn-principal">Iniciar sesión</button>
                         </form>
