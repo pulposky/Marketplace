@@ -22,10 +22,6 @@
         <% if (usuario) { %>
         <nav class="navegacion-navbar">
             <ul class="lista-menu">
-                <li class="item-menu activo requiere-login"><a href="#">Inicio</a></li>
-                <li class="item-menu requiere-login"><a href="#">Productos</a></li>
-                <li class="item-menu requiere-login"><a href="#">Mis Apartados</a></li>
-                <li class="item-menu requiere-login"><a href="#">Pedidos</a></li>
                 <li class="item-menu requiere-login"><a href="#">Mis Datos</a></li>
                 <li class="item-menu requiere-login"><a href="#">Ayuda</a></li>
                 <li class="item-menu requiere-login">
@@ -104,7 +100,11 @@
                     <% destacados.forEach(producto => { %>
                         <div class="tarjeta-producto">
                             <div class="imagen-producto">
-                                <span>Imagen</span>
+                                <% if (producto.imagenUpload) { %>
+                                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
+                                <% } else { %>
+                                    <span><%= producto.nombre %></span>
+                                <% } %>
                             </div>
                             <div class="info-producto">
                                 <h4><%= producto.nombre %></h4>
@@ -114,12 +114,12 @@
                                 </span>
                                 
                                 <!-- BOTÓN DE APARTAR ACTUALIZADO CON SUS ATRIBUTOS -->
-                                <div class="boton-apartar accion-apartar" 
+                                <button class="boton-apartar accion-apartar" 
                                         data-id="<%= producto.id_producto %>"
                                         data-nombre="<%= producto.nombre %>" 
                                         data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>">
                                     Apartar
-                                </div>
+                                </button>
                             </div>
                         </div>
                     <% }) %>
@@ -199,4 +199,4 @@
     <script src="/js/login.js"></script>
     <script src="/js/main.js"></script>
 </body>
-</html>
+</ht

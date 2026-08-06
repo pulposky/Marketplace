@@ -13,10 +13,10 @@ const ProductoModel = {
             SELECT nombre, unidad, lugar, precio, id_producto
             FROM producto
             WHERE nombre IN (
-                'PLATANO HARTON 1A',
-                'PLATANO HARTON 2A',
-                'HUEVOS DE GALLINA A',
-                'HUEVOS DE GALLINA AA'
+                'PLATANO HARTON 1A KG',
+                'PLATANO HARTON 2A KG',
+                'HUEVOS DE GALLINA A UND',
+                'HUEVOS DE GALLINA AA UND'
             )
             AND unidad <> '25 KG' AND precio <> 0
         `;

@@ -1,8 +1,4 @@
 const mysql = require('mysql2');
-const dotenv = require('dotenv');
-const path = require('path');
-
-dotenv.config(); // Carga variables de entorno para DB desde .env
 
 // Configuración de conexión a MySQL usando mysql2
 const conexion = mysql.createConnection({

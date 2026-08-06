@@ -7,7 +7,6 @@
     <title>Catálogo | SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/productos.css">
-    <link rel="stylesheet" href="/public/css/interaccion.css">
 </head>
 <body>
 
@@ -40,15 +39,67 @@
 
         <div class="contenido-principal">
             
-            <!-- PANEL LATERAL DE FILTROS -->
-            <aside class="panel-lateral">
-                <div class="seccion-categorias">
-                    <div class="titulo-categoria">Categorías</div>
-                    <div class="linea-divisora"></div>
+        <!-- PANEL LATERAL DE FILTROS -->
+        <aside class="panel-lateral">
+            <div class="seccion-categorias">
+                <div class="titulo-categoria">Categorías</div>
+                <div class="linea-divisora"></div>
 
-                    <button class="boton-filtrar">Aplicar Filtros</button>
+                <div class="lista-categorias">
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Abonos y Sustratos">
+                        <span>Abonos y Sustratos</span>
+                    </label>
+                    
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Frutas y Hortalizas">
+                        <span>Frutas y Hortalizas</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Cereales, Granos y Forrajes">
+                        <span>Cereales, Granos y Forrajes</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Material Vegetal y Flores">
+                        <span>Material Vegetal y Flores</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Embutidos y Cárnicos Procesados">
+                        <span>Embutidos y Cárnicos</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Bebidas y Refrescos">
+                        <span>Bebidas y Refrescos</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Salsas y Conservas">
+                        <span>Salsas y Conservas</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Lácteos y Derivados">
+                        <span>Lácteos y Derivados</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Repostería, Dulces y Licores">
+                        <span>Repostería, Dulces y Licores</span>
+                    </label>
+
+                    <label class="opcion-categoria">
+                        <input type="checkbox" name="categoria" value="Pecuario y Acuícola">
+                        <span>Pecuario y Acuícola</span>
+                    </label>
                 </div>
-            </aside>
+
+                <button class="boton-filtrar">Aplicar Filtros</button>
+            </div>
+        </aside>
 
             <!-- REJILLA DE PRODUCTOS -->
             <!-- Cada tarjeta muestra información del producto y un botón para apartar -->
@@ -56,7 +107,11 @@
                 <% productos.forEach(producto => { %>
                     <div class="tarjeta-producto">
                         <div class="imagen-producto">
-                            <span>Imagen</span>
+                            <% if (producto.imagenUpload) { %>
+                                <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
+                            <% } else { %>
+                                <span><%= producto.nombre %></span>
+                            <% } %>
                         </div>
                         <div class="info-producto-detalles">
                             <h3 class="nombre-producto">
@@ -74,8 +129,9 @@
                         <button class="boton-apartar btn-accion-apartar" 
                                 data-id="<%= producto.id_producto %>"
                                 data-nombre="<%= producto.nombre %>" 
-                                data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>">
-                            Apartar
+                                data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                data-imagen="<%= producto.imagenUpload || '' %>">
+                            Ver
                         </button>
                     </div>
                 <% }) %>
@@ -90,11 +146,11 @@
             <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
 
             <main class="card-container">
-                <div class="product-image-placeholder">
-                    <span>Imagen del Producto</span>
-                </div>
 
                 <div class="card-body">
+                    <div class="modal-imagen" style="margin-bottom:12px;">
+                        <img id="apartarImagenProducto" src="" alt="Imagen del producto" style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;"/>
+                    </div>
                     <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
 
                     <div class="product-info">
@@ -117,42 +173,38 @@
     </div>
 
     <!-- MODAL LOGIN -->
-    <div class="modal-fondo" id="modalLogin">
-        <div class="modal-contenido">
-            <span class="cerrar-modal" id="cerrarModal">&times;</span>
-            <div class="contenedor-login">
-                <div class="marca">
-                    <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
-                    <span class="marca-texto">Marketplace</span>
-                </div>
-                <main class="login" role="main">
-                    <div class="login-encabezado">
-                        <h1>Bienvenido</h1>
-                        <p>Ingresa tus credenciales para continuar</p>
+        <div class="modal-fondo" id="modalLogin">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" id="cerrarModal">&times;</span>
+                <div class="contenedor-login">
+                    <div class="marca">
+                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                        <span class="marca-texto">Marketplace</span>
                     </div>
-                    <form class="login-form" id="formLogin">
-                        <div class="campo">
-                            <label for="usuario">Usuario</label>
-                            <input type="text" id="usuario" name="usuario" placeholder="Nombre de usuario" required>
+                    <main class="login" role="main">
+                        <div class="login-encabezado">
+                            <h1>Bienvenido</h1>
+                            <p>Ingresa tus credenciales para continuar</p>
                         </div>
-                        <div class="campo">
-                            <label for="password">Contraseña</label>
-                            <input type="password" id="password" name="password" placeholder="Contraseña" required>
-                        </div>
-                        <button type="submit" class="btn-principal">Iniciar sesión</button>
-                    </form>
-                    <p class="login-pie">
-                        ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
-                    </p>
-                    <p id="mensaje" class="mensaje-error"></p>
-                </main>
-                <footer class="pie-pagina">
-                    <span class="pie-punto" aria-hidden="true"></span>
-                    SENA · Colombia
-                </footer>
+                        <form class="login-form" id="formLogin">
+                            <div class="campo">
+                                <label for="doc">Documento</label>
+                                <input type="text" id="doc" name="documento" placeholder="Documento">
+                            </div>
+                            <button type="submit" class="btn-principal">Iniciar sesión</button>
+                        </form>
+                        <p class="login-pie">
+                            ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
+                        </p>
+                        <p id="mensaje" class="mensaje-error"></p>
+                    </main>
+                    <footer class="pie-pagina">
+                        <span class="pie-punto" aria-hidden="true"></span>
+                        SENA · Colombia
+                    </footer>
+                </div>
             </div>
         </div>
-    </div>
 
     <script src="/js/login.js"></script>
     <script src="/js/productos.js"></script>

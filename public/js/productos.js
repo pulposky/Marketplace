@@ -15,12 +15,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const campoIdProducto = document.getElementById('apartarProductoId');
     const formularioApartado = document.getElementById('formConfirmarApartado');
     const formularioLogin = document.getElementById('formLogin');
+    const imagenApartar = document.getElementById('apartarImagenProducto');
 
     // Muestra el modal de apartado con los datos seleccionados del producto
     function mostrarVentanaApartado(datosProducto) {
         if (textoNombreProducto) textoNombreProducto.textContent = datosProducto.nombre;
         if (textoPrecioProducto) textoPrecioProducto.textContent = datosProducto.precio;
         if (campoIdProducto) campoIdProducto.value = datosProducto.id;
+        if (imagenApartar) {
+            if (datosProducto.imagen) {
+                imagenApartar.src = datosProducto.imagen;
+                imagenApartar.alt = `Imagen de ${datosProducto.nombre}`;
+                imagenApartar.style.display = 'block';
+            } else {
+                imagenApartar.src = '';
+                imagenApartar.alt = '';
+                imagenApartar.style.display = 'none';
+            }
+        }
 
         if (ventanaApartar) ventanaApartar.style.display = 'flex';
     }
@@ -31,7 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const infoProducto = {
                 id: botonApartar.dataset.id,
                 nombre: botonApartar.dataset.nombre,
-                precio: botonApartar.dataset.precio
+                precio: botonApartar.dataset.precio,
+                nota: botonApartar.dataset.nota || '',
+                imagen: botonApartar.dataset.imagen || ''
             };
 
             try {
@@ -53,14 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formularioLogin) {
         formularioLogin.addEventListener('submit', async (evento) => {
             evento.preventDefault();
-
-            const usuarioIngresado = document.getElementById('usuario').value;
-            const claveIngresada = document.getElementById('password').value;
-
-            const esExitoso = await procesarLogin(usuarioIngresado, claveIngresada);
+            const usuarioIngresado = document.getElementById('doc').value;
+            const esExitoso = await procesarLogin(usuarioIngresado);
 
             if (esExitoso) {
-                window.location.reload();
+                window.location.reload(); 
             }
         });
     }
