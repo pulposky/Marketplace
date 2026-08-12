@@ -51,7 +51,7 @@
 .login-form{
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 12px;
 }
 
 /* CAMPOS */
@@ -59,7 +59,7 @@
 .campo{
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .campo label{
@@ -148,4 +148,56 @@
     text-align: center;
     color: #777;
     font-size: 14px;
+}
+
+/* ============================
+   Selector segmentado: Cliente / Usuario
+   ============================ */
+.campo-tipo .tipo-options{
+    display:flex;
+    gap:6px;
+    background: #f3f6f5;
+    padding: 4px;
+    border-radius: 12px;
+    align-items:center;
+    width: 100%;
+    justify-content: space-between;
+}
+.campo-tipo .tipo-option{
+    position: relative;
+    display:flex;
+    align-items:center;
+    flex: 1 1 0;
+}
+.campo-tipo .tipo-option input[type="radio"]{
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+}
+.campo-tipo .tipo-label{
+    display:block;
+    padding: 10px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #4b5563;
+    cursor: pointer;
+    transition: background .12s ease, color .12s ease, transform .12s ease;
+    text-align: center;
+    width: 100%;
+}
+.campo-tipo .tipo-option input[type="radio"]:checked + .tipo-label{
+    background: #0f5132;
+    color: #fff;
+    box-shadow: 0 10px 26px rgba(15,81,50,0.14);
+    transform: translateY(-1px);
+}
+.campo-tipo .tipo-option .tipo-label:hover{
+    transform: translateY(-1px);
+}
+
+@media (max-width:480px){
+    .campo-tipo .tipo-options{flex-direction:column; gap:6px; padding:4px}
+    .campo-tipo .tipo-label{padding:8px 12px}
 }

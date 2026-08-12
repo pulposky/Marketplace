@@ -1,8 +1,6 @@
-// Script para la página de catálogo y el modal de apartado de producto
-// Aquí se controla el login, el modal de apartado y el envío del formulario
+// Script del catálogo de productos.
+// Aquí se controlan los modales, el login y el filtro de categorías desde la vista.
 
-// Script de la vista de catálogo.
-// Muestra el modal de apartado, verifica la sesión y envía el apartado al backend.
 document.addEventListener('DOMContentLoaded', () => {
     const ventanaApartar = document.getElementById('modalApartarProducto');
     const ventanaLogin = document.getElementById('modalLogin');
@@ -15,9 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const campoIdProducto = document.getElementById('apartarProductoId');
     const formularioApartado = document.getElementById('formConfirmarApartado');
     const formularioLogin = document.getElementById('formLogin');
+    const formularioCategorias = document.querySelector('.filtros-categorias-form');
     const imagenApartar = document.getElementById('apartarImagenProducto');
+    const seccionProductos = document.querySelector('.rejilla-productos');
 
-    // Muestra el modal de apartado con los datos seleccionados del producto
     function mostrarVentanaApartado(datosProducto) {
         if (textoNombreProducto) textoNombreProducto.textContent = datosProducto.nombre;
         if (textoPrecioProducto) textoPrecioProducto.textContent = datosProducto.precio;
@@ -37,9 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ventanaApartar) ventanaApartar.style.display = 'flex';
     }
 
-    // Verifica si el usuario ya está autenticado antes de abrir el modal
+    async function verificarSesion() {
+        try {
+            const respuestaSesion = await fetch('/api/verificar-sesion');
+            return await respuestaSesion.json();
+        } catch (error) {
+            console.error('Error al verificar la sesión:', error);
+            return { login: false };
+        }
+    }
+
     document.querySelectorAll('.btn-accion-apartar').forEach(botonApartar => {
-        botonApartar.addEventListener('click', async () => {
+        botonApartar.addEventListener('click', () => {
             const infoProducto = {
                 id: botonApartar.dataset.id,
                 nombre: botonApartar.dataset.nombre,
@@ -48,42 +56,96 @@ document.addEventListener('DOMContentLoaded', () => {
                 imagen: botonApartar.dataset.imagen || ''
             };
 
-            try {
-                const respuestaSesion = await fetch('/api/verificar-sesion');
-                const estadoSesion = await respuestaSesion.json();
-
-                if (estadoSesion.login) {
-                    mostrarVentanaApartado(infoProducto);
-                } else {
-                    if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                }
-            } catch (error) {
-                console.error('Error al verificar la sesión:', error);
-            }
+            mostrarVentanaApartado(infoProducto);
         });
     });
 
-    // Login desde el modal de catálogo
     if (formularioLogin) {
+        // Mostrar/ocultar campos según tipo de login
+        const tipoCliente = document.getElementById('tipo_cliente');
+        const tipoUsuario = document.getElementById('tipo_usuario');
+        const clienteFields = document.getElementById('clienteFields');
+        const usuarioFields = document.getElementById('usuarioFields');
+
+        function actualizarCampos() {
+            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
+            if (tipo === 'cliente') {
+                if (clienteFields) clienteFields.style.display = 'block';
+                if (usuarioFields) usuarioFields.style.display = 'none';
+            } else {
+                if (clienteFields) clienteFields.style.display = 'none';
+                if (usuarioFields) usuarioFields.style.display = 'block';
+            }
+        }
+
+        if (tipoCliente) tipoCliente.addEventListener('change', actualizarCampos);
+        if (tipoUsuario) tipoUsuario.addEventListener('change', actualizarCampos);
+        actualizarCampos();
+
         formularioLogin.addEventListener('submit', async (evento) => {
             evento.preventDefault();
-            const usuarioIngresado = document.getElementById('doc').value;
-            const esExitoso = await procesarLogin(usuarioIngresado);
+            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
 
-            if (esExitoso) {
-                window.location.reload(); 
+            let payload = {};
+            if (tipo === 'cliente') {
+                payload.documento = document.getElementById('doc')?.value || '';
+            } else {
+                payload.usuario = document.getElementById('user')?.value || '';
+                payload.password = document.getElementById('pwd')?.value || '';
+            }
+
+            const resultado = await procesarLogin(payload);
+            if (resultado && resultado.ok) {
+                if (resultado.redirect) {
+                    window.location.href = resultado.redirect;
+                    return;
+                }
+                window.location.reload();
             }
         });
     }
 
-    // Envío del formulario de apartado al backend
+    if (formularioCategorias && seccionProductos) {
+        formularioCategorias.addEventListener('submit', (evento) => {
+            evento.preventDefault();
+
+            const categoriasSeleccionadas = Array.from(
+                formularioCategorias.querySelectorAll('input[name="categoria"]:checked')
+            ).map((input) => input.value);
+
+            const tarjetas = Array.from(seccionProductos.querySelectorAll('.tarjeta-producto'));
+
+            tarjetas.forEach((tarjeta) => {
+                const nombreProducto = tarjeta.querySelector('.nombre-producto')?.textContent || '';
+                const categoriaProducto = tarjeta.dataset.categoria || '';
+                const coincide = categoriasSeleccionadas.length === 0 || categoriasSeleccionadas.includes(categoriaProducto);
+                tarjeta.style.display = coincide ? '' : 'none';
+            });
+        });
+    }
+
     if (formularioApartado) {
         formularioApartado.addEventListener('submit', async (evento) => {
             evento.preventDefault();
 
+            const idVal = campoIdProducto ? campoIdProducto.value : '';
+            const cantidadVal = document.getElementById('cantidadApartar')?.value;
+
+            if (!idVal) {
+                alert('Error: No se ha detectado la ID del producto.');
+                console.error('campoIdProducto está vacío al intentar enviar.');
+                return;
+            }
+
+            const estadoSesion = await verificarSesion();
+            if (!estadoSesion.login) {
+                if (ventanaLogin) ventanaLogin.style.display = 'flex';
+                return;
+            }
+
             const datosApartado = {
-                productoId: campoIdProducto.value,
-                cantidad: document.getElementById('cantidadApartar').value
+                productoId: idVal,
+                cantidad: cantidadVal
             };
 
             try {
@@ -105,6 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(datosRespuesta.mensaje || '¡Producto apartado con éxito!');
                     if (ventanaApartar) ventanaApartar.style.display = 'none';
                     formularioApartado.reset();
+                } else if (respuestaApartar.status === 401) {
+                    if (ventanaLogin) ventanaLogin.style.display = 'flex';
+                    alert(datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
                 } else {
                     alert(datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
                 }
@@ -114,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cierra los modales cuando el usuario hace clic en la 'X' o fuera del contenido
     if (botonCerrarApartar) botonCerrarApartar.addEventListener('click', () => ventanaApartar.style.display = 'none');
     if (botonCerrarLogin) botonCerrarLogin.addEventListener('click', () => ventanaLogin.style.display = 'none');
 

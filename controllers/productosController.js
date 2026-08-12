@@ -1,17 +1,31 @@
 const ProductoModel = require('../model/productoModel');
 
+// Convierte los filtros de categoría recibidos desde la URL en un arreglo limpio.
+const normalizarCategorias = (valor) => {
+    if (!valor) return [];
+    const valores = Array.isArray(valor) ? valor : [valor];
+    return valores.map((item) => String(item).trim()).filter(Boolean);
+};
+
 const ProductoController = {
-    // Devuelve todos los productos en formato JSON para la API
+    // Devuelve los productos en formato JSON; opcionalmente filtra por categoría.
     obtenerTodos: (req, res) => {
+        const categorias = normalizarCategorias(req.query.categoria || req.query.categorias);
+
         ProductoModel.obtenerTodos((error, resultados) => {
             if (error) {
                 return res.status(500).json({ error: 'Error al consultar la BD' });
             }
-            res.json(resultados);
+
+            const productosFiltrados = categorias.length > 0
+                ? resultados.filter((producto) => categorias.includes(producto.categoria))
+                : resultados;
+
+            res.json(productosFiltrados);
         });
     },
 
-    // Procesa el apartado de un producto y guarda el registro en la tabla apartados
+    // Registra un apartado de producto en la base de datos si el usuario tiene sesión activa.
     apartarProducto: (req, res) => {
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Debe iniciar sesión para apartar un producto.' });

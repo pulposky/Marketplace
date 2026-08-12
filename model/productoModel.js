@@ -1,8 +1,8 @@
 const conexion = require('../database/conexion');
 
-// Modelo de productos con consultas SQL para la aplicación
+// Modelo de productos con las consultas SQL principales del catálogo.
 const ProductoModel = {
-    // Devuelve todos los productos disponibles ordenados por nombre
+    // Devuelve todos los productos disponibles, excluyendo comodines y precios en cero.
     obtenerTodos: (callback) => {
         conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC", callback);
     },

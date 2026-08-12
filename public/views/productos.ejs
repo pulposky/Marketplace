@@ -13,9 +13,10 @@
     <!-- Vista de catálogo de productos -->
     <!-- Muestra todos los productos y permite abrir el modal para apartar -->
     <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
+    <% const rolUsuario = usuario && usuario.role ? String(usuario.role).trim().toLowerCase() : ''; %>
     <header class="header-catalogo">
         <div class="contenedor-header">
-            <a href="/" class="btn-regresar">
+            <a href="<%= (rolUsuario === 'admin' || rolUsuario === 'aprendiz') ? '/admin' : '/' %>" class="btn-regresar">
                 ← Regresar al Inicio
             </a>
             <div class="marca-catalogo">
@@ -45,59 +46,62 @@
                 <div class="titulo-categoria">Categorías</div>
                 <div class="linea-divisora"></div>
 
-                <div class="lista-categorias">
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Abonos y Sustratos">
-                        <span>Abonos y Sustratos</span>
-                    </label>
-                    
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Frutas y Hortalizas">
-                        <span>Frutas y Hortalizas</span>
-                    </label>
+                <% const categoriasActivas = Array.isArray(categoriasSeleccionadas) ? categoriasSeleccionadas : []; %>
+                <form method="get" action="/catalogo" class="filtros-categorias-form">
+                    <div class="lista-categorias">
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Abonos y Sustratos" <% if (categoriasActivas.includes('Abonos y Sustratos')) { %>checked<% } %>>
+                            <span>Abonos y Sustratos</span>
+                        </label>
+                        
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Frutas y Hortalizas" <% if (categoriasActivas.includes('Frutas y Hortalizas')) { %>checked<% } %>>
+                            <span>Frutas y Hortalizas</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Cereales, Granos y Forrajes">
-                        <span>Cereales, Granos y Forrajes</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Cereales, Granos y Forrajes" <% if (categoriasActivas.includes('Cereales, Granos y Forrajes')) { %>checked<% } %>>
+                            <span>Cereales, Granos y Forrajes</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Material Vegetal y Flores">
-                        <span>Material Vegetal y Flores</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Material Vegetal y Flores" <% if (categoriasActivas.includes('Material Vegetal y Flores')) { %>checked<% } %>>
+                            <span>Material Vegetal y Flores</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Embutidos y Cárnicos Procesados">
-                        <span>Embutidos y Cárnicos</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Embutidos y Cárnicos Procesados" <% if (categoriasActivas.includes('Embutidos y Cárnicos Procesados')) { %>checked<% } %>>
+                            <span>Embutidos y Cárnicos</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Bebidas y Refrescos">
-                        <span>Bebidas y Refrescos</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Bebidas y Refrescos" <% if (categoriasActivas.includes('Bebidas y Refrescos')) { %>checked<% } %>>
+                            <span>Bebidas y Refrescos</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Salsas y Conservas">
-                        <span>Salsas y Conservas</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Salsas y Conservas" <% if (categoriasActivas.includes('Salsas y Conservas')) { %>checked<% } %>>
+                            <span>Salsas y Conservas</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Lácteos y Derivados">
-                        <span>Lácteos y Derivados</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Lácteos y Derivados" <% if (categoriasActivas.includes('Lácteos y Derivados')) { %>checked<% } %>>
+                            <span>Lácteos y Derivados</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Repostería, Dulces y Licores">
-                        <span>Repostería, Dulces y Licores</span>
-                    </label>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Repostería, Dulces y Licores" <% if (categoriasActivas.includes('Repostería, Dulces y Licores')) { %>checked<% } %>>
+                            <span>Repostería, Dulces y Licores</span>
+                        </label>
 
-                    <label class="opcion-categoria">
-                        <input type="checkbox" name="categoria" value="Pecuario y Acuícola">
-                        <span>Pecuario y Acuícola</span>
-                    </label>
-                </div>
+                        <label class="opcion-categoria">
+                            <input type="checkbox" name="categoria" value="Pecuario y Acuícola" <% if (categoriasActivas.includes('Pecuario y Acuícola')) { %>checked<% } %>>
+                            <span>Pecuario y Acuícola</span>
+                        </label>
+                    </div>
 
-                <button class="boton-filtrar">Aplicar Filtros</button>
+                    <button type="submit" class="boton-filtrar">Aplicar Filtros</button>
+                </form>
             </div>
         </aside>
 
@@ -105,7 +109,7 @@
             <!-- Cada tarjeta muestra información del producto y un botón para apartar -->
             <section class="rejilla-productos">
                 <% productos.forEach(producto => { %>
-                    <div class="tarjeta-producto">
+                    <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
                         <div class="imagen-producto">
                             <% if (producto.imagenUpload) { %>
                                 <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
@@ -124,15 +128,23 @@
                                 $<%= Number(producto.precio).toLocaleString("es-CO") %>
                             </div>
                         </div>
-                        
-                        <!-- BOTÓN ÚNICO DE APARTAR -->
-                        <button class="boton-apartar btn-accion-apartar" 
-                                data-id="<%= producto.id_producto %>"
-                                data-nombre="<%= producto.nombre %>" 
-                                data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
-                                data-imagen="<%= producto.imagenUpload || '' %>">
-                            Ver
-                        </button>
+                        <% if (usuario) { %>
+                            <button class="boton-apartar btn-accion-apartar" 
+                                    data-id="<%= producto.id_producto %>"
+                                    data-nombre="<%= producto.nombre %>" 
+                                    data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                    data-imagen="<%= producto.imagenUpload || '' %>">
+                                Apartar
+                            </button>
+                        <% }else { %>
+                            <button class="boton-apartar btn-accion-apartar" 
+                                    data-id="<%= producto.id_producto %>"
+                                    data-nombre="<%= producto.nombre %>" 
+                                    data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                    data-imagen="<%= producto.imagenUpload || '' %>">
+                                Ver
+                            </button>
+                        <% } %>
                     </div>
                 <% }) %>
             </section>
@@ -165,7 +177,7 @@
                             <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" required style="width: 100%; padding: 8px;">
                         </div>
 
-                        <button type="submit" class="btn-principal" style="width: 100%;">Confirmar Apartado</button>
+                        <button type="submit" class="btn-principal" style="width: 100%; ">Apartar</button>
                     </form>
                 </div>
             </main>
@@ -187,10 +199,37 @@
                             <p>Ingresa tus credenciales para continuar</p>
                         </div>
                         <form class="login-form" id="formLogin">
-                            <div class="campo">
-                                <label for="doc">Documento</label>
-                                <input type="text" id="doc" name="documento" placeholder="Documento">
+                            <div class="campo campo-tipo" style="margin-bottom:8px;">
+                                <div class="tipo-options">
+                                    <label class="tipo-option">
+                                        <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
+                                        <span class="tipo-label">Soy cliente</span>
+                                    </label>
+                                    <label class="tipo-option">
+                                        <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
+                                        <span class="tipo-label">Soy usuario</span>
+                                    </label>
+                                </div>
                             </div>
+
+                            <div id="clienteFields">
+                                <div class="campo">
+                                    <label for="doc">Documento</label>
+                                    <input type="text" id="doc" name="documento" placeholder="Documento">
+                                </div>
+                            </div>
+
+                            <div id="usuarioFields" style="display:none;">
+                                <div class="campo">
+                                    <label for="user">Usuario</label>
+                                    <input type="text" id="user" name="usuario" placeholder="Usuario">
+                                </div>
+                                <div class="campo">
+                                    <label for="pwd">Contraseña</label>
+                                    <input type="password" id="pwd" name="password" placeholder="Contraseña">
+                                </div>
+                            </div>
+
                             <button type="submit" class="btn-principal">Iniciar sesión</button>
                         </form>
                         <p class="login-pie">

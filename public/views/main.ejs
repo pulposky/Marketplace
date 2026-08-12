@@ -48,7 +48,7 @@
                 <% if (typeof usuario !== 'undefined' && usuario) { %>
                     <h2>Bienvenido <%= usuario.nombre %></h2>
                 <% } else { %>
-                    <h2>Bienvenido Invitado</h2>
+                    <h2>Bienvenido</h2>
                 <% } %>
                 <p>Encuentra los mejores productos en SENAEMPRESA.</p>
             </div>
@@ -112,14 +112,23 @@
                                 <span class="precio">
                                     $<%= Number(producto.precio).toLocaleString("es-CO") %>
                                 </span>
-                                
-                                <!-- BOTÓN DE APARTAR ACTUALIZADO CON SUS ATRIBUTOS -->
-                                <button class="boton-apartar accion-apartar" 
+                            <% if (usuario) { %>
+                                <button class="boton-apartar btn-accion-apartar" 
                                         data-id="<%= producto.id_producto %>"
                                         data-nombre="<%= producto.nombre %>" 
-                                        data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>">
+                                        data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                        data-imagen="<%= producto.imagenUpload || '' %>">
                                     Apartar
                                 </button>
+                            <% }else { %>
+                                <button class="boton-apartar btn-accion-apartar" 
+                                        data-id="<%= producto.id_producto %>"
+                                        data-nombre="<%= producto.nombre %>" 
+                                        data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                        data-imagen="<%= producto.imagenUpload || '' %>">
+                                    Ver
+                                </button>
+                            <% } %>
                             </div>
                         </div>
                     <% }) %>
@@ -128,17 +137,17 @@
 
         </div>
 
-        <!-- MODAL APARTAR PRODUCTO (AGREGADO A TU VISTA MAIN) -->
+        <!-- MODAL APARTAR PRODUCTO -->
         <div class="modal-fondo" id="modalApartarProducto">
             <div class="modal-contenido">
                 <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
 
                 <main class="card-container">
-                    <div class="product-image-placeholder">
-                        <span>Imagen del Producto</span>
-                    </div>
 
                     <div class="card-body">
+                        <div class="modal-imagen" style="margin-bottom:12px;">
+                            <img id="apartarImagenProducto" src="" alt="Imagen del producto" style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;"/>
+                        </div>
                         <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
 
                         <div class="product-info">
@@ -153,7 +162,7 @@
                                 <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" required style="width: 100%; padding: 8px;">
                             </div>
 
-                            <button type="submit" class="btn-principal" style="width: 100%;">Confirmar Apartado</button>
+                            <button type="submit" class="btn-principal" style="width: 100%; ">Apartar</button>
                         </form>
                     </div>
                 </main>
@@ -175,10 +184,37 @@
                             <p>Ingresa tus credenciales para continuar</p>
                         </div>
                         <form class="login-form" id="formLogin">
-                            <div class="campo">
-                                <label for="doc">Documento</label>
-                                <input type="text" id="doc" name="documento" placeholder="Documento">
+                            <div class="campo campo-tipo" style="margin-bottom:8px;">
+                                <div class="tipo-options">
+                                    <label class="tipo-option">
+                                        <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
+                                        <span class="tipo-label">Soy cliente</span>
+                                    </label>
+                                    <label class="tipo-option">
+                                        <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
+                                        <span class="tipo-label">Soy usuario</span>
+                                    </label>
+                                </div>
                             </div>
+
+                            <div id="clienteFields">
+                                <div class="campo">
+                                    <label for="doc">Documento</label>
+                                    <input type="text" id="doc" name="documento" placeholder="Documento">
+                                </div>
+                            </div>
+
+                            <div id="usuarioFields" style="display:none;">
+                                <div class="campo">
+                                    <label for="user">Usuario</label>
+                                    <input type="text" id="user" name="usuario" placeholder="Usuario">
+                                </div>
+                                <div class="campo">
+                                    <label for="pwd">Contraseña</label>
+                                    <input type="password" id="pwd" name="password" placeholder="Contraseña">
+                                </div>
+                            </div>
+
                             <button type="submit" class="btn-principal">Iniciar sesión</button>
                         </form>
                         <p class="login-pie">

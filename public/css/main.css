@@ -271,21 +271,21 @@ body {
 }
 
 .boton-apartar {
-    background-color: #0d4722;
-    color: white;
+    background-color: #0f5132;
+    color: #ffffff;
     text-align: center;
-    padding: 8px 0;
-    border-radius: 15px;
+    padding: 10px 0;
+    border-radius: 20px;
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    margin-bottom: 10px;
-    transition: background 0.2s;
-    user-select: none;
+    border: none;
+    transition: background-color 0.2s ease;
+    width: 100%;
 }
 
 .boton-apartar:hover {
-    background-color: #1b5e20;
+    background-color: #0b3d26;
 }
 
 /* ============================
@@ -315,6 +315,15 @@ body {
     animation: abrirModal 0.25s ease-out;
 }
 
+.modal-imagen img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+    max-height: 360px;
+}
+
 .cerrar-modal {
     position: absolute;
     top: 12px;
@@ -338,8 +347,8 @@ body {
 
 .imagen-producto {
     width: 100%;
-    min-height: 140px;
-    max-height: 180px;
+    min-height: 120px;
+    max-height: 160px;
     background-color: #f3f4f6;
     border-radius: 12px;
     overflow: hidden;
