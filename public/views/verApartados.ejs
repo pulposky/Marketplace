@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Apartados - SENAEMPRESA</title>
+    <link rel="stylesheet" href="/css/verApartados.css">
+</head>
+<body>
+
+    <!-- HEADER Y BOTÓN REGRESAR -->
+    <header class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>SENAEMPRESA</span>
+            </div>
+            <a href="/" class="btn-regresar">&larr; Regresar</a>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="contenedor-principal">
+        <div class="encabezado-seccion">
+            <div>
+                <h1 class="titulo-catalogo">MIS APARTADOS</h1>
+                <p class="subtitulo-seccion">Consulta y gestiona los productos que has reservado.</p>
+            </div>
+        </div>
+
+        <% if (typeof apartados !== 'undefined' && apartados.length > 0) { %>
+            <div class="rejilla-productos">
+                <% apartados.forEach(item => { %>
+                    <div class="tarjeta-producto" id="apartado-<%= item.id_apartado %>">
+                        <div class="imagen-producto">
+                            <% if (item.imagenUpload) { %>
+                                <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
+                            <% } else { %>
+                                <span><%= item.nombre %></span>
+                            <% } %>
+                            <span class="badge-estado <%= (item.estado || 'activo').toLowerCase() %>">
+                                <%= item.estado || 'Activo' %>
+                            </span>
+                        </div>
+
+                        <div class="nombre-producto"><%= item.nombre %></div>
+                        
+                        <p class="presentacion-producto">
+                            Cantidad: <strong><%= item.cantidad %></strong> <%= item.unidad || 'Unidad(es)' %>
+                        </p>
+                        
+                        <p class="presentacion-producto">
+                            Precio un.: $<%= Number(item.precio).toLocaleString("es-CO") %>
+                        </p>
+
+                        <div class="precio-producto">
+                            Total: $<%= Number(item.precio * item.cantidad).toLocaleString("es-CO") %>
+                        </div>
+
+                        <button type="button" 
+                                class="btn-cancelar btn-accion-cancelar" 
+                                data-id="<%= item.id_apartado %>">
+                            Cancelar Apartado
+                        </button>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="estado-vacio">
+                <h3>No tienes apartados activos</h3>
+                <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
+                <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
+            </div>
+        <% } %>
+    </main>
+
+    <script src="/js/verApartados.js"></script>
+</body>
+</html>

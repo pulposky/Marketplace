@@ -10,8 +10,6 @@
 </head>
 <body>
 
-    <!-- Página principal de SENAEMPRESA Marketplace -->
-    <!-- Esta vista muestra el banner, estadísticas, productos destacados y modales de login/apartar -->
     <!-- NAVBAR SUPERIOR -->
     <header class="navbar-superior">
         <img src="/img/Logo_SENAEMPRESA.png" alt="Logo SENAEMPRESA" class="imagen">
@@ -32,9 +30,11 @@
         <% } %>
 
         <div class="acciones-navbar">
-            <div class="caja-carrito requiere-login">
-                <span>Carrito</span>
-            </div>
+            <% if (!usuario) { %>
+                <button type="button" class="btn-iniciar-sesion" id="abrirModalLogin">
+                    Iniciar sesión
+                </button>
+            <% } %>
         </div>
     </header>
 
@@ -68,7 +68,7 @@
                     <div class="detalles-estadistica requiere-login">
                         <span class="titulo-estadistica">Apartados activos</span>
                         <h3 class="valor-estadistica"></h3>
-                        <a href="#" class="enlace-estadistica enlace-protegido">Ver mis apartados</a>
+                        <a href="/verApartados" class="enlace-estadistica enlace-protegido">Ver mis apartados</a>
                     </div>
                 </div>
 
@@ -90,12 +90,10 @@
             </div>
 
             <!-- SECCIÓN PRODUCTOS DESTACADOS -->
-            <!-- Aquí se listan los productos seleccionados como destacados desde el backend -->
             <div class="seccion-productos">
                 <div class="encabezado-seccion">
                     <h3>Productos Destacados</h3>
                 </div>
-
                 <div class="cuadricula-productos">
                     <% destacados.forEach(producto => { %>
                         <div class="tarjeta-producto">
@@ -109,23 +107,32 @@
                             <div class="info-producto">
                                 <h4><%= producto.nombre %></h4>
                                 <p class="unidad"><%= producto.unidad %></p>
+                                
+                                <!-- Muestra de la cantidad disponible/temporal de la BD -->
+                                <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin: 4px 0;">
+                                    Disponibles: <strong><%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %></strong> <%= producto.unidad %>
+                                </p>
+
                                 <span class="precio">
                                     $<%= Number(producto.precio).toLocaleString("es-CO") %>
                                 </span>
+
                             <% if (usuario) { %>
                                 <button class="boton-apartar btn-accion-apartar" 
                                         data-id="<%= producto.id_producto %>"
                                         data-nombre="<%= producto.nombre %>" 
                                         data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
-                                        data-imagen="<%= producto.imagenUpload || '' %>">
+                                        data-imagen="<%= producto.imagenUpload || '' %>"
+                                        data-limite="<%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %>">
                                     Apartar
                                 </button>
-                            <% }else { %>
+                            <% } else { %>
                                 <button class="boton-apartar btn-accion-apartar" 
                                         data-id="<%= producto.id_producto %>"
                                         data-nombre="<%= producto.nombre %>" 
                                         data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
-                                        data-imagen="<%= producto.imagenUpload || '' %>">
+                                        data-imagen="<%= producto.imagenUpload || '' %>"
+                                        data-limite="<%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %>">
                                     Ver
                                 </button>
                             <% } %>
@@ -143,7 +150,6 @@
                 <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
 
                 <main class="card-container">
-
                     <div class="card-body">
                         <div class="modal-imagen" style="margin-bottom:12px;">
                             <img id="apartarImagenProducto" src="" alt="Imagen del producto" style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;"/>
@@ -162,7 +168,7 @@
                                 <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" required style="width: 100%; padding: 8px;">
                             </div>
 
-                            <button type="submit" class="btn-principal" style="width: 100%; ">Apartar</button>
+                            <button type="submit" class="btn-principal" style="width: 100%;">Apartar</button>
                         </form>
                     </div>
                 </main>
@@ -188,11 +194,11 @@
                                 <div class="tipo-options">
                                     <label class="tipo-option">
                                         <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
-                                        <span class="tipo-label">Soy cliente</span>
+                                        <span class="tipo-label">Soy Cliente</span>
                                     </label>
                                     <label class="tipo-option">
                                         <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
-                                        <span class="tipo-label">Soy usuario</span>
+                                        <span class="tipo-label">Soy Admin</span>
                                     </label>
                                 </div>
                             </div>
@@ -235,4 +241,4 @@
     <script src="/js/login.js"></script>
     <script src="/js/main.js"></script>
 </body>
-</ht
+</html>

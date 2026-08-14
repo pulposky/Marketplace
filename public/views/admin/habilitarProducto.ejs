@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos - Panel Admin</title>
+    <link rel="stylesheet" href="/css/admin/habilitarProducto.css">
+</head>
+
+<body>
+
+    <!-- HEADER Y BARRA SUPERIOR -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Habilitación de Productos</span> - Panel Admin
+            </div>
+            <div>
+                <a href='/admin' class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="encabezado-seccion">
+            <div class="titulo-catalogo">Habilitar Productos para Venta</div>
+
+            <div class="barra-superior">
+                <div class="campo-busqueda">
+                    <input type="text" id="busqueda-producto" placeholder="Buscar producto por nombre...">
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO PRINCIPA-->
+        <div class="contenido-principal">
+
+            <!-- PANEL LATERAL -->
+            <div class="panel-lateral">
+                <div class="titulo-categoria">Filtros de Gestión</div>
+                <div class="linea-divisora"></div>
+
+                <div class="lista-filtros">
+                    <div class="item-filtro">
+                        <input type="checkbox" id="filtro-disponibles">
+                        <label for="filtro-disponibles">Solo habilitados</label>
+                    </div>
+                </div>
+
+                <div class="boton-filtrar">Aplicar Filtros</div>
+            </div>
+
+            <!-- REJILLA DE PRODUCTOS -->
+            <div class="rejilla-productos" id="contenedorProductos">
+
+                <% if (productos && productos.length> 0) { %>
+                    <% productos.forEach(producto=> { %>
+                        <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
+                            data-nombre="<%= (producto.nombre || '').toLowerCase() %>"
+                            data-estado="<%= producto.estado %>" data-cantidad="<%= producto.limite_venta || 0 %>">
+
+                            <!-- Imagen del Producto -->
+                            <div class="imagen-producto">
+                                <% if (producto.imagenUpload) { %>
+                                    <img src="<%= producto.imagenUpload %>" alt="<%= producto.nombre %>">
+                                    <% } else { %>
+                                        <span>
+                                            <%= producto.nombre %>
+                                        </span>
+                                        <% } %>
+                            </div>
+
+                            <!-- Datos del Producto -->
+                            <div class="presentacion-producto">
+                                Presentación: <%= producto.unidad || 'N/A' %>
+                            </div>
+
+                            <div class="nombre-producto">
+                                <%= producto.nombre %>
+                            </div>
+
+                            <div class="precio-producto">
+                                $<%= Number(producto.precio || 0).toLocaleString("es-CO") %>
+                            </div>
+
+                            <div class="linea-divisora"></div>
+
+                            <!-- Panel de Controles -->
+                            <div class="panel-controles">
+                                <div class="grupo-control">
+                                    <div class="texto-control">Cantidad a vender:</div>
+                                    <input type="number" class="campo-cantidad" min="0"
+                                        value="<%= producto.limite_venta || 0 %>" placeholder="0"
+                                        data-id="<%= producto.id_producto %>">
+                                </div>
+
+                                <div class="grupo-control">
+                                    <div class="texto-control">Habilitar venta:</div>
+                                    <label class="interruptor">
+                                        <input type="checkbox" class="check-habilitar"
+                                            data-id="<%= producto.id_producto %>" <%=producto.estado==='activo'
+                                            ? 'checked' : '' %>>
+                                        <div class="deslizador"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                            <% } else { %>
+                                <p class="sin-resultados">No se encontraron productos en la base de datos.</p>
+                                <% } %>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin/habilitarProducto.js"></script>
+</body>
+
+</html>

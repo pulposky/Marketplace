@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de administración</title>
+    <link rel="stylesheet" href="/css/admin/mainAdmin.css" />
+</head>
+<body>
+    <main class="admin-panel">
+        <header class="admin-header">
+            <h1>Panel de Administración</h1>
+            <p>Bienvenido, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong></p>
+            <p>Estado de sesión: <span class="rol-badge"><%= usuario.role %></span></p>
+        </header>
+
+        <section class="admin-content">
+            <article class="admin-card">
+                <h2>Gestión de Productos</h2>
+                <p>
+                    Activa, deshabilita o gestiona el catálogo disponible para tus clientes de forma rápida y centralizada.
+                </p>
+            </article>
+
+            <article class="admin-card">
+                <h2>Control de Pedidos</h2>
+                <p>
+                    Revisa el historial, el estado de las entregas y el detalle de cada compra realizada en la plataforma.
+                </p>
+            </article>
+        </section>
+
+        <nav class="admin-actions">
+            <a href="/admin/habilitar-producto" class="btn-principal">Habilitar Producto</a>
+            <a href="/admin/pedidos" class="btn-secundario">Ver Pedidos</a>
+            <a href="/logout" class="btn-danger">Cerrar Sesión</a>
+        </nav>
+    </main>
+</body>
+</html>

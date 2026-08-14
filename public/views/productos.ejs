@@ -10,8 +10,6 @@
 </head>
 <body>
 
-    <!-- Vista de catálogo de productos -->
-    <!-- Muestra todos los productos y permite abrir el modal para apartar -->
     <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
     <% const rolUsuario = usuario && usuario.role ? String(usuario.role).trim().toLowerCase() : ''; %>
     <header class="header-catalogo">
@@ -19,6 +17,7 @@
             <a href="<%= (rolUsuario === 'admin' || rolUsuario === 'aprendiz') ? '/admin' : '/' %>" class="btn-regresar">
                 ← Regresar al Inicio
             </a>
+
             <div class="marca-catalogo">
                 <span>SENAEMPRESA</span>
             </div>
@@ -106,7 +105,6 @@
         </aside>
 
             <!-- REJILLA DE PRODUCTOS -->
-            <!-- Cada tarjeta muestra información del producto y un botón para apartar -->
             <section class="rejilla-productos">
                 <% productos.forEach(producto => { %>
                     <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
@@ -124,27 +122,25 @@
                             <p class="presentacion-producto">
                                 Presentación: <%= producto.unidad %>
                             </p>
+                            
+                            <!-- CAMBIO 1: Muestra la cantidad disponible en la tarjeta -->
+                            <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin-top: 4px;">
+                                Disponibles: <strong><%= producto.limite_venta || 0 %></strong> <%= producto.unidad %>
+                            </p>
+
                             <div class="precio-producto">
                                 $<%= Number(producto.precio).toLocaleString("es-CO") %>
                             </div>
                         </div>
-                        <% if (usuario) { %>
-                            <button class="boton-apartar btn-accion-apartar" 
-                                    data-id="<%= producto.id_producto %>"
-                                    data-nombre="<%= producto.nombre %>" 
-                                    data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
-                                    data-imagen="<%= producto.imagenUpload || '' %>">
-                                Apartar
-                            </button>
-                        <% }else { %>
-                            <button class="boton-apartar btn-accion-apartar" 
-                                    data-id="<%= producto.id_producto %>"
-                                    data-nombre="<%= producto.nombre %>" 
-                                    data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
-                                    data-imagen="<%= producto.imagenUpload || '' %>">
-                                Ver
-                            </button>
-                        <% } %>
+
+                        <button class="boton-apartar btn-accion-apartar" 
+                                data-id="<%= producto.id_producto %>"
+                                data-nombre="<%= producto.nombre %>" 
+                                data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                data-imagen="<%= producto.imagenUpload || '' %>"
+                                data-limite="<%= producto.limite_venta || 0 %>">
+                            <%= usuario ? 'Apartar' : 'Ver' %>
+                        </button>
                     </div>
                 <% }) %>
             </section>
@@ -174,7 +170,10 @@
                         
                         <div class="campo" style="margin-bottom: 12px;">
                             <label for="cantidadApartar" style="display:block; margin-bottom:5px;">Cantidad:</label>
-                            <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" required style="width: 100%; padding: 8px;">
+                            
+                            <!-- CAMBIO 3: Campo de cantidad e indicador de unidades disponibles en el modal -->
+                            <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1" required style="width: 100%; padding: 8px;">
+                            <small id="textoDisponibles" style="display:block; color:#666; margin-top:4px;">Disponibles: <span id="cantDisponiblesModal">0</span></small>
                         </div>
 
                         <button type="submit" class="btn-principal" style="width: 100%; ">Apartar</button>
@@ -185,65 +184,65 @@
     </div>
 
     <!-- MODAL LOGIN -->
-        <div class="modal-fondo" id="modalLogin">
-            <div class="modal-contenido">
-                <span class="cerrar-modal" id="cerrarModal">&times;</span>
-                <div class="contenedor-login">
-                    <div class="marca">
-                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
-                        <span class="marca-texto">Marketplace</span>
-                    </div>
-                    <main class="login" role="main">
-                        <div class="login-encabezado">
-                            <h1>Bienvenido</h1>
-                            <p>Ingresa tus credenciales para continuar</p>
-                        </div>
-                        <form class="login-form" id="formLogin">
-                            <div class="campo campo-tipo" style="margin-bottom:8px;">
-                                <div class="tipo-options">
-                                    <label class="tipo-option">
-                                        <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
-                                        <span class="tipo-label">Soy cliente</span>
-                                    </label>
-                                    <label class="tipo-option">
-                                        <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
-                                        <span class="tipo-label">Soy usuario</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div id="clienteFields">
-                                <div class="campo">
-                                    <label for="doc">Documento</label>
-                                    <input type="text" id="doc" name="documento" placeholder="Documento">
-                                </div>
-                            </div>
-
-                            <div id="usuarioFields" style="display:none;">
-                                <div class="campo">
-                                    <label for="user">Usuario</label>
-                                    <input type="text" id="user" name="usuario" placeholder="Usuario">
-                                </div>
-                                <div class="campo">
-                                    <label for="pwd">Contraseña</label>
-                                    <input type="password" id="pwd" name="password" placeholder="Contraseña">
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn-principal">Iniciar sesión</button>
-                        </form>
-                        <p class="login-pie">
-                            ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
-                        </p>
-                        <p id="mensaje" class="mensaje-error"></p>
-                    </main>
-                    <footer class="pie-pagina">
-                        <span class="pie-punto" aria-hidden="true"></span>
-                        SENA · Colombia
-                    </footer>
+    <div class="modal-fondo" id="modalLogin">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" id="cerrarModal">&times;</span>
+            <div class="contenedor-login">
+                <div class="marca">
+                    <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                    <span class="marca-texto">Marketplace</span>
                 </div>
+                <main class="login" role="main">
+                    <div class="login-encabezado">
+                        <h1>Bienvenido</h1>
+                        <p>Ingresa tus credenciales para continuar</p>
+                    </div>
+                    <form class="login-form" id="formLogin">
+                        <div class="campo campo-tipo" style="margin-bottom:8px;">
+                            <div class="tipo-options">
+                                <label class="tipo-option">
+                                    <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
+                                    <span class="tipo-label">Soy Cliente</span>
+                                </label>
+                                <label class="tipo-option">
+                                    <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
+                                    <span class="tipo-label">Soy Admin</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="clienteFields">
+                            <div class="campo">
+                                <label for="doc">Documento</label>
+                                <input type="text" id="doc" name="documento" placeholder="Documento">
+                            </div>
+                        </div>
+
+                        <div id="usuarioFields" style="display:none;">
+                            <div class="campo">
+                                <label for="user">Usuario</label>
+                                <input type="text" id="user" name="usuario" placeholder="Usuario">
+                            </div>
+                            <div class="campo">
+                                <label for="pwd">Contraseña</label>
+                                <input type="password" id="pwd" name="password" placeholder="Contraseña">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-principal">Iniciar sesión</button>
+                    </form>
+                    <p class="login-pie">
+                        ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
+                    </p>
+                    <p id="mensaje" class="mensaje-error"></p>
+                </main>
+                <footer class="pie-pagina">
+                    <span class="pie-punto" aria-hidden="true"></span>
+                    SENA · Colombia
+                </footer>
             </div>
         </div>
+    </div>
 
     <script src="/js/login.js"></script>
     <script src="/js/productos.js"></script>

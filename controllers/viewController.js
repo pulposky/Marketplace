@@ -1,9 +1,7 @@
-// Controlador encargado de renderizar las vistas principales del marketplace.
 const fs = require('fs');
 const path = require('path');
 const ProductoModel = require('../model/productoModel');
 
-// Normaliza texto para comparar nombres de productos e imágenes sin importar tildes o espacios.
 const normalizeText = (text) => {
     if (!text) return '';
     return text
@@ -15,7 +13,6 @@ const normalizeText = (text) => {
         .toLowerCase();
 };
 
-// Asocia a cada producto una imagen si existe en la carpeta de uploads.
 const asociarImagenesAProductos = (productos, callback) => {
     const uploadDir = path.join(__dirname, '..', 'public', 'img', 'upload');
 
@@ -45,7 +42,6 @@ const asociarImagenesAProductos = (productos, callback) => {
     });
 };
 
-// Convierte los filtros de categoría en un arreglo limpio y útil para el controlador.
 const normalizarCategorias = (valor) => {
     if (!valor) return [];
     const valores = Array.isArray(valor) ? valor : [valor];
@@ -53,20 +49,23 @@ const normalizarCategorias = (valor) => {
 };
 
 const ViewController = {
-    // Muestra el formulario de login
     mostrarLogin: (req, res) => {
         res.render('login');
     },
 
-    // Muestra la página principal con los productos destacados y el listado general.
     mostrarMain: (req, res) => {
+        const rol = String(req.session?.usuario?.role || '').trim().toLowerCase();
+
+        if (rol === 'admin' || rol === 'aprendiz') {
+            return res.redirect('/admin');
+        }
+
         ProductoModel.obtenerDestacados((errorDestacados, destacados) => {
             const listaDestacadosRaw = (errorDestacados || !Array.isArray(destacados)) ? [] : destacados;
 
             ProductoModel.obtenerTodos((errorTodos, todosLosProductos) => {
                 const listaTodosRaw = (errorTodos || !Array.isArray(todosLosProductos)) ? [] : todosLosProductos;
 
-                // Asociar imágenes a destacados y luego a todos
                 asociarImagenesAProductos(listaDestacadosRaw, (destacadosConImagen) => {
                     asociarImagenesAProductos(listaTodosRaw, (todosConImagen) => {
                         res.render("main", {
@@ -80,20 +79,23 @@ const ViewController = {
         });
     },
 
-    // Renderiza una vista adicional para apartar productos, si se usa en el futuro.
     mostrarApartado: (req, res) => {
         res.render('apartarProductos');
     },
 
-    // Renderiza el catálogo completo y aplica filtros por categoría si llegaron en la solicitud.
     mostrarCatalogo: (req, res) => {
         const categoriasSeleccionadas = normalizarCategorias(req.query.categoria || req.query.categorias);
 
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
+
+            // 1. Filtrar solo los productos cuyo estado sea 'activo'
+            const productosActivos = listaProductosRaw.filter((producto) => producto.estado === 'activo');
+
+            // 2. Filtrar por categoría si el usuario seleccionó alguna
             const productosFiltrados = categoriasSeleccionadas.length > 0
-                ? listaProductosRaw.filter((producto) => categoriasSeleccionadas.includes(producto.categoria))
-                : listaProductosRaw;
+                ? productosActivos.filter((producto) => categoriasSeleccionadas.includes(producto.categoria))
+                : productosActivos;
 
             asociarImagenesAProductos(productosFiltrados, (productosConImagen) => {
                 res.render("productos", {
@@ -103,18 +105,58 @@ const ViewController = {
                 });
             });
         });
-    }
-    ,
+    },
 
-    // Vista de administración para habilitación de productos
-    mostrarHabilitacionProductos: (req, res) => {
-        // Solo permitir si hay sesión y rol admin o aprendiz
+    mostrarMainAdmin: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
         if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
             return res.redirect('/');
         }
-        res.render('admin/habilitacionProductos', { usuario: usuarioSesion });
+        res.render('admin/mainAdmin', { usuario: usuarioSesion });
+    },
+
+    mostrarHabilitarProducto: (req, res) => {
+        const usuarioSesion = req.session?.usuario;
+        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
+        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+            return res.redirect('/');
+        }
+
+        ProductoModel.obtenerTodos((error, productos) => {
+            const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
+
+            asociarImagenesAProductos(listaProductosRaw, (productosConImagen) => {
+                res.render('admin/habilitarProducto', { 
+                    usuario: usuarioSesion,
+                    productos: productosConImagen 
+                });
+            });
+        });
+    },
+
+    mostrarVerApartados: (req, res) => {
+        if (!req.session || !req.session.usuario) {
+            return res.redirect('/login');
+        }
+
+        const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+
+        ProductoModel.obtenerApartadosPorCliente(nombreCliente, (error, apartados) => {
+            if (error) {
+                console.error('Error al consultar apartados:', error);
+                return res.status(500).send('Error en el servidor');
+            }
+
+            const listaApartadosRaw = Array.isArray(apartados) ? apartados : [];
+
+            asociarImagenesAProductos(listaApartadosRaw, (apartadosConImagen) => {
+                res.render('verApartados', { 
+                    apartados: apartadosConImagen,
+                    usuario: req.session.usuario 
+                });
+            });
+        });
     }
 };
 

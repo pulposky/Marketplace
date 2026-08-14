@@ -6,10 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const botonCerrarApartar = document.getElementById('cerrarModalProducto');
     const botonCerrarLogin = document.getElementById('cerrarModal');
+    const botonAbrirLogin = document.getElementById('abrirModalLogin');
 
     const textoNombreProducto = document.getElementById('apartarNombreProducto');
     const textoPrecioProducto = document.getElementById('apartarPrecioProducto');
     const campoIdProducto = document.getElementById('apartarProductoId');
+    const inputCantidadApartar = document.getElementById('cantidadApartar'); // <-- CAPTURAMOS EL INPUT DE CANTIDAD
     const formularioApartado = document.getElementById('formConfirmarApartado');
     const formularioLogin = document.getElementById('formLogin');
     const imagenApartar = document.getElementById('apartarImagenProducto');
@@ -18,6 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (textoNombreProducto) textoNombreProducto.textContent = datosProducto.nombre || '';
         if (textoPrecioProducto) textoPrecioProducto.textContent = datosProducto.precio || '';
         if (campoIdProducto) campoIdProducto.value = datosProducto.id || '';
+
+        // CONFIGURAR EL INPUT DE CANTIDAD CON EL LÍMITE
+        if (inputCantidadApartar) {
+            const limite = parseInt(datosProducto.limite) || 0;
+            inputCantidadApartar.value = limite > 0 ? 1 : 0;
+            inputCantidadApartar.min = limite > 0 ? 1 : 0;
+            inputCantidadApartar.max = limite; // Se establece el máximo según el stock/límite disponible
+        }
+
         if (imagenApartar) {
             if (datosProducto.imagen) {
                 imagenApartar.src = datosProducto.imagen;
@@ -49,12 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombreObtenido = botonApartar.dataset.nombre || botonApartar.getAttribute('data-nombre');
             const precioObtenido = botonApartar.dataset.precio || botonApartar.getAttribute('data-precio');
             const imgObtenida = botonApartar.dataset.imagen || botonApartar.getAttribute('data-imagen');
+            // EXTRAEMOS EL LÍMITE/CANTIDAD DESDE EL BOTÓN
+            const limiteObtenido = botonApartar.dataset.limite || botonApartar.getAttribute('data-limite');
 
             mostrarVentanaApartado({
                 id: idObtenido,
                 nombre: nombreObtenido,
                 precio: precioObtenido,
-                imagen: imgObtenida
+                imagen: imgObtenida,
+                limite: limiteObtenido // PASSING LIMITE TO THE FUNCTION
             });
         });
     });
@@ -110,11 +124,17 @@ document.addEventListener('DOMContentLoaded', () => {
             evento.preventDefault();
 
             const idVal = campoIdProducto ? campoIdProducto.value : '';
-            const cantidadVal = document.getElementById('cantidadApartar')?.value;
+            const cantidadVal = parseInt(inputCantidadApartar?.value) || 0;
+            const maxVal = parseInt(inputCantidadApartar?.max) || 0;
 
             if (!idVal) {
                 alert('Error: No se ha detectado la ID del producto.');
                 console.error('campoIdProducto está vacío al intentar enviar.');
+                return;
+            }
+
+            if (maxVal > 0 && cantidadVal > maxVal) {
+                alert(`No puedes apartar más del límite disponible (${maxVal}).`);
                 return;
             }
 
@@ -157,6 +177,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error de red al apartar producto:', error);
             }
+        });
+    }
+
+    if (botonAbrirLogin && ventanaLogin) {
+        botonAbrirLogin.addEventListener('click', () => {
+            ventanaLogin.style.display = 'flex';
         });
     }
 

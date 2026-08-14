@@ -1,6 +1,5 @@
 const ProductoModel = require('../model/productoModel');
 
-// Convierte los filtros de categoría recibidos desde la URL en un arreglo limpio.
 const normalizarCategorias = (valor) => {
     if (!valor) return [];
     const valores = Array.isArray(valor) ? valor : [valor];
@@ -25,7 +24,7 @@ const ProductoController = {
         });
     },
 
-    // Registra un apartado de producto en la base de datos si el usuario tiene sesión activa.
+    // Registra un apartado y descuenta de la cantidad temporal. Deshabilita si llega a 0.
     apartarProducto: (req, res) => {
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Debe iniciar sesión para apartar un producto.' });
@@ -42,23 +41,141 @@ const ProductoController = {
             return res.status(400).json({ error: 'Cantidad inválida.' });
         }
 
-        const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
-
-        const datosApartado = {
-            nombreCliente,
-            producto: productoId,
-            cantidad: cantidadNumero
-        };
-
-        ProductoModel.crearApartado(datosApartado, (error, resultado) => {
-            if (error) {
-                console.error('Error al registrar apartado:', error);
-                return res.status(500).json({ error: 'Error al procesar el apartado en la BD.' });
+        // 1. Verificar existencia y cupo disponible
+        ProductoModel.obtenerPorId(productoId, (err, resultados) => {
+            if (err || resultados.length === 0) {
+                return res.status(404).json({ error: 'Producto no encontrado.' });
             }
 
-            return res.status(200).json({
-                mensaje: '¡Producto apartado con éxito!',
-                idInsertado: resultado.insertId
+            const producto = resultados[0];
+
+            if (producto.estado !== 'activo' || (producto.limite_venta || 0) < cantidadNumero) {
+                return res.status(400).json({ error: 'El producto está inactivo o no tiene cupo disponible para la venta.' });
+            }
+
+            const nuevoLimite = producto.limite_venta - cantidadNumero;
+            const nuevoEstado = nuevoLimite > 0 ? 'activo' : 'inactivo';
+
+            const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+            const datosApartado = {
+                nombreCliente,
+                producto: productoId,
+                cantidad: cantidadNumero
+            };
+
+            // 2. Crear el registro de apartado
+            ProductoModel.crearApartado(datosApartado, (errorApartado, resultado) => {
+                if (errorApartado) {
+                    console.error('Error al registrar apartado:', errorApartado);
+                    return res.status(500).json({ error: 'Error al procesar el apartado en la BD.' });
+                }
+
+                // 3. Descontar cupo temporal y auto-deshabilitar si es necesario
+                ProductoModel.actualizarLimiteVenta(productoId, nuevoLimite, nuevoEstado, (errorUpdate) => {
+                    if (errorUpdate) {
+                        console.error('Error actualizando límite tras apartado:', errorUpdate);
+                    }
+
+                    return res.status(200).json({
+                        mensaje: '¡Producto apartado con éxito!',
+                        idInsertado: resultado.insertId,
+                        unidadesRestantes: nuevoLimite,
+                        estado: nuevoEstado
+                    });
+                });
+            });
+        });
+    },
+
+    // Actualiza la cantidad temporal a vender (Admin)
+    actualizarLimiteVenta: (req, res) => {
+        const { id } = req.params;
+        const { cantidad } = req.body;
+        const limite = parseInt(cantidad, 10);
+
+        if (isNaN(limite) || limite < 0) {
+            return res.status(400).json({ error: 'Cantidad inválida' });
+        }
+
+        const nuevoEstado = limite > 0 ? 'activo' : 'inactivo';
+
+        ProductoModel.actualizarLimiteVenta(id, limite, nuevoEstado, (error) => {
+            if (error) {
+                console.error('Error actualizando límite:', error);
+                return res.status(500).json({ error: 'Error en el servidor al guardar cantidad.' });
+            }
+
+            return res.json({
+                ok: true,
+                limite,
+                estado: nuevoEstado
+            });
+        });
+    },
+
+    // Alterna manualmente el switch activo / inactivo (Admin)
+    actualizarEstadoManual: (req, res) => {
+        const { id } = req.params;
+        const { activo } = req.body;
+        const nuevoEstado = activo ? 'activo' : 'inactivo';
+
+        ProductoModel.actualizarEstado(id, nuevoEstado, (error) => {
+            if (error) {
+                console.error('Error actualizando estado:', error);
+                return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
+            }
+
+            return res.json({
+                ok: true,
+                estado: nuevoEstado
+            });
+        });
+    },
+    // Obtiene y renderiza la vista de apartados solo para el usuario en sesión
+    obtenerApartadosCliente: (req, res) => {
+        if (!req.session || !req.session.usuario) {
+            return res.redirect('/login'); // O la ruta de login que manejes
+        }
+
+        const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+
+        ProductoModel.obtenerApartadosPorCliente(nombreCliente, (error, apartados) => {
+            if (error) {
+                console.error('Error al obtener apartados del cliente:', error);
+                return res.status(500).render('error', { mensaje: 'Error al consultar tus apartados.' });
+            }
+
+            // Renderiza la plantilla EJS pasando únicamente los apartados de este cliente
+            res.render('verApartados', { apartados });
+        });
+    },
+
+    cancelarApartado: (req, res) => {
+        // Verificar que haya un usuario autenticado en sesión
+        if (!req.session || !req.session.usuario) {
+            return res.status(401).json({ error: 'Sesión no válida o expirada.' });
+        }
+
+        const { idApartado } = req.params;
+
+        if (!idApartado) {
+            return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
+        }
+        ProductoModel.obtenerApartadoPorId(idApartado, (err, resultados) => {
+            if (err || !resultados || resultados.length === 0) {
+                return res.status(404).json({ error: 'Apartado no encontrado.' });
+            }
+            const apartado = resultados[0];
+            ProductoModel.eliminarApartado(idApartado, (errDelete) => {
+                if (errDelete) {
+                    console.error('Error al eliminar apartado:', errDelete);
+                    return res.status(500).json({ error: 'Error al cancelar el apartado en la BD.' });
+                }
+                ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errUpdate) => {
+                    if (errUpdate) {
+                        console.error('Error devolviendo stock del producto:', errUpdate);
+                    }
+                });
             });
         });
     }

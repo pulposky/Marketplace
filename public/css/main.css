@@ -70,6 +70,24 @@ body {
     gap: 15px;
 }
 
+.btn-iniciar-sesion {
+    background-color: #ffffff;
+    color: #0d4722;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.btn-iniciar-sesion:hover {
+    background-color: #e8f5e9;
+    transform: translateY(-1px);
+}
+
 /* ============================
     CONTENEDOR Y CONTENIDO
 ============================ */

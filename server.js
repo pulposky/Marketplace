@@ -6,6 +6,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const dotenv = require('dotenv');
+const session = require('express-session'); // <-- Importamos la sesión arriba
 
 dotenv.config(); // Carga las variables de entorno desde el archivo .env.
 
@@ -22,19 +23,22 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const PORT = process.env.PORT;
-
-// Habilita el manejo de sesiones del usuario para login y apartados.
-const session = require('express-session');
+// Habilita el manejo de sesiones del usuario ANTES de registrar las rutas
 app.use(session({
     secret: 'mi_clave_secreta',
     resave: false,
     saveUninitialized: false,
+    cookie: {
+        secure: false, // Asegura que funcione bien en entorno local http://
+        maxAge: 1000 * 60 * 60 * 2 // 2 horas de duración
+    }
 }));
 
-// Carga las rutas principales definidas en el router del proyecto.
+// Carga las rutas principales definidas en el router del proyecto (AHORA SÍ CON ACCESO A LA SESIÓN)
 const misRutas = require('./src/router');
 app.use('/', misRutas);
+
+const PORT = process.env.PORT || 3000;
 
 // Levanta el servidor y deja la app disponible en el puerto configurado.
 app.listen(PORT, () => {
