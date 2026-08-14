@@ -4,8 +4,8 @@ const protegerRuta = (req, res, next) => {
         return next();
     }
 
-    // Si la petición viene desde fetch/AJAX, respondemos con JSON
-    if (req.xhr || req.headers.accept.includes("application/json")) {
+    // Usamos optional chaining (?.), así si accept es undefined no rompe el código
+    if (req.xhr || req.headers.accept?.includes("application/json")) {
         return res.status(401).json({
             ok: false,
             login: false,

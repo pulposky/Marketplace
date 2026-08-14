@@ -196,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (respuestaApartar.ok) {
                     alert(datosRespuesta.mensaje || '¡Producto apartado con éxito!');
+                    window.location.reload();
                     if (ventanaApartar) ventanaApartar.style.display = 'none';
                     formularioApartado.reset();
                 } else if (respuestaApartar.status === 401) {

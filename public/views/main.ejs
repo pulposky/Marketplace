@@ -55,28 +55,22 @@
 
             <!-- TARJETAS DE ESTADÍSTICAS -->
             <div class="cuadricula-estadisticas">
-                <div class="tarjeta-estadistica">
-                    <div class="detalles-estadistica">
-                        <span class="titulo-estadistica">Productos disponibles</span>
-                        <h3 class="valor-estadistica"></h3>
-                        <a class="enlace-estadistica navegacion" href="/catalogo">Ver catálogo</a>
-                        <img class="catalogoimg" src="/img/catalogo.png" alt="">
+                <a class="enlace-estadistica navegacion" href="/catalogo">
+                    <div class="tarjeta-estadistica">
+                        <div class="detalles-estadistica">
+                            <span class="titulo-estadistica">Productos disponibles</span>
+                            <h3 class="valor-estadistica"></h3>
+                            Ver catálogo
+                            <img class="catalogoimg" src="/img/catalogo.png" alt="">
+                        </div>
                     </div>
-                </div>
+                </a>
                 <% if (usuario) { %>
                 <div class="tarjeta-estadistica">
                     <div class="detalles-estadistica requiere-login">
                         <span class="titulo-estadistica">Apartados activos</span>
                         <h3 class="valor-estadistica"></h3>
                         <a href="/verApartados" class="enlace-estadistica enlace-protegido">Ver mis apartados</a>
-                    </div>
-                </div>
-
-                <div class="tarjeta-estadistica">
-                    <div class="detalles-estadistica requiere-login">
-                        <span class="titulo-estadistica">Pedidos realizados</span>
-                        <h3 class="valor-estadistica"></h3>
-                        <a href="/catalogo" class="enlace-estadistica enlace-protegido">Ver historial</a>
                     </div>
                 </div>
                 <% } %>
@@ -95,33 +89,41 @@
                     <h3>Productos Destacados</h3>
                 </div>
                 <div class="cuadricula-productos">
-                    <% destacados.forEach(producto => { %>
+                    <% destacados.forEach(producto => { 
+                        // Verificamos si es un producto de huevos por unidad (AA o A)
+                        const esHuevoUnidad = producto.nombre === "HUEVOS DE GALLINA AA UND" || producto.nombre === "HUEVOS DE GALLINA A UND";
+                        
+                        // Reemplazamos 'UND' por 'CUBETA' en el nombre si aplica
+                        const nombreMostrar = esHuevoUnidad ? producto.nombre.replace("UND", "CUBETA") : producto.nombre;
+                        const unidadMostrar = esHuevoUnidad ? "CUBETA" : producto.unidad;
+                        const precioCalculado = esHuevoUnidad ? Number(producto.precio) * 30 : Number(producto.precio);
+                    %>
                         <div class="tarjeta-producto">
                             <div class="imagen-producto">
                                 <% if (producto.imagenUpload) { %>
-                                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
+                                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= nombreMostrar %>">
                                 <% } else { %>
-                                    <span><%= producto.nombre %></span>
+                                    <span><%= nombreMostrar %></span>
                                 <% } %>
                             </div>
                             <div class="info-producto">
-                                <h4><%= producto.nombre %></h4>
-                                <p class="unidad"><%= producto.unidad %></p>
+                                <h4><%= nombreMostrar %></h4>
+                                <p class="unidad"><%= unidadMostrar %></p>
                                 
                                 <!-- Muestra de la cantidad disponible/temporal de la BD -->
                                 <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin: 4px 0;">
-                                    Disponibles: <strong><%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %></strong> <%= producto.unidad %>
+                                    Disponibles: <strong><%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %></strong> <%= unidadMostrar %>
                                 </p>
 
                                 <span class="precio">
-                                    $<%= Number(producto.precio).toLocaleString("es-CO") %>
+                                    $<%= precioCalculado.toLocaleString("es-CO") %>
                                 </span>
 
                             <% if (usuario) { %>
                                 <button class="boton-apartar btn-accion-apartar" 
                                         data-id="<%= producto.id_producto %>"
-                                        data-nombre="<%= producto.nombre %>" 
-                                        data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                        data-nombre="<%= nombreMostrar %>" 
+                                        data-precio="$<%= precioCalculado.toLocaleString('es-CO') %>"
                                         data-imagen="<%= producto.imagenUpload || '' %>"
                                         data-limite="<%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %>">
                                     Apartar
@@ -129,8 +131,8 @@
                             <% } else { %>
                                 <button class="boton-apartar btn-accion-apartar" 
                                         data-id="<%= producto.id_producto %>"
-                                        data-nombre="<%= producto.nombre %>" 
-                                        data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
+                                        data-nombre="<%= nombreMostrar %>" 
+                                        data-precio="$<%= precioCalculado.toLocaleString('es-CO') %>"
                                         data-imagen="<%= producto.imagenUpload || '' %>"
                                         data-limite="<%= producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0 %>">
                                     Ver
@@ -141,7 +143,6 @@
                     <% }) %>
                 </div>
             </div>
-
         </div>
 
         <!-- MODAL APARTAR PRODUCTO -->

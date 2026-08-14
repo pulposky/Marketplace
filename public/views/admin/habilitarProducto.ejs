@@ -57,36 +57,54 @@
             </div>
 
             <!-- REJILLA DE PRODUCTOS -->
+            <!-- REJILLA DE PRODUCTOS -->
             <div class="rejilla-productos" id="contenedorProductos">
 
                 <% if (productos && productos.length> 0) { %>
-                    <% productos.forEach(producto=> { %>
+                    <% productos.forEach(producto=> {
+                        // Evaluamos si es huevo por unidad
+                        const esHuevoUnidad = producto.nombre === "HUEVOS DE GALLINA AA UND" || producto.nombre ===
+                        "HUEVOS DE GALLINA A UND";
+
+                        // Nombre y presentación dinámicos
+                        const nombreMostrar = esHuevoUnidad ? producto.nombre.replace("UND", "CUBETA") :
+                        producto.nombre;
+                        const presentacionMostrar = esHuevoUnidad ? "CUBETA" : (producto.unidad || 'N/A');
+
+                        // Si son huevos y la BD maneja unidades, dividimos por 30 para mostrar cubetas
+                        const unidadesStock = producto.limite_venta || 0;
+                        const cantidadMostrar = esHuevoUnidad ? Math.floor(unidadesStock / 30) : unidadesStock;
+
+                        // Precio por cubeta o por unidad
+                        const precioCalculado = esHuevoUnidad ? Number(producto.precio || 0) * 30 :
+                        Number(producto.precio || 0);
+                        %>
                         <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
-                            data-nombre="<%= (producto.nombre || '').toLowerCase() %>"
-                            data-estado="<%= producto.estado %>" data-cantidad="<%= producto.limite_venta || 0 %>">
+                            data-nombre="<%= (nombreMostrar || '').toLowerCase() %>"
+                            data-estado="<%= producto.estado %>" data-cantidad="<%= cantidadMostrar %>">
 
                             <!-- Imagen del Producto -->
                             <div class="imagen-producto">
                                 <% if (producto.imagenUpload) { %>
-                                    <img src="<%= producto.imagenUpload %>" alt="<%= producto.nombre %>">
+                                    <img src="<%= producto.imagenUpload %>" alt="<%= nombreMostrar %>">
                                     <% } else { %>
                                         <span>
-                                            <%= producto.nombre %>
+                                            <%= nombreMostrar %>
                                         </span>
                                         <% } %>
                             </div>
 
                             <!-- Datos del Producto -->
                             <div class="presentacion-producto">
-                                Presentación: <%= producto.unidad || 'N/A' %>
+                                Presentación: <%= presentacionMostrar %>
                             </div>
 
                             <div class="nombre-producto">
-                                <%= producto.nombre %>
+                                <%= nombreMostrar %>
                             </div>
 
                             <div class="precio-producto">
-                                $<%= Number(producto.precio || 0).toLocaleString("es-CO") %>
+                                $<%= precioCalculado.toLocaleString("es-CO") %>
                             </div>
 
                             <div class="linea-divisora"></div>
@@ -94,10 +112,12 @@
                             <!-- Panel de Controles -->
                             <div class="panel-controles">
                                 <div class="grupo-control">
-                                    <div class="texto-control">Cantidad a vender:</div>
-                                    <input type="number" class="campo-cantidad" min="0"
-                                        value="<%= producto.limite_venta || 0 %>" placeholder="0"
-                                        data-id="<%= producto.id_producto %>">
+                                    <div class="texto-control">
+                                        <%= esHuevoUnidad ? 'Cubetas a vender:' : 'Cantidad a vender:' %>
+                                    </div>
+                                    <input type="number" class="campo-cantidad" min="0" value="<%= cantidadMostrar %>"
+                                        placeholder="0" data-id="<%= producto.id_producto %>"
+                                        data-es-huevo="<%= esHuevoUnidad %>">
                                 </div>
 
                                 <div class="grupo-control">

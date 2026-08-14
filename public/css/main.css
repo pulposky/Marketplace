@@ -221,7 +221,7 @@ body {
 }
 
 .enlace-estadistica:hover {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 /* Posiciona el icono a la derecha */

@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.campo-cantidad').forEach(input => {
         input.addEventListener('change', async (e) => {
             const idProducto = e.target.dataset.id;
+            const esHuevo = e.target.dataset.esHuevo === 'true'; // Verificamos si es cubeta
             const nuevaCantidad = parseInt(e.target.value, 10);
             const tarjeta = e.target.closest('.tarjeta-producto');
             const checkbox = tarjeta.querySelector('.check-habilitar');
@@ -53,11 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Conversión: Si es huevo multiplicamos x 30, sino, enviamos la cantidad normal
+            const cantidadEnviar = esHuevo ? nuevaCantidad * 30 : nuevaCantidad;
+
             try {
                 const response = await fetch(`/api/admin/productos/limite-venta/${idProducto}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cantidad: nuevaCantidad })
+                    body: JSON.stringify({ cantidad: cantidadEnviar }) // Enviamos el valor ya calculado
                 });
 
                 const data = await response.json();
@@ -82,9 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const idProducto = e.target.dataset.id;
             // Buscamos el input de cantidad correspondiente al mismo producto
             const inputCantidad = document.querySelector(`.campo-cantidad[data-id="${idProducto}"]`);
+            
+            const esHuevo = inputCantidad?.dataset.esHuevo === 'true'; // Verificamos si es cubeta
             const cantidad = Number(inputCantidad?.value || 0);
 
-            // Si intenta marcar 'activo' pero la cantidad es 0 o menor
+            // Si intenta marcar 'activo' pero la cantidad es 0 o menor (evaluando lo que se ve en pantalla)
             if (e.target.checked && cantidad <= 0) {
                 e.preventDefault();
                 e.target.checked = false; // Desmarcamos el checkbox de nuevo
@@ -95,8 +101,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Conversión: Si la función actualizarEstadoProducto necesita la cantidad para la BD
+            const cantidadEnviar = esHuevo ? cantidad * 30 : cantidad;
+
             // Aquí continúa tu lógica actual para enviar el cambio de estado al servidor mediante fetch
-            actualizarEstadoProducto(idProducto, e.target.checked ? 'activo' : 'inactivo', cantidad);
+            // Enviamos 'cantidadEnviar' (unidades reales) en lugar de 'cantidad' (cubetas)
+            if (typeof actualizarEstadoProducto === 'function') {
+                actualizarEstadoProducto(idProducto, e.target.checked ? 'activo' : 'inactivo', cantidadEnviar);
+            } else {
+                console.warn('La función actualizarEstadoProducto no está definida en este archivo.');
+            }
         });
     });
 });

@@ -151,7 +151,7 @@ const ProductoController = {
     },
 
     cancelarApartado: (req, res) => {
-        // Verificar que haya un usuario autenticado en sesión
+        // 1. Verificar que haya un usuario autenticado en sesión
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Sesión no válida o expirada.' });
         }
@@ -161,20 +161,38 @@ const ProductoController = {
         if (!idApartado) {
             return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
         }
+
+        // 2. Obtener la información del apartado para saber el id del producto y la cantidad
         ProductoModel.obtenerApartadoPorId(idApartado, (err, resultados) => {
             if (err || !resultados || resultados.length === 0) {
                 return res.status(404).json({ error: 'Apartado no encontrado.' });
             }
+
             const apartado = resultados[0];
+
+            // 3. Eliminar el apartado
             ProductoModel.eliminarApartado(idApartado, (errDelete) => {
                 if (errDelete) {
                     console.error('Error al eliminar apartado:', errDelete);
                     return res.status(500).json({ error: 'Error al cancelar el apartado en la BD.' });
                 }
+
+                // 4. Devolver el stock/cupo al producto
                 ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errUpdate) => {
                     if (errUpdate) {
                         console.error('Error devolviendo stock del producto:', errUpdate);
+                        // Aún si falla la devolución del stock, notificamos que se canceló el apartado
+                        return res.status(200).json({ 
+                            mensaje: 'Apartado cancelado, pero hubo un detalle al restaurar el stock.',
+                            idApartado 
+                        });
                     }
+
+                    // 5. ¡RESPUESTA COMPLETA Y EXITOSA! (Evita el estado pending)
+                    return res.status(200).json({ 
+                        mensaje: 'Apartado cancelado y stock devuelto correctamente.',
+                        idApartado 
+                    });
                 });
             });
         });

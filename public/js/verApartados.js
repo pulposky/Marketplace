@@ -1,37 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const botonesCancelar = document.querySelectorAll('.btn-accion-cancelar');
 
-    botonesCancelar.forEach(boton => {
-        boton.addEventListener('click', async (e) => {
-            const idApartado = boton.dataset.id || boton.getAttribute('data-id');
+    document.addEventListener('click', async (e) => {
+        const boton = e.target.closest('.btn-accion-cancelar');
 
-            if (!idApartado) return;
+        if (!boton) return;
 
-            const confirmar = confirm('¿Deseas cancelar este apartado?');
-            if (!confirmar) return;
+        e.preventDefault();
 
-            try {
-                const respuesta = await fetch(`/api/apartados/cancelar/${idApartado}`, {
-                    method: 'POST', // o 'DELETE' según tu API
-                    headers: { 'Content-Type': 'application/json' }
-                });
+        const idApartado = boton.dataset.id || boton.getAttribute('data-id');
 
-                const data = await respuesta.json();
+        if (!idApartado) {
+            alert('Error: El botón no tiene un ID asociado (data-id está vacío).');
+            return;
+        }
 
-                if (respuesta.ok) {
-                    alert(data.mensaje || 'Apartado cancelado correctamente.');
-                    const tarjeta = document.getElementById(`apartado-${idApartado}`);
-                    if (tarjeta) tarjeta.remove();
+        const confirmar = confirm(`¿Deseas cancelar el apartado #${idApartado}?`);
+        if (!confirmar) return;
 
-                    if (document.querySelectorAll('.tarjeta-producto').length === 0) {
-                        window.location.reload();
-                    }
-                } else {
-                    alert(data.error || 'Error al cancelar el apartado.');
+        try {
+            // Revisa si tu ruta en Express es POST o DELETE
+            const respuesta = await fetch(`/api/apartados/cancelar/${idApartado}`, {
+                method: 'POST', 
+                headers: { 
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                console.error('Error al cancelar el apartado:', error);
+            });
+
+            console.log('Status HTTP:', respuesta.status);
+
+            // Intentamos parsear la respuesta como JSON
+            let data;
+            try {
+                data = await respuesta.json();
+            } catch (jsonErr) {
+                data = {};
             }
-        });
+
+            if (respuesta.ok) {
+                alert(data.mensaje || 'Apartado cancelado correctamente.');
+                window.location.reload();
+            } else {
+                // Alerta con el error exacto que envía el servidor o el status HTTP
+                alert(`Error ${respuesta.status}: ${data.error || data.mensaje || 'No se pudo procesar la solicitud en el servidor.'}`);
+            }
+        } catch (error) {
+            console.error('Error de red o ejecución:', error);
+            alert('Error de conexión con el servidor (Revisa la consola con F12).');
+        }
     });
+
 });
