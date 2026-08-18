@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Apartados - SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/verApartados.css">
 </head>
+
 <body>
 
     <!-- HEADER Y BOTÓN REGRESAR -->
@@ -27,70 +29,83 @@
             </div>
         </div>
 
-        <% if (typeof apartados !== 'undefined' && apartados.length > 0) { %>
+        <% if (typeof apartados !=='undefined' && apartados.length> 0) { %>
             <div class="rejilla-productos">
-                <% apartados.forEach(item => { 
-                    // Detectar si el ítem es huevo (por bandera o por el nombre)
+                <% apartados.forEach(item=> {
+                    // 1. Detectar si el ítem es huevo
                     const esHuevo = item.es_huevo || (item.nombre && item.nombre.toLowerCase().includes('huevo'));
-                    
-                    // Si es huevo, el precio por cubeta es precio_unitario * 30
+
+                    // 2. Precios base
                     const precioUnitarioReal = Number(item.precio);
                     const precioCubeta = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
-                    
-                    // Total a pagar: (precio por cubeta * cantidad de cubetas) o (precio un. * cantidad)
-                    const totalPagar = precioCubeta * item.cantidad;
-                %>
+
+                    // 3. Convertir unidades guardadas en BD a cubetas si aplica
+                    const cantidadHuevosUnidades = Number(item.cantidad);
+                    const cubetas = esHuevo ? Math.floor(cantidadHuevosUnidades / 30) : cantidadHuevosUnidades;
+
+                    // 4. Calcular el total acumulado real a pagar
+                    const totalPagar = esHuevo ? cubetas * precioCubeta : cantidadHuevosUnidades * precioUnitarioReal;
+                    %>
                     <div class="tarjeta-producto" id="apartado-<%= item.id_apartado %>">
                         <div class="imagen-producto">
                             <% if (item.imagenUpload) { %>
                                 <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
-                            <% } else { %>
-                                <span><%= item.nombre %></span>
-                            <% } %>
-                            <span class="badge-estado <%= (item.estado || 'activo').toLowerCase() %>">
-                                <%= item.estado || 'Activo' %>
-                            </span>
+                                <% } else { %>
+                                    <span>
+                                        <%= item.nombre %>
+                                    </span>
+                                    <% } %>
+                                        <span class="badge-estado <%= (item.estado || 'activo').toLowerCase() %>">
+                                            <%= item.estado || 'Activo' %>
+                                        </span>
                         </div>
 
-                        <div class="nombre-producto"><%= item.nombre %></div>
-                        
+                        <div class="nombre-producto">
+                            <%= item.nombre %>
+                        </div>
+
                         <p class="presentacion-producto">
-                            Cantidad: <strong><%= item.cantidad %></strong> <%= esHuevo ? 'Cubeta(s)' : (item.unidad || 'Unidad(es)') %>
-                            <% if (esHuevo) { %>
-                                <small style="display: block; color: #666;">(<%= item.cantidad * 30 %> huevos en total)</small>
-                            <% } %>
+                            Cantidad: <strong>
+                                <%= esHuevo ? cubetas : cantidadHuevosUnidades %>
+                            </strong>
+                            <%= esHuevo ? 'Cubeta(s)' : (item.unidad || 'Unidad(es)' ) %>
+                                <% if (esHuevo) { %>
+                                    <small style="display: block; color: #666;">(<%= cantidadHuevosUnidades %> huevos en
+                                            total)</small>
+                                    <% } %>
                         </p>
-                        
+
                         <p class="presentacion-producto">
                             <% if (esHuevo) { %>
                                 Precio por cubeta: <strong>$<%= precioCubeta.toLocaleString("es-CO") %></strong>
-                                <small style="display: block; color: #888;">($<%= precioUnitarioReal.toLocaleString("es-CO") %> / huevo)</small>
-                            <% } else { %>
-                                Precio un.: $<%= precioUnitarioReal.toLocaleString("es-CO") %>
-                            <% } %>
+                                <small style="display: block; color: #888;">($<%=
+                                        precioUnitarioReal.toLocaleString("es-CO") %> / huevo)</small>
+                                <% } else { %>
+                                    Precio un.: $<%= precioUnitarioReal.toLocaleString("es-CO") %>
+                                        <% } %>
                         </p>
 
                         <div class="precio-producto">
                             Total: $<%= totalPagar.toLocaleString("es-CO") %>
                         </div>
 
-                        <button type="button" 
-                                class="btn-cancelar btn-accion-cancelar" 
-                                data-id="<%= item.id_apartado %>">
+                        <button type="button" class="btn-cancelar btn-accion-cancelar"
+                            data-id="<%= item.id_apartado %>">
                             Cancelar Apartado
                         </button>
                     </div>
-                <% }) %>
+                    <% }) %>
             </div>
-        <% } else { %>
-            <div class="estado-vacio">
-                <h3>No tienes apartados activos</h3>
-                <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
-                <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
-            </div>
-        <% } %>
+            <% } else { %>
+                <div class="estado-vacio">
+                    <h3>No tienes apartados activos</h3>
+                    <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
+                    <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
+                </div>
+                <% } %>
     </main>
 
     <script src="/js/verApartados.js"></script>
 </body>
+
 </html>

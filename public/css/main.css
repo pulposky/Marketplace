@@ -14,60 +14,102 @@ body {
 }
 
 /* ============================
-    NAVBAR SUPERIOR
+    NAVBAR SUPERIOR Y LOGO
 ============================ */
 .navbar-superior {
-    background-color: #0d4722;
+    background-color: #006837; /* Verde SENA */
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 10px 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     position: sticky;
     top: 0;
     z-index: 1000;
+    height: 90px; /* Altura aumentada para permitir el logo grande */
+}
+
+/* 1. Extremo Izquierdo */
+.navbar-izquierda {
+    display: flex;
+    align-items: center;
+    z-index: 2;
+}
+
+.navbar-superior img.imagen {
+    max-height: 75px; /* Logo grande de 75px de alto */
+    width: auto;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+/* 2. Centro Absoluto (Fijo exactamente al medio de la pantalla) */
+.marca-navbar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
 }
 
 .marca-navbar h2 {
-    font-size: 1.2rem;
-    letter-spacing: 0.5px;
+    font-size: 1.4rem;
+    letter-spacing: 0.8px;
     color: #ffffff;
-    line-height: 1.1;
+    line-height: 1;
+    font-weight: 700;
+    margin: 0;
 }
 
-.marca-navbar p {
-    font-size: 0.8rem;
-    color: #c8e6c9;
+/* 3. Extremo Derecho (Navegación y botones) */
+.navbar-derecha {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto; /* Empuja todo al borde derecho */
+    z-index: 2;
 }
 
 .navegacion-navbar .lista-menu {
     display: flex;
+    align-items: center;
     list-style: none;
-    gap: 8px;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
 }
 
 .item-menu a {
     display: block;
-    color: #e8f5e9;
+    color: #ffffff;
     text-decoration: none;
     padding: 8px 14px;
     border-radius: 6px;
-    font-size: 0.9rem;
-    transition: background 0.2s ease;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
 }
 
-.item-menu.activo a, 
 .item-menu a:hover {
-    background-color: #1b5e20;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Estilo para botón Cerrar Sesión */
+.item-menu a.btn-cerrar {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.item-menu a.btn-cerrar:hover {
+    background-color: #8b0000;
     color: #ffffff;
-    font-weight: bold;
 }
 
 .acciones-navbar {
     display: flex;
     align-items: center;
-    gap: 15px;
 }
 
 .btn-iniciar-sesion {
@@ -75,12 +117,12 @@ body {
     color: #0d4722;
     border: none;
     border-radius: 20px;
-    padding: 10px 18px;
+    padding: 8px 20px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .btn-iniciar-sesion:hover {
@@ -106,85 +148,47 @@ body {
     gap: 20px;
 }
 
-.encabezado-superior {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-}
-
-.barra-busqueda {
-    flex: 1;
-    max-width: 500px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 8px 18px;
-}
-
-.barra-busqueda input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 0.9rem;
-}
-
-.caja-carrito {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.caja-carrito .insignia {
-    background-color: #1b5e20;
-    color: white;
-    font-size: 0.75rem;
-    padding: 2px 7px;
-    border-radius: 10px;
-}
-
 .banner-bienvenida {
     background-color: #e8f3ec;
-    padding: 25px;
-    border-radius: 10px;
+    border-left: 5px solid #006837;
+    padding: 20px 25px;
+    border-radius: 8px;
 }
 
 .banner-bienvenida h2 {
     font-size: 1.3rem;
-    color: #111;
-    margin-bottom: 8px;
+    color: #006837;
+    margin-bottom: 6px;
+    font-weight: 700;
 }
 
 .banner-bienvenida p {
-    color: #555;
+    color: #4a5568;
     font-size: 0.95rem;
 }
 
 /* ============================
-    ESTADÍSTICAS Y PRODUCTOS
+    TARJETAS Y ESTADÍSTICAS
 ============================ */
 .cuadricula-estadisticas {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
 }
 
 .tarjeta-estadistica {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 18px 15px;
+    padding: 18px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Alineación con Grid para separar texto e imagen */
+.tarjeta-estadistica:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 .detalles-estadistica {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -195,10 +199,9 @@ body {
 .titulo-estadistica {
     grid-column: 1;
     font-size: 0.85rem;
-    color: #6c757d;
+    color: #64748b;
 }
 
-/* Oculta la etiqueta si está vacía para evitar espacios en blanco extra */
 .valor-estadistica:empty {
     display: none;
 }
@@ -217,37 +220,29 @@ body {
     text-decoration: none;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 4px;
 }
 
-.enlace-estadistica:hover {
-    text-decoration: none;
-}
-
-/* Posiciona el icono a la derecha */
 .catalogoimg {
     grid-column: 2;
     grid-row: 1 / 4;
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     object-fit: contain;
     justify-self: end;
 }
 
+/* ============================
+    CATÁLOGO DE PRODUCTOS
+============================ */
 .seccion-productos {
     margin-top: 10px;
 }
 
-.encabezado-seccion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
 .encabezado-seccion h3 {
-    font-size: 1.1rem;
-    color: #222;
+    font-size: 1.15rem;
+    color: #1a202c;
+    margin-bottom: 15px;
+    font-weight: 700;
 }
 
 .cuadricula-productos {
@@ -259,51 +254,71 @@ body {
 .tarjeta-producto {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 15px;
     display: flex;
     flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.info-producto {
+.tarjeta-producto:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.imagen-producto {
+    width: 100%;
+    height: 150px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    overflow: hidden;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.imagen-producto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .info-producto h4 {
     font-size: 0.95rem;
-    color: #222;
+    color: #1e293b;
+    font-weight: 700;
 }
 
 .info-producto .unidad {
     font-size: 0.8rem;
-    color: #777;
-    margin-bottom: 8px;
+    color: #64748b;
+    margin-bottom: 4px;
 }
 
 .info-producto .precio {
-    font-size: 0.95rem;
-    font-weight: bold;
-    color: #111;
-    margin-bottom: 12px;
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #006837;
+    margin: 8px 0 12px 0;
 }
 
 .boton-apartar {
-    background-color: #0f5132;
+    background-color: #006837;
     color: #ffffff;
-    text-align: center;
-    padding: 10px 0;
-    border-radius: 20px;
+    border: none;
+    padding: 9px 0;
+    border-radius: 8px;
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    border: none;
-    transition: background-color 0.2s ease;
     width: 100%;
+    transition: background-color 0.2s ease;
 }
 
 .boton-apartar:hover {
-    background-color: #0b3d26;
+    background-color: #1b5e20;
 }
 
 /* ============================
@@ -316,7 +331,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.65);
+    background-color: rgba(0, 0, 0, 0.55);
     z-index: 2000;
     justify-content: center;
     align-items: center;
@@ -325,124 +340,145 @@ body {
 .modal-contenido {
     background-color: #ffffff;
     border-radius: 12px;
-    padding: 30px 25px;
+    padding: 25px;
     width: 90%;
     max-width: 420px;
     position: relative;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-    animation: abrirModal 0.25s ease-out;
-}
-
-.modal-imagen img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
-    border-radius: 8px;
-    max-height: 360px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
 .cerrar-modal {
     position: absolute;
     top: 12px;
     right: 18px;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: bold;
-    color: #888;
+    color: #94a3b8;
     cursor: pointer;
-}
-
-.imagen {
-    width: 90px;
-    height: 65px;
-    background-color: #f3f4f6;
-    border-radius: 8px;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-    font-size: 0.85rem;   
-}
-
-.imagen-producto {
-    width: 100%;
-    min-height: 120px;
-    max-height: 160px;
-    background-color: #f3f4f6;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
-    position: relative;
-}
-
-.imagen-producto img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.imagen-producto span {
-    color: #374151;
-    font-size: 0.85rem;
-    text-align: center;
-    padding: 0 10px;
-    line-height: 1.2;
-}
-
-.requiere-login {
-    cursor: pointer;
-}
-
-@keyframes abrirModal {
-    from {
-        opacity: 0;
-        transform: translateY(-15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* ============================
-    RESPONSIVE / DISPOSITIVOS
+    FOOTER PRINCIPAL 
 ============================ */
-@media (max-width: 992px) {
+.pie-pagina-principal {
+    background-color: #006837; 
+    color: #f2f2f2; 
+    margin-top: 40px;
+    padding-top: 40px;
+    font-size: 0.9rem;
+}
+
+.contenedor-footer {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 30px 30px 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+}
+
+.columna-footer h4 {
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.columna-footer h4::after {
+    content: '';
+    display: block;
+    width: 35px;
+    height: 3px;
+    background-color: #39A900; 
+    margin-top: 6px;
+    border-radius: 2px;
+}
+
+.logo-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.logo-footer img {
+    height: 40px;
+    width: auto;
+}
+
+.logo-footer h3 {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.descripcion-empresa {
+    color: #f2f2f2;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.ubicacion {
+    color: #f2f2f2;
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.contacto-info {
+    color: #f2f2f2;
+    margin-bottom: 6px;
+}
+
+.redes-sociales {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.icono-red {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.icono-red:hover {
+    transform: translateY(-3px);
+    background-color: #39A900; 
+    color: #ffffff;
+}
+
+.pie-copyright {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    text-align: center;
+    padding: 15px 20px;
+    background-color: #000000; 
+    color: #f2f2f2;
+    font-size: 0.8rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
     .navbar-superior {
+        height: auto;
         flex-direction: column;
         gap: 12px;
         padding: 15px;
     }
-
-    .navegacion-navbar .lista-menu {
-        overflow-x: auto;
-        max-width: 100%;
+    
+    .marca-navbar {
+        position: static;
+        transform: none;
     }
 
-    .contenido-principal {
-        padding: 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    .encabezado-superior {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .barra-busqueda {
-        max-width: 100%;
-    }
-
-    .caja-carrito {
-        justify-content: center;
-    }
-
-    .cuadricula-estadisticas,
-    .cuadricula-productos {
-        grid-template-columns: 1fr;
+    .navbar-derecha {
+        margin-left: 0;
     }
 }

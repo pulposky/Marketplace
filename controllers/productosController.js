@@ -36,31 +36,45 @@ const ProductoController = {
             return res.status(400).json({ error: 'Faltan datos obligatorios para apartar.' });
         }
 
-        const cantidadNumero = parseInt(cantidad, 10);
-        if (Number.isNaN(cantidadNumero) || cantidadNumero <= 0) {
+        const cantidadIngresada = parseInt(cantidad, 10);
+        if (Number.isNaN(cantidadIngresada) || cantidadIngresada <= 0) {
             return res.status(400).json({ error: 'Cantidad inválida.' });
         }
 
         // 1. Verificar existencia y cupo disponible
         ProductoModel.obtenerPorId(productoId, (err, resultados) => {
-            if (err || resultados.length === 0) {
+            if (err || !resultados || resultados.length === 0) {
                 return res.status(404).json({ error: 'Producto no encontrado.' });
             }
 
             const producto = resultados[0];
 
-            if (producto.estado !== 'activo' || (producto.limite_venta || 0) < cantidadNumero) {
-                return res.status(400).json({ error: 'El producto está inactivo o no tiene cupo disponible para la venta.' });
+            // Determinar si el producto es huevo para realizar la conversión a unidades reales
+            const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
+            
+            // Si el cliente envía la cantidad en cubetas, convertimos a unidades de huevos (* 30)
+            const unidadesARestar = esHuevo ? cantidadIngresada * 30 : cantidadIngresada;
+
+            const stockDisponible = producto.limite_venta || 0;
+
+            if (producto.estado !== 'activo' || stockDisponible < unidadesARestar) {
+                return res.status(400).json({ 
+                    error: esHuevo 
+                        ? `No hay suficientes cubetas disponibles. Stock actual: ${Math.floor(stockDisponible / 30)} cubeta(s).` 
+                        : 'El producto está inactivo o no tiene cupo disponible para la venta.' 
+                });
             }
 
-            const nuevoLimite = producto.limite_venta - cantidadNumero;
+            const nuevoLimite = stockDisponible - unidadesARestar;
             const nuevoEstado = nuevoLimite > 0 ? 'activo' : 'inactivo';
 
             const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+            
+            // Se registra en la tabla de apartados la cantidad exacta en unidades de BD
             const datosApartado = {
                 nombreCliente,
                 producto: productoId,
-                cantidad: cantidadNumero
+                cantidad: unidadesARestar
             };
 
             // 2. Crear el registro de apartado
@@ -80,6 +94,7 @@ const ProductoController = {
                         mensaje: '¡Producto apartado con éxito!',
                         idInsertado: resultado.insertId,
                         unidadesRestantes: nuevoLimite,
+                        cubetasRestantes: esHuevo ? Math.floor(nuevoLimite / 30) : undefined,
                         estado: nuevoEstado
                     });
                 });
@@ -131,10 +146,11 @@ const ProductoController = {
             });
         });
     },
+
     // Obtiene y renderiza la vista de apartados solo para el usuario en sesión
     obtenerApartadosCliente: (req, res) => {
         if (!req.session || !req.session.usuario) {
-            return res.redirect('/login'); // O la ruta de login que manejes
+            return res.redirect('/login');
         }
 
         const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
@@ -145,13 +161,11 @@ const ProductoController = {
                 return res.status(500).render('error', { mensaje: 'Error al consultar tus apartados.' });
             }
 
-            // Renderiza la plantilla EJS pasando únicamente los apartados de este cliente
             res.render('verApartados', { apartados });
         });
     },
 
     cancelarApartado: (req, res) => {
-        // 1. Verificar que haya un usuario autenticado en sesión
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Sesión no válida o expirada.' });
         }
@@ -162,7 +176,7 @@ const ProductoController = {
             return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
         }
 
-        // 2. Obtener la información del apartado para saber el id del producto y la cantidad
+        // Obtener la información del apartado para saber el id del producto y la cantidad
         ProductoModel.obtenerApartadoPorId(idApartado, (err, resultados) => {
             if (err || !resultados || resultados.length === 0) {
                 return res.status(404).json({ error: 'Apartado no encontrado.' });
@@ -170,25 +184,23 @@ const ProductoController = {
 
             const apartado = resultados[0];
 
-            // 3. Eliminar el apartado
+            // Eliminar el apartado
             ProductoModel.eliminarApartado(idApartado, (errDelete) => {
                 if (errDelete) {
                     console.error('Error al eliminar apartado:', errDelete);
                     return res.status(500).json({ error: 'Error al cancelar el apartado en la BD.' });
                 }
 
-                // 4. Devolver el stock/cupo al producto
+                // Devolver el stock/cupo en unidades exactas al producto
                 ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errUpdate) => {
                     if (errUpdate) {
                         console.error('Error devolviendo stock del producto:', errUpdate);
-                        // Aún si falla la devolución del stock, notificamos que se canceló el apartado
                         return res.status(200).json({ 
                             mensaje: 'Apartado cancelado, pero hubo un detalle al restaurar el stock.',
                             idApartado 
                         });
                     }
 
-                    // 5. ¡RESPUESTA COMPLETA Y EXITOSA! (Evita el estado pending)
                     return res.status(200).json({ 
                         mensaje: 'Apartado cancelado y stock devuelto correctamente.',
                         idApartado 

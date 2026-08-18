@@ -106,44 +106,66 @@
 
             <!-- REJILLA DE PRODUCTOS -->
             <section class="rejilla-productos">
-                <% productos.forEach(producto => { %>
-                    <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
-                        <div class="imagen-producto">
-                            <% if (producto.imagenUpload) { %>
-                                <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
-                            <% } else { %>
-                                <span><%= producto.nombre %></span>
-                            <% } %>
-                        </div>
-                        <div class="info-producto-detalles">
-                            <h3 class="nombre-producto">
-                                <%= producto.nombre %>
-                            </h3>
-                            <p class="presentacion-producto">
-                                Presentación: <%= producto.unidad %>
-                            </p>
-                            
-                            <!-- CAMBIO 1: Muestra la cantidad disponible en la tarjeta -->
-                            <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin-top: 4px;">
-                                Disponibles: <strong><%= producto.limite_venta || 0 %></strong> <%= producto.unidad %>
-                            </p>
+    <% productos.forEach(producto => { 
+        const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
+        const precioUnitarioReal = Number(producto.precio);
+        
+        const precioMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+        const textoUnidad = esHuevo ? 'Cubeta(s)' : (producto.unidad || 'Unidad(es)');
 
-                            <div class="precio-producto">
-                                $<%= Number(producto.precio).toLocaleString("es-CO") %>
-                            </div>
-                        </div>
+        // CORRECCIÓN AQUÍ: Usamos Math.floor para obtener cubetas enteras y sin decimales
+        const limiteStock = producto.limite_venta || 0;
+        const cubetasDisponibles = esHuevo ? Math.floor(limiteStock / 30) : limiteStock;
+    %>
+        <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
+            <div class="imagen-producto">
+                <% if (producto.imagenUpload) { %>
+                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
+                <% } else { %>
+                    <span><%= producto.nombre %></span>
+                <% } %>
+            </div>
+            <div class="info-producto-detalles">
+                <h3 class="nombre-producto">
+                    <%= producto.nombre %>
+                </h3>
+                <p class="presentacion-producto">
+                    Presentación: <%= textoUnidad %>
+                </p>
+                
+                <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin-top: 4px;">
+                    Disponibles: <strong><%= cubetasDisponibles %></strong> <%= textoUnidad %>
+                    <% if (esHuevo) { %>
+                        <span style="display:block; font-size: 0.75rem; color: #777;">
+                            (<%= limiteStock %> huevos en total)
+                        </span>
+                    <% } %>
+                </p>
 
-                        <button class="boton-apartar btn-accion-apartar" 
-                                data-id="<%= producto.id_producto %>"
-                                data-nombre="<%= producto.nombre %>" 
-                                data-precio="$<%= Number(producto.precio).toLocaleString('es-CO') %>"
-                                data-imagen="<%= producto.imagenUpload || '' %>"
-                                data-limite="<%= producto.limite_venta || 0 %>">
-                            <%= usuario ? 'Apartar' : 'Ver' %>
-                        </button>
-                    </div>
-                <% }) %>
-            </section>
+                <div class="precio-producto">
+                    $<%= Number(precioMostrar).toLocaleString("es-CO") %>
+                    <% if (esHuevo) { %>
+                        <span style="display:block; font-size: 0.75rem; color: #666; font-weight: normal;">
+                            ($<%= Number(precioUnitarioReal).toLocaleString("es-CO") %> / huevo)
+                        </span>
+                    <% } %>
+                </div>
+            </div>
+
+            <button class="boton-apartar btn-accion-apartar" 
+                    data-id="<%= producto.id_producto %>"
+                    data-nombre="<%= producto.nombre %>" 
+                    data-precio="$<%= Number(precioMostrar).toLocaleString('es-CO') %>"
+                    data-precio-unitario="<%= precioUnitarioReal %>"
+                    data-es-huevo="<%= esHuevo ? 'true' : 'false' %>"
+                    data-unidad="<%= textoUnidad %>"
+                    data-imagen="<%= producto.imagenUpload || '' %>"
+                    data-limite="<%= cubetasDisponibles %>"> <!-- Pasa las cubetas enteras al JS -->
+                <%= usuario ? 'Apartar' : 'Ver' %>
+            </button>
+        </div>
+    <% }) %>
+</section>
 
         </div>
     </main>
@@ -163,20 +185,21 @@
 
                     <div class="product-info">
                         <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
+                        <small id="apartarPrecioDetalle" style="display:block; color:#666; font-size:0.85rem; margin-top:2px;"></small>
                     </div>
 
                     <form id="formConfirmarApartado" style="width: 100%; margin-top: 15px;">
                         <input type="hidden" id="apartarProductoId" name="productoId">
                         
                         <div class="campo" style="margin-bottom: 12px;">
-                            <label for="cantidadApartar" style="display:block; margin-bottom:5px;">Cantidad:</label>
+                            <label for="cantidadApartar" id="labelCantidadModal" style="display:block; margin-bottom:5px;">Cantidad:</label>
                             
-                            <!-- CAMBIO 3: Campo de cantidad e indicador de unidades disponibles en el modal -->
                             <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1" required style="width: 100%; padding: 8px;">
-                            <small id="textoDisponibles" style="display:block; color:#666; margin-top:4px;">Disponibles: <span id="cantDisponiblesModal">0</span></small>
+                            <small id="textoDisponibles" style="display:block; color:#666; margin-top:4px;">
+                                Disponibles: <span id="cantDisponiblesModal">0</span> <span id="unidadDisponiblesModal"></span>
+                            </small>
                         </div>
-
-                        <button type="submit" class="btn-principal" style="width: 100%; ">Apartar</button>
+                        <button type="submit" class="btn-principal" style="width: 100%;">Apartar</button>
                     </form>
                 </div>
             </main>

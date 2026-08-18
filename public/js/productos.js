@@ -65,151 +65,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.btn-accion-apartar').forEach(botonApartar => {
-        botonApartar.addEventListener('click', () => {
-            const infoProducto = {
-                id: botonApartar.dataset.id,
-                nombre: botonApartar.dataset.nombre,
-                precio: botonApartar.dataset.precio,
-                nota: botonApartar.dataset.nota || '',
-                imagen: botonApartar.dataset.imagen || '',
-                limite: botonApartar.dataset.limite || 0 // Captura la cantidad temporal/disponible
-            };
+    botonApartar.addEventListener('click', () => {
+        const infoProducto = {
+            id: botonApartar.dataset.id,
+            nombre: botonApartar.dataset.nombre,
+            precio: botonApartar.dataset.precio,
+            imagen: botonApartar.dataset.imagen || '',
+            limite: Number(botonApartar.dataset.limite) || 0, // Cubetas enteras o unidades
+            esHuevo: botonApartar.dataset.esHuevo === 'true' // Flag booleano
+        };
 
-            mostrarVentanaApartado(infoProducto);
-        });
-    });
-
-    if (formularioLogin) {
-        // Mostrar/ocultar campos según tipo de login
-        const tipoCliente = document.getElementById('tipo_cliente');
-        const tipoUsuario = document.getElementById('tipo_usuario');
-        const clienteFields = document.getElementById('clienteFields');
-        const usuarioFields = document.getElementById('usuarioFields');
-
-        function actualizarCampos() {
-            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
-            if (tipo === 'cliente') {
-                if (clienteFields) clienteFields.style.display = 'block';
-                if (usuarioFields) usuarioFields.style.display = 'none';
-            } else {
-                if (clienteFields) clienteFields.style.display = 'none';
-                if (usuarioFields) usuarioFields.style.display = 'block';
-            }
+        // Guardar el flag en la dataset del formulario o un input hidden para leerlo al enviar
+        if (formularioApartado) {
+            formularioApartado.dataset.esHuevo = infoProducto.esHuevo;
         }
 
-        if (tipoCliente) tipoCliente.addEventListener('change', actualizarCampos);
-        if (tipoUsuario) tipoUsuario.addEventListener('change', actualizarCampos);
-        actualizarCampos();
+        mostrarVentanaApartado(infoProducto);
+    });
+});
 
-        formularioLogin.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
+// Ajuste en el submit del formulario de apartado
+if (formularioApartado) {
+    formularioApartado.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
 
-            let payload = {};
-            if (tipo === 'cliente') {
-                payload.documento = document.getElementById('doc')?.value || '';
-            } else {
-                payload.usuario = document.getElementById('user')?.value || '';
-                payload.password = document.getElementById('pwd')?.value || '';
-            }
+        const idVal = campoIdProducto ? campoIdProducto.value : '';
+        const cantidadVal = Number(inputCantidadApartar?.value || 0);
+        const limiteMax = Number(inputCantidadApartar?.max || 0);
+        const esHuevo = formularioApartado.dataset.esHuevo === 'true';
 
-            const resultado = await procesarLogin(payload);
-            if (resultado && resultado.ok) {
-                if (resultado.redirect) {
-                    window.location.href = resultado.redirect;
-                    return;
-                }
-                window.location.reload();
-            }
-        });
-    }
+        if (!idVal) {
+            alert('Error: No se ha detectado la ID del producto.');
+            return;
+        }
 
-    if (formularioCategorias && seccionProductos) {
-        formularioCategorias.addEventListener('submit', (evento) => {
-            evento.preventDefault();
+        if (cantidadVal > limiteMax) {
+            alert(`No puedes apartar más de la cantidad disponible (${limiteMax}).`);
+            return;
+        }
 
-            const categoriasSeleccionadas = Array.from(
-                formularioCategorias.querySelectorAll('input[name="categoria"]:checked')
-            ).map((input) => input.value);
+        if (cantidadVal <= 0) {
+            alert('La cantidad a apartar debe ser mayor a 0.');
+            return;
+        }
 
-            const tarjetas = Array.from(seccionProductos.querySelectorAll('.tarjeta-producto'));
+        const estadoSesion = await verificarSesion();
+        if (!estadoSesion.login) {
+            if (ventanaLogin) ventanaLogin.style.display = 'flex';
+            return;
+        }
 
-            tarjetas.forEach((tarjeta) => {
-                const nombreProducto = tarjeta.querySelector('.nombre-producto')?.textContent || '';
-                const categoriaProducto = tarjeta.dataset.categoria || '';
-                const coincide = categoriasSeleccionadas.length === 0 || categoriasSeleccionadas.includes(categoriaProducto);
-                tarjeta.style.display = coincide ? '' : 'none';
+        // Si es huevo, multiplicamos por 30 para enviar unidades reales a la Base de Datos,
+        // o enviamos el indicador "esHuevo" para que la conversión la haga Express.
+        const cantidadAEnviar = esHuevo ? cantidadVal * 30 : cantidadVal;
+
+        const datosApartado = {
+            productoId: idVal,
+            cantidad: cantidadAEnviar
+        };
+
+        try {
+            const respuestaApartar = await fetch('/api/apartar-producto', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(datosApartado)
             });
-        });
-    }
 
-    if (formularioApartado) {
-        formularioApartado.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-
-            const idVal = campoIdProducto ? campoIdProducto.value : '';
-            const cantidadVal = Number(inputCantidadApartar?.value || 0);
-            const limiteMax = Number(inputCantidadApartar?.max || 0);
-
-            if (!idVal) {
-                alert('Error: No se ha detectado la ID del producto.');
-                console.error('campoIdProducto está vacío al intentar enviar.');
-                return;
-            }
-
-            // Validar de lado del cliente que no supere el stock/límite disponible
-            if (cantidadVal > limiteMax) {
-                alert(`No puedes apartar más de la cantidad disponible (${limiteMax}).`);
-                return;
-            }
-
-            if (cantidadVal <= 0) {
-                alert('La cantidad a apartar debe ser mayor a 0.');
-                return;
-            }
-
-            const estadoSesion = await verificarSesion();
-            if (!estadoSesion.login) {
-                if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                return;
-            }
-
-            const datosApartado = {
-                productoId: idVal,
-                cantidad: cantidadVal
-            };
-
+            let datosRespuesta = {};
             try {
-                const respuestaApartar = await fetch('/api/apartar-producto', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify(datosApartado)
-                });
-
-                let datosRespuesta = {};
-                try {
-                    datosRespuesta = await respuestaApartar.json();
-                } catch (error) {
-                    console.error('Respuesta no JSON:', error);
-                }
-
-                if (respuestaApartar.ok) {
-                    alert(datosRespuesta.mensaje || '¡Producto apartado con éxito!');
-                    window.location.reload();
-                    if (ventanaApartar) ventanaApartar.style.display = 'none';
-                    formularioApartado.reset();
-                } else if (respuestaApartar.status === 401) {
-                    if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                    alert(datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
-                } else {
-                    alert(datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
-                }
+                datosRespuesta = await respuestaApartar.json();
             } catch (error) {
-                console.error('Error al apartar producto:', error);
+                console.error('Respuesta no JSON:', error);
             }
-        });
-    }
+
+            if (respuestaApartar.ok) {
+                alert(datosRespuesta.mensaje || '¡Producto apartado con éxito!');
+                window.location.reload();
+            } else if (respuestaApartar.status === 401) {
+                if (ventanaLogin) ventanaLogin.style.display = 'flex';
+                alert(datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
+            } else {
+                alert(datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
+            }
+        } catch (error) {
+            console.error('Error al apartar producto:', error);
+        }
+    });
+}
 
     if (botonAbrirLogin && ventanaLogin) {
         botonAbrirLogin.addEventListener('click', () => {
