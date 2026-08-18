@@ -152,18 +152,57 @@ body {
     border-left: 5px solid #006837;
     padding: 20px 25px;
     border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
-.banner-bienvenida h2 {
-    font-size: 1.3rem;
-    color: #006837;
-    margin-bottom: 6px;
-    font-weight: 700;
+
+.banner-bienvenida::before,
+.banner-bienvenida::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -50px; 
+    width: 320px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
 }
 
+.banner-bienvenida::before {
+    background-image: 
+        radial-gradient(circle, #39a900 40%, transparent 45%),
+        radial-gradient(circle, #006837 35%, transparent 40%),
+        radial-gradient(circle, #39a900 40%, transparent 45%),
+        radial-gradient(circle, #006837 30%, transparent 35%),
+        radial-gradient(circle, #39a900 35%, transparent 40%);
+    background-size: 10px 10px, 14px 14px, 8px 8px, 12px 12px, 9px 9px;
+    background-position: 95% 15%, 75% 65%, 85% 40%, 60% 80%, 40% 25%;
+    background-repeat: no-repeat;
+    
+    animation: flujoContinuo1 4s linear infinite;
+}
+
+.banner-bienvenida::after {
+    background-image: 
+        radial-gradient(circle, #006837 35%, transparent 40%),
+        radial-gradient(circle, #39a900 40%, transparent 45%),
+        radial-gradient(circle, #006837 30%, transparent 35%),
+        radial-gradient(circle, #39a900 35%, transparent 40%);
+    background-size: 12px 12px, 7px 7px, 11px 11px, 9px 9px;
+    background-position: 90% 75%, 70% 20%, 50% 60%, 30% 85%;
+    background-repeat: no-repeat;
+    
+    animation: flujoContinuo2 4s linear infinite;
+    animation-delay: -2s; 
+}
+
+/* Texto visible por encima */
+.banner-bienvenida h2, 
 .banner-bienvenida p {
-    color: #4a5568;
-    font-size: 0.95rem;
+    position: relative;
+    z-index: 2;
 }
 
 /* ============================
@@ -357,7 +396,7 @@ body {
 }
 
 /* ==========================================
-   FOOTER PRINCIPAL
+    FOOTER PRINCIPAL
    ========================================== */
 .pie-pagina-principal {
     background-color: #006837;
@@ -410,15 +449,13 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    justify-self: center;
-    width: 100%;
 }
 
 .enlace-logo-sena {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: inline-block;
     text-decoration: none;
+    /* Evita saltos de línea e integra el área interactiva */
+    border-radius: 50%;
 }
 
 .contenedor-logo-sena {
@@ -429,10 +466,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     padding: 12px;
     box-sizing: border-box;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    /* Transición elástica mediante cubic-bezier */
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.35s ease, 
+                background-color 0.3s ease;
+    will-change: transform, box-shadow;
 }
 
 .logo-sena-footer {
@@ -444,12 +485,23 @@ body {
     display: block;
     margin: 0 auto;
     transform: translateX(-2.5px);
+    transition: filter 0.35s ease, transform 0.35s ease;
+    will-change: transform, filter;
 }
 
 .enlace-logo-sena:hover .contenedor-logo-sena {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-    background-color: #f8fafc;
+    transform: translateY(-6px) scale(1.08);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3), 0 0 18px rgba(57, 169, 0, 0.45);
+    background-color: #ffffff;
+}
+
+.enlace-logo-sena:hover .logo-sena-footer {
+    filter: drop-shadow(0 3px 6px rgba(0, 104, 55, 0.35));
+}
+
+.enlace-logo-sena:active .contenedor-logo-sena {
+    transform: translateY(-2px) scale(0.97);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* COLUMNA DERECHA */
@@ -541,5 +593,48 @@ body {
 
     .navbar-derecha {
         margin-left: 0;
+    }
+}
+
+
+@keyframes flujoContinuo1 {
+    0% {
+        transform: translateX(40px);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.9;
+    }
+    85% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(-220px);
+        opacity: 0;
+    }
+}
+
+@keyframes flujoContinuo2 {
+    0% {
+        transform: translateX(40px);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.8;
+    }
+    85% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateX(-220px);
+        opacity: 0;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .banner-bienvenida::before,
+    .banner-bienvenida::after {
+        display: none !important;
     }
 }

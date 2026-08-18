@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const confirmar = confirm(`¿Deseas cancelar el apartado #${idApartado}?`);
+        const confirmar = confirm(`¿Deseas cancelar el apartado?`);
         if (!confirmar) return;
 
         try {

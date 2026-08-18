@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <!-- Página de catálogo con la lista completa de productos y el modal de apartado -->
     <meta charset="UTF-8">
@@ -8,266 +9,294 @@
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/productos.css">
 </head>
+
 <body>
 
     <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
-    <% const rolUsuario = usuario && usuario.role ? String(usuario.role).trim().toLowerCase() : ''; %>
-    <header class="header-catalogo">
-        <div class="contenedor-header">
-            <a href="<%= (rolUsuario === 'admin' || rolUsuario === 'aprendiz') ? '/admin' : '/' %>" class="btn-regresar">
-                ← Regresar al Inicio
-            </a>
+    <% const rolUsuario=usuario && usuario.role ? String(usuario.role).trim().toLowerCase() : '' ; %>
+        <header class="header-catalogo">
+            <div class="contenedor-header">
+                <a href="<%= (rolUsuario === 'admin' || rolUsuario === 'aprendiz') ? '/admin' : '/' %>"
+                    class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
 
-            <div class="marca-catalogo">
-                <span>SENAEMPRESA</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- CONTENEDOR PRINCIPAL DEL CATÁLOGO -->
-    <main class="contenedor-principal">
-        
-        <div class="encabezado-seccion">
-            <h1 class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</h1>
-            
-            <div class="barra-superior">
-                <div class="campo-busqueda">
-                    <input type="text" id="inputBuscar" placeholder="Buscar producto...">
+                <div class="marca-catalogo">
+                    <span>SENAEMPRESA</span>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <div class="contenido-principal">
-            
-        <!-- PANEL LATERAL DE FILTROS -->
-        <aside class="panel-lateral">
-            <div class="seccion-categorias">
-                <div class="titulo-categoria">Categorías</div>
-                <div class="linea-divisora"></div>
+        <!-- CONTENEDOR PRINCIPAL DEL CATÁLOGO -->
+        <main class="contenedor-principal">
 
-                <% const categoriasActivas = Array.isArray(categoriasSeleccionadas) ? categoriasSeleccionadas : []; %>
-                <form method="get" action="/catalogo" class="filtros-categorias-form">
-                    <div class="lista-categorias">
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Abonos y Sustratos" <% if (categoriasActivas.includes('Abonos y Sustratos')) { %>checked<% } %>>
-                            <span>Abonos y Sustratos</span>
-                        </label>
-                        
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Frutas y Hortalizas" <% if (categoriasActivas.includes('Frutas y Hortalizas')) { %>checked<% } %>>
-                            <span>Frutas y Hortalizas</span>
-                        </label>
+            <div class="encabezado-seccion">
+                <h1 class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</h1>
 
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Cereales, Granos y Forrajes" <% if (categoriasActivas.includes('Cereales, Granos y Forrajes')) { %>checked<% } %>>
-                            <span>Cereales, Granos y Forrajes</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Material Vegetal y Flores" <% if (categoriasActivas.includes('Material Vegetal y Flores')) { %>checked<% } %>>
-                            <span>Material Vegetal y Flores</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Embutidos y Cárnicos Procesados" <% if (categoriasActivas.includes('Embutidos y Cárnicos Procesados')) { %>checked<% } %>>
-                            <span>Embutidos y Cárnicos</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Bebidas y Refrescos" <% if (categoriasActivas.includes('Bebidas y Refrescos')) { %>checked<% } %>>
-                            <span>Bebidas y Refrescos</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Salsas y Conservas" <% if (categoriasActivas.includes('Salsas y Conservas')) { %>checked<% } %>>
-                            <span>Salsas y Conservas</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Lácteos y Derivados" <% if (categoriasActivas.includes('Lácteos y Derivados')) { %>checked<% } %>>
-                            <span>Lácteos y Derivados</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Repostería, Dulces y Licores" <% if (categoriasActivas.includes('Repostería, Dulces y Licores')) { %>checked<% } %>>
-                            <span>Repostería, Dulces y Licores</span>
-                        </label>
-
-                        <label class="opcion-categoria">
-                            <input type="checkbox" name="categoria" value="Pecuario y Acuícola" <% if (categoriasActivas.includes('Pecuario y Acuícola')) { %>checked<% } %>>
-                            <span>Pecuario y Acuícola</span>
-                        </label>
+                <div class="barra-superior">
+                    <div class="campo-busqueda">
+                        <input type="text" id="inputBuscar" placeholder="Buscar producto...">
                     </div>
-
-                    <button type="submit" class="boton-filtrar">Aplicar Filtros</button>
-                </form>
-            </div>
-        </aside>
-
-            <!-- REJILLA DE PRODUCTOS -->
-            <section class="rejilla-productos">
-    <% productos.forEach(producto => { 
-        const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
-        const precioUnitarioReal = Number(producto.precio);
-        
-        const precioMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
-        const textoUnidad = esHuevo ? 'Cubeta(s)' : (producto.unidad || 'Unidad(es)');
-
-        // CORRECCIÓN AQUÍ: Usamos Math.floor para obtener cubetas enteras y sin decimales
-        const limiteStock = producto.limite_venta || 0;
-        const cubetasDisponibles = esHuevo ? Math.floor(limiteStock / 30) : limiteStock;
-    %>
-        <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
-            <div class="imagen-producto">
-                <% if (producto.imagenUpload) { %>
-                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
-                <% } else { %>
-                    <span><%= producto.nombre %></span>
-                <% } %>
-            </div>
-            <div class="info-producto-detalles">
-                <h3 class="nombre-producto">
-                    <%= producto.nombre %>
-                </h3>
-                <p class="presentacion-producto">
-                    Presentación: <%= textoUnidad %>
-                </p>
-                
-                <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin-top: 4px;">
-                    Disponibles: <strong><%= cubetasDisponibles %></strong> <%= textoUnidad %>
-                    <% if (esHuevo) { %>
-                        <span style="display:block; font-size: 0.75rem; color: #777;">
-                            (<%= limiteStock %> huevos en total)
-                        </span>
-                    <% } %>
-                </p>
-
-                <div class="precio-producto">
-                    $<%= Number(precioMostrar).toLocaleString("es-CO") %>
-                    <% if (esHuevo) { %>
-                        <span style="display:block; font-size: 0.75rem; color: #666; font-weight: normal;">
-                            ($<%= Number(precioUnitarioReal).toLocaleString("es-CO") %> / huevo)
-                        </span>
-                    <% } %>
                 </div>
             </div>
 
-            <button class="boton-apartar btn-accion-apartar" 
-                    data-id="<%= producto.id_producto %>"
-                    data-nombre="<%= producto.nombre %>" 
-                    data-precio="$<%= Number(precioMostrar).toLocaleString('es-CO') %>"
-                    data-precio-unitario="<%= precioUnitarioReal %>"
-                    data-es-huevo="<%= esHuevo ? 'true' : 'false' %>"
-                    data-unidad="<%= textoUnidad %>"
-                    data-imagen="<%= producto.imagenUpload || '' %>"
-                    data-limite="<%= cubetasDisponibles %>"> <!-- Pasa las cubetas enteras al JS -->
-                <%= usuario ? 'Apartar' : 'Ver' %>
-            </button>
-        </div>
-    <% }) %>
-</section>
+            <div class="contenido-principal">
 
-        </div>
-    </main>
+                <!-- PANEL LATERAL DE FILTROS -->
+                <aside class="panel-lateral">
+                    <div class="seccion-categorias">
+                        <div class="titulo-categoria">Categorías</div>
+                        <div class="linea-divisora"></div>
 
-    <!-- MODAL APARTAR PRODUCTO -->
-    <div class="modal-fondo" id="modalApartarProducto">
-        <div class="modal-contenido">
-            <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
+                        <% const categoriasActivas=Array.isArray(categoriasSeleccionadas) ? categoriasSeleccionadas :
+                            []; %>
+                            <form method="get" action="/catalogo" class="filtros-categorias-form">
+                                <div class="lista-categorias">
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Abonos y Sustratos" <% if
+                                            (categoriasActivas.includes('Abonos y Sustratos')) { %>checked<% } %>>
+                                            <span>Abonos y Sustratos</span>
+                                    </label>
 
-            <main class="card-container">
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Frutas y Hortalizas" <% if
+                                            (categoriasActivas.includes('Frutas y Hortalizas')) { %>checked<% } %>>
+                                            <span>Frutas y Hortalizas</span>
+                                    </label>
 
-                <div class="card-body">
-                    <div class="modal-imagen" style="margin-bottom:12px;">
-                        <img id="apartarImagenProducto" src="" alt="Imagen del producto" style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;"/>
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Cereales, Granos y Forrajes" <%
+                                            if (categoriasActivas.includes('Cereales, Granos y Forrajes')) { %>checked<%
+                                            } %>>
+                                            <span>Cereales, Granos y Forrajes</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Material Vegetal y Flores" <% if
+                                            (categoriasActivas.includes('Material Vegetal y Flores')) { %>checked<% } %>
+                                            >
+                                            <span>Material Vegetal y Flores</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Embutidos y Cárnicos Procesados"
+                                            <% if (categoriasActivas.includes('Embutidos y Cárnicos Procesados')) {
+                                            %>checked<% } %>>
+                                            <span>Embutidos y Cárnicos</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Bebidas y Refrescos" <% if
+                                            (categoriasActivas.includes('Bebidas y Refrescos')) { %>checked<% } %>>
+                                            <span>Bebidas y Refrescos</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Salsas y Conservas" <% if
+                                            (categoriasActivas.includes('Salsas y Conservas')) { %>checked<% } %>>
+                                            <span>Salsas y Conservas</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Lácteos y Derivados" <% if
+                                            (categoriasActivas.includes('Lácteos y Derivados')) { %>checked<% } %>>
+                                            <span>Lácteos y Derivados</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Repostería, Dulces y Licores" <%
+                                            if (categoriasActivas.includes('Repostería, Dulces y Licores')) { %>checked
+                                        <% } %>>
+                                            <span>Repostería, Dulces y Licores</span>
+                                    </label>
+
+                                    <label class="opcion-categoria">
+                                        <input type="checkbox" name="categoria" value="Pecuario y Acuícola" <% if
+                                            (categoriasActivas.includes('Pecuario y Acuícola')) { %>checked<% } %>>
+                                            <span>Pecuario y Acuícola</span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="boton-filtrar">Aplicar Filtros</button>
+                            </form>
                     </div>
-                    <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
+                </aside>
 
-                    <div class="product-info">
-                        <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
-                        <small id="apartarPrecioDetalle" style="display:block; color:#666; font-size:0.85rem; margin-top:2px;"></small>
+                <!-- REJILLA DE PRODUCTOS -->
+                <section class="rejilla-productos">
+                    <% productos.forEach(producto=> {
+                        const esHuevo = producto.es_huevo || (producto.nombre &&
+                        producto.nombre.toLowerCase().includes('huevo'));
+                        const precioUnitarioReal = Number(producto.precio);
+
+                        const precioMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+                        const textoUnidad = esHuevo ? 'Cubeta(s)' : (producto.unidad || 'Unidad(es)');
+
+                        // CORRECCIÓN AQUÍ: Usamos Math.floor para obtener cubetas enteras y sin decimales
+                        const limiteStock = producto.limite_venta || 0;
+                        const cubetasDisponibles = esHuevo ? Math.floor(limiteStock / 30) : limiteStock;
+                        %>
+                        <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
+                            <div class="imagen-producto">
+                                <% if (producto.imagenUpload) { %>
+                                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
+                                    <% } else { %>
+                                        <span>
+                                            <%= producto.nombre %>
+                                        </span>
+                                        <% } %>
+                            </div>
+                            <div class="info-producto-detalles">
+                                <h3 class="nombre-producto">
+                                    <%= producto.nombre %>
+                                </h3>
+                                <p class="presentacion-producto">
+                                    Presentación: <%= textoUnidad %>
+                                </p>
+
+                                <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin-top: 4px;">
+                                    Disponibles: <strong>
+                                        <%= cubetasDisponibles %>
+                                    </strong>
+                                    <%= textoUnidad %>
+                                        <% if (esHuevo) { %>
+                                            <span style="display:block; font-size: 0.75rem; color: #777;">
+                                                (<%= limiteStock %> huevos en total)
+                                            </span>
+                                            <% } %>
+                                </p>
+
+                                <div class="precio-producto">
+                                    $<%= Number(precioMostrar).toLocaleString("es-CO") %>
+                                        <% if (esHuevo) { %>
+                                            <span
+                                                style="display:block; font-size: 0.75rem; color: #666; font-weight: normal;">
+                                                ($<%= Number(precioUnitarioReal).toLocaleString("es-CO") %> / huevo)
+                                            </span>
+                                            <% } %>
+                                </div>
+                            </div>
+
+                            <button class="boton-apartar btn-accion-apartar" data-id="<%= producto.id_producto %>"
+                                data-nombre="<%= producto.nombre %>"
+                                data-precio="$<%= Number(precioMostrar).toLocaleString('es-CO') %>"
+                                data-precio-unitario="<%= precioUnitarioReal %>"
+                                data-es-huevo="<%= esHuevo ? 'true' : 'false' %>" data-unidad="<%= textoUnidad %>"
+                                data-imagen="<%= producto.imagenUpload || '' %>"
+                                data-limite="<%= cubetasDisponibles %>"> <!-- Pasa las cubetas enteras al JS -->
+                                <%= usuario ? 'Apartar' : 'Ver' %>
+                            </button>
+                        </div>
+                        <% }) %>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- MODAL APARTAR PRODUCTO -->
+        <div class="modal-fondo" id="modalApartarProducto">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
+
+                <main class="card-container">
+
+                    <div class="card-body">
+                        <div class="modal-imagen" style="margin-bottom:12px;">
+                            <img id="apartarImagenProducto" src="" alt="Imagen del producto"
+                                style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;" />
+                        </div>
+                        <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
+
+                        <div class="product-info">
+                            <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
+                            <small id="apartarPrecioDetalle"
+                                style="display:block; color:#666; font-size:0.85rem; margin-top:2px;"></small>
+                        </div>
+
+                        <form id="formConfirmarApartado" style="width: 100%; margin-top: 15px;">
+                            <input type="hidden" id="apartarProductoId" name="productoId">
+
+                            <div class="campo" style="margin-bottom: 12px;">
+                                <label for="cantidadApartar" id="labelCantidadModal"
+                                    style="display:block; margin-bottom:5px;">Cantidad:</label>
+
+                                <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1"
+                                    required style="width: 100%; padding: 8px;">
+                                <small id="textoDisponibles" style="display:block; color:#666; margin-top:4px;">
+                                    Disponibles: <span id="cantDisponiblesModal">0</span> <span
+                                        id="unidadDisponiblesModal"></span>
+                                </small>
+                            </div>
+                            <button type="submit" class="btn-principal" style="width: 100%;">Apartar</button>
+                        </form>
                     </div>
-
-                    <form id="formConfirmarApartado" style="width: 100%; margin-top: 15px;">
-                        <input type="hidden" id="apartarProductoId" name="productoId">
-                        
-                        <div class="campo" style="margin-bottom: 12px;">
-                            <label for="cantidadApartar" id="labelCantidadModal" style="display:block; margin-bottom:5px;">Cantidad:</label>
-                            
-                            <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1" required style="width: 100%; padding: 8px;">
-                            <small id="textoDisponibles" style="display:block; color:#666; margin-top:4px;">
-                                Disponibles: <span id="cantDisponiblesModal">0</span> <span id="unidadDisponiblesModal"></span>
-                            </small>
-                        </div>
-                        <button type="submit" class="btn-principal" style="width: 100%;">Apartar</button>
-                    </form>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- MODAL LOGIN -->
-    <div class="modal-fondo" id="modalLogin">
-        <div class="modal-contenido">
-            <span class="cerrar-modal" id="cerrarModal">&times;</span>
-            <div class="contenedor-login">
-                <div class="marca">
-                    <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
-                    <span class="marca-texto">Marketplace</span>
-                </div>
-                <main class="login" role="main">
-                    <div class="login-encabezado">
-                        <h1>Bienvenido</h1>
-                        <p>Ingresa tus credenciales para continuar</p>
-                    </div>
-                    <form class="login-form" id="formLogin">
-                        <div class="campo campo-tipo" style="margin-bottom:8px;">
-                            <div class="tipo-options">
-                                <label class="tipo-option">
-                                    <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
-                                    <span class="tipo-label">Soy Cliente</span>
-                                </label>
-                                <label class="tipo-option">
-                                    <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
-                                    <span class="tipo-label">Soy Admin</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div id="clienteFields">
-                            <div class="campo">
-                                <label for="doc">Documento</label>
-                                <input type="text" id="doc" name="documento" placeholder="Documento">
-                            </div>
-                        </div>
-
-                        <div id="usuarioFields" style="display:none;">
-                            <div class="campo">
-                                <label for="user">Usuario</label>
-                                <input type="text" id="user" name="usuario" placeholder="Usuario">
-                            </div>
-                            <div class="campo">
-                                <label for="pwd">Contraseña</label>
-                                <input type="password" id="pwd" name="password" placeholder="Contraseña">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-principal">Iniciar sesión</button>
-                    </form>
-                    <p class="login-pie">
-                        ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
-                    </p>
-                    <p id="mensaje" class="mensaje-error"></p>
                 </main>
-                <footer class="pie-pagina">
-                    <span class="pie-punto" aria-hidden="true"></span>
-                    SENA · Colombia
-                </footer>
             </div>
         </div>
-    </div>
 
-    <script src="/js/login.js"></script>
-    <script src="/js/productos.js"></script>
+        <!-- MODAL LOGIN -->
+        <div class="modal-fondo" id="modalLogin">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" id="cerrarModal">&times;</span>
+                <div class="contenedor-login">
+                    <div class="marca">
+                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                        <span class="marca-texto">Marketplace</span>
+                    </div>
+                    <main class="login" role="main">
+                        <div class="login-encabezado">
+                            <h1>Bienvenido</h1>
+                            <p>Ingresa tus credenciales para continuar</p>
+                        </div>
+                        <form class="login-form" id="formLogin">
+                            <div class="campo campo-tipo" style="margin-bottom:8px;">
+                                <div class="tipo-options">
+                                    <label class="tipo-option">
+                                        <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
+                                        <span class="tipo-label">Soy Cliente</span>
+                                    </label>
+                                    <label class="tipo-option">
+                                        <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
+                                        <span class="tipo-label">Soy Admin</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="clienteFields">
+                                <div class="campo">
+                                    <label for="doc">Documento</label>
+                                    <input type="text" id="doc" name="documento" placeholder="Documento">
+                                </div>
+                            </div>
+
+                            <div id="usuarioFields" style="display:none;">
+                                <div class="campo">
+                                    <label for="user">Usuario</label>
+                                    <input type="text" id="user" name="usuario" placeholder="Usuario">
+                                </div>
+                                <div class="campo">
+                                    <label for="pwd">Contraseña</label>
+                                    <input type="password" id="pwd" name="password" placeholder="Contraseña">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-principal">Iniciar sesión</button>
+                        </form>
+                        <p class="login-pie">
+                            ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
+                        </p>
+                        <p id="mensaje" class="mensaje-error"></p>
+                    </main>
+                    <footer class="pie-pagina">
+                        <span class="pie-punto" aria-hidden="true"></span>
+                        SENA · Colombia
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <script src="/js/login.js"></script>
+        <script src="/js/productos.js"></script>
 </body>
+
 </html>
