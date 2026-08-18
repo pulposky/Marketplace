@@ -27,7 +27,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
-    height: 90px; /* Altura aumentada para permitir el logo grande */
+    height: 90px;
 }
 
 /* 1. Extremo Izquierdo */
@@ -38,14 +38,14 @@ body {
 }
 
 .navbar-superior img.imagen {
-    max-height: 75px; /* Logo grande de 75px de alto */
+    max-height: 75px;
     width: auto;
     object-fit: contain;
     display: block;
     transition: transform 0.2s ease;
 }
 
-/* 2. Centro Absoluto (Fijo exactamente al medio de la pantalla) */
+/* 2. Centro Absoluto */
 .marca-navbar {
     position: absolute;
     left: 50%;
@@ -63,12 +63,12 @@ body {
     margin: 0;
 }
 
-/* 3. Extremo Derecho (Navegación y botones) */
+/* 3. Extremo Derecho */
 .navbar-derecha {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-left: auto; /* Empuja todo al borde derecho */
+    margin-left: auto;
     z-index: 2;
 }
 
@@ -96,7 +96,6 @@ body {
     background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Estilo para botón Cerrar Sesión */
 .item-menu a.btn-cerrar {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -357,83 +356,120 @@ body {
     cursor: pointer;
 }
 
-/* ============================
-    FOOTER PRINCIPAL 
-============================ */
+/* ==========================================
+   FOOTER PRINCIPAL
+   ========================================== */
 .pie-pagina-principal {
-    background-color: #006837; 
-    color: #f2f2f2; 
-    margin-top: 40px;
-    padding-top: 40px;
-    font-size: 0.9rem;
+    background-color: #006837;
+    color: #ffffff;
+    margin-top: 60px;
+    padding-top: 35px;
+    width: 100%;
 }
 
 .contenedor-footer {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 0 30px 30px 30px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 40px 30px 40px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 40px;
-}
-
-.columna-footer h4 {
-    color: #ffffff;
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    position: relative;
-}
-
-.columna-footer h4::after {
-    content: '';
-    display: block;
-    width: 35px;
-    height: 3px;
-    background-color: #39A900; 
-    margin-top: 6px;
-    border-radius: 2px;
-}
-
-.logo-footer {
-    display: flex;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
 }
 
-.logo-footer img {
-    height: 40px;
-    width: auto;
+/* COLUMNA IZQUIERDA */
+.columna-info {
+    text-align: left;
+    justify-self: start;
+    padding-left: 10px;
 }
 
-.logo-footer h3 {
+.columna-info h3 {
     color: #ffffff;
-    font-size: 1.2rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
 }
 
 .descripcion-empresa {
-    color: #f2f2f2;
-    line-height: 1.5;
-    margin-bottom: 12px;
+    color: #e2e8f0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    max-width: 440px;
 }
 
 .ubicacion {
-    color: #f2f2f2;
-    font-size: 0.85rem;
-    opacity: 0.85;
+    color: #cbd5e1;
+    font-size: 0.8rem;
 }
 
-.contacto-info {
-    color: #f2f2f2;
-    margin-bottom: 6px;
+/* COLUMNA CENTRO */
+.columna-centro {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    justify-self: center;
+    width: 100%;
+}
+
+.enlace-logo-sena {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+}
+
+.contenedor-logo-sena {
+    width: 95px;
+    height: 95px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.logo-sena-footer {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    transform: translateX(-2.5px);
+}
+
+.enlace-logo-sena:hover .contenedor-logo-sena {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+    background-color: #f8fafc;
+}
+
+/* COLUMNA DERECHA */
+.columna-redes {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-self: end;
+}
+
+.columna-redes h4 {
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 12px;
 }
 
 .redes-sociales {
     display: flex;
     gap: 12px;
-    margin-top: 15px;
 }
 
 .icono-red {
@@ -446,25 +482,50 @@ body {
     color: #ffffff;
     border-radius: 50%;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
 }
 
 .icono-red:hover {
     transform: translateY(-3px);
-    background-color: #39A900; 
-    color: #ffffff;
+    background-color: #39a900;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
+/* PIE COPYRIGHT */
 .pie-copyright {
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
     text-align: center;
-    padding: 15px 20px;
-    background-color: #000000; 
-    color: #f2f2f2;
-    font-size: 0.8rem;
+    padding: 14px 20px;
+    background-color: #004d28;
+    color: #cbd5e1;
+    font-size: 0.78rem;
 }
 
-/* RESPONSIVE */
+/* RESPONSIVE MÓVIL */
+@media (max-width: 850px) {
+    .contenedor-footer {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 24px;
+        padding: 0 20px 30px 20px;
+    }
+
+    .columna-info {
+        text-align: center;
+        justify-self: center;
+        padding-left: 0;
+    }
+
+    .columna-redes {
+        align-items: center;
+        justify-self: center;
+    }
+
+    .descripcion-empresa {
+        margin: 0 auto 8px auto;
+    }
+}       
+
 @media (max-width: 768px) {
     .navbar-superior {
         height: auto;
