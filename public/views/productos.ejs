@@ -7,7 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo | SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/registro.css">
     <link rel="stylesheet" href="/css/productos.css">
+    <link rel="stylesheet" href="/css/toast.css">
 </head>
 
 <body>
@@ -283,9 +285,66 @@
                             <button type="submit" class="btn-principal">Iniciar sesión</button>
                         </form>
                         <p class="login-pie">
-                            ¿No tienes cuenta? <a href="/registro" class="enlace-fuerte">Regístrate</a>
+                            ¿No tienes cuenta? <a href="#" class="enlace-fuerte enlace-registro">Regístrate</a>
                         </p>
                         <p id="mensaje" class="mensaje-error"></p>
+                    </main>
+                    <footer class="pie-pagina">
+                        <span class="pie-punto" aria-hidden="true"></span>
+                        SENA · Colombia
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL REGISTRO -->
+        <div class="modal-fondo" id="modalRegistro">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" id="cerrarModalRegistro">&times;</span>
+                <div class="contenedor-registro">
+                    <div class="marca">
+                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                        <span class="marca-texto">Marketplace</span>
+                    </div>
+                    <main class="registro" role="main">
+                        <div class="registro-encabezado">
+                            <h1>Crear Cuenta</h1>
+                            <p>Completa tus datos para registrarte</p>
+                        </div>
+                        <form class="registro-form" id="formRegistro">
+                            <div class="campo">
+                                <label for="regNombre">Nombre completo</label>
+                                <input type="text" id="regNombre" name="nombre" placeholder="Nombre completo">
+                            </div>
+                            <div class="campo">
+                                <label for="regDocumento">Documento</label>
+                                <input type="text" id="regDocumento" name="documento" placeholder="Número de documento">
+                            </div>
+                            <div class="campo">
+                                <label for="regDireccion">Dirección</label>
+                                <input type="text" id="regDireccion" name="direccion" placeholder="Dirección">
+                            </div>
+                            <div class="campo">
+                                <label for="regTelefono">Teléfono</label>
+                                <input type="text" id="regTelefono" name="telefono" placeholder="Teléfono">
+                            </div>
+                            <div class="campo">
+                                <label for="regRol">Rol</label>
+                                <select id="regRol" name="rol">
+                                    <option value="" disabled selected>Selecciona un rol</option>
+                                    <option value="aprendiz">Aprendiz</option>
+                                    <option value="instructor">Instructor</option>
+                                    <option value="contratista">Contratista</option>
+                                    <option value="externo">Externo</option>
+                                    <option value="administrativo">Administrativo</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-principal">Registrarme</button>
+                        </form>
+                        <p class="registro-pie">
+                            ¿Ya tienes cuenta? <a href="#" class="enlace-fuerte" id="volverLogin">Inicia sesión</a>
+                        </p>
+                        <p id="mensajeRegistro" class="mensaje-registro"></p>
                     </main>
                     <footer class="pie-pagina">
                         <span class="pie-punto" aria-hidden="true"></span>
@@ -303,7 +362,9 @@
             </svg>
         </div>
 
+        <script src="/js/toast.js"></script>
         <script src="/js/login.js"></script>
+        <script src="/js/registro.js"></script>
         <script src="/js/productos.js"></script>
 </body>
 

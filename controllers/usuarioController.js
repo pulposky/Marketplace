@@ -98,7 +98,40 @@ const logoutUsuarioController = (req, res) => {
     });
 };
 
+// Registro de nuevo usuario/cliente
+const registroUsuarioController = async (req, res) => {
+    const { nombre, documento, direccion, telefono, rol } = req.body;
+
+    // Validar que todos los campos vengan
+    if (!nombre || !documento || !direccion || !telefono || !rol) {
+        return res.json({ ok: false, mensaje: 'Todos los campos son obligatorios' });
+    }
+
+    // Lista de roles válidos
+    const rolesValidos = ['aprendiz', 'instructor', 'contratista', 'externo', 'administrativo'];
+    if (!rolesValidos.includes(rol)) {
+        return res.json({ ok: false, mensaje: 'Rol no válido' });
+    }
+
+    try {
+        // Verificar si ya existe un cliente con ese documento
+        const yaExiste = await UsuarioModel.existeDocumento(documento);
+        if (yaExiste) {
+            return res.json({ ok: false, mensaje: 'Ya existe un usuario con ese documento' });
+        }
+
+        // Insertar el nuevo registro
+        await UsuarioModel.registrar({ nombre, documento, direccion, telefono, rol });
+
+        return res.json({ ok: true, mensaje: 'Registro exitoso. Ya puedes iniciar sesión.' });
+    } catch (error) {
+        console.error('Error en registroUsuarioController:', error);
+        return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });
+    }
+};
+
 module.exports = {
     loginUsuarioController,
-    logoutUsuarioController
+    logoutUsuarioController,
+    registroUsuarioController
 };

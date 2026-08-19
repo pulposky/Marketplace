@@ -1,0 +1,90 @@
+/* ============================
+   MODAL DE REGISTRO
+   ============================ */
+
+.contenedor-registro {
+    width: 100%;
+    max-width: 380px;
+    margin: auto;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* ENCABEZADO */
+.registro-encabezado {
+    text-align: center;
+}
+
+.registro-encabezado h1 {
+    font-size: 34px;
+    color: #222;
+    margin-bottom: 8px;
+}
+
+.registro-encabezado p {
+    color: #777;
+    font-size: 15px;
+}
+
+/* FORMULARIO */
+.registro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* SELECT / DROPDOWN */
+.campo select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    transition: .2s;
+    box-sizing: border-box;
+    background: #fff;
+    appearance: auto;
+    cursor: pointer;
+    color: #333;
+}
+
+.campo select:focus {
+    border-color: #39A900;
+    box-shadow: 0 0 0 3px rgba(57, 169, 0, .15);
+}
+
+/* MENSAJE REGISTRO */
+.mensaje-registro {
+    display: none;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.mensaje-registro.exito {
+    display: block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #66bb6a;
+}
+
+.mensaje-registro.error {
+    display: block;
+    background: #ffe5e5;
+    color: #c62828;
+    border: 1px solid #ef5350;
+}
+
+/* ENLACE VOLVER AL LOGIN */
+.registro-pie {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}

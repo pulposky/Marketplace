@@ -120,11 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }, 350);
             } else {
-                alert(data.error || 'Error al confirmar el pedido.');
+                toast('error', data.error || 'Error al confirmar el pedido.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error de conexion con el servidor.');
+            toast('error', 'Error de conexion con el servidor.');
         }
     }
 
@@ -162,11 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }, 350);
             } else {
-                alert(data.error || 'Error al cancelar el pedido.');
+                toast('error', data.error || 'Error al cancelar el pedido.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error de conexion con el servidor.');
+            toast('error', 'Error de conexion con el servidor.');
         }
     }
 

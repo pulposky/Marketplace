@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const idApartado = boton.dataset.id || boton.getAttribute('data-id');
 
         if (!idApartado) {
-            alert('Error: El botón no tiene un ID asociado (data-id está vacío).');
+            toast('error', 'El botón no tiene un ID asociado (data-id está vacío).');
             return;
         }
 
@@ -51,14 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (respuesta.ok) {
-                alert(data.mensaje || 'Apartado cancelado correctamente.');
+                toast('exito', data.mensaje || 'Apartado cancelado correctamente.');
                 window.location.reload(); // Recargo para que se actualice la lista
             } else {
-                alert(`Error ${respuesta.status}: ${data.error || data.mensaje || 'No se pudo procesar la solicitud en el servidor.'}`);
+                toast('error', `Error ${respuesta.status}: ${data.error || data.mensaje || 'No se pudo procesar la solicitud en el servidor.'}`);
             }
         } catch (error) {
             console.error('Error de red o ejecución:', error);
-            alert('Error de conexión con el servidor (Revisa la consola con F12).');
+            toast('error', 'Error de conexión con el servidor (Revisa la consola con F12).');
         }
     });
 

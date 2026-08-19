@@ -24,6 +24,7 @@ const protegerRuta = require('../middleware/verificarUsuario');
 // Logout: destruye la sesión y limpia la cookie
 router.post('/login', UsuarioController.loginUsuarioController);
 router.get('/logout', UsuarioController.logoutUsuarioController);
+router.post('/registro', UsuarioController.registroUsuarioController);
 
 // -----------------------------------------------
 // RUTAS DE VISTAS PÚBLICAS Y PRIVADAS

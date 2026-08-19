@@ -163,13 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxVal = parseInt(inputCantidadApartar?.max) || 0;
 
             if (!idVal) {
-                alert('Error: No se ha detectado la ID del producto.');
+                toast('error', 'Error: No se ha detectado la ID del producto.');
                 console.error('campoIdProducto está vacío al intentar enviar.');
                 return;
             }
 
             if (maxVal > 0 && cantidadVal > maxVal) {
-                alert(`No puedes apartar más del límite disponible (${maxVal}).`);
+                toast('advertencia', `No puedes apartar más del límite disponible (${maxVal}).`);
                 return;
             }
 
@@ -201,15 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (respuestaApartar.ok) {
-                    alert(datosRespuesta.mensaje || '¡Producto apartado con éxito!');
+                    toast('exito', datosRespuesta.mensaje || '¡Producto apartado con éxito!');
                     window.location.reload();
                     if (ventanaApartar) ventanaApartar.style.display = 'none';
                     formularioApartado.reset();
                 } else if (respuestaApartar.status === 401) {
                     if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                    alert(datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
+                    toast('advertencia', datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
                 } else {
-                    alert(datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
+                    toast('error', datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
                 }
             } catch (error) {
                 console.error('Error de red al apartar producto:', error);

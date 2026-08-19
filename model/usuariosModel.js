@@ -65,6 +65,38 @@ const UsuarioModel = {
                 }
             );
         });
+    },
+
+    // Verifica si ya existe un cliente con ese documento
+    existeDocumento: (documento) => {
+        return new Promise((resuelta, rechazada) => {
+            conexion.query(
+                'SELECT id FROM clientes WHERE documento = ?',
+                [documento],
+                (error, registros) => {
+                    if (error) {
+                        return rechazada(error);
+                    }
+                    resuelta(registros.length > 0);
+                }
+            );
+        });
+    },
+
+    // Registra un nuevo cliente en la tabla 'clientes'
+    registrar: (datos) => {
+        return new Promise((resuelta, rechazada) => {
+            conexion.query(
+                'INSERT INTO clientes (nombre, documento, direccion, telefono, rol) VALUES (?, ?, ?, ?, ?)',
+                [datos.nombre, datos.documento, datos.direccion, datos.telefono, datos.rol],
+                (error, resultado) => {
+                    if (error) {
+                        return rechazada(error);
+                    }
+                    resuelta(resultado);
+                }
+            );
+        });
     }
 };
 

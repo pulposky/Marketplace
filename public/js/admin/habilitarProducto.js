@@ -74,12 +74,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const checkbox = tarjeta.querySelector('.check-habilitar');
 
             if (isNaN(nuevaCantidad) || nuevaCantidad < 0) {
-                alert('Ingresa una cantidad válida');
+                toast('advertencia', 'Ingresa una cantidad válida');
                 return;
             }
 
             // Si es huevo, multiplico por 30 para enviar unidades reales a la BD
             const cantidadEnviar = esHuevo ? nuevaCantidad * 30 : nuevaCantidad;
+
+            const nombreProducto = tarjeta.dataset.nombre || 'este producto';
+            const confirmar = confirm(`¿Deseas actualizar la cantidad de "${nombreProducto}" a ${nuevaCantidad}?`);
+            if (!confirmar) {
+                toast('info', 'Cambios cancelados.');
+                return;
+            }
 
             try {
                 const response = await fetch(`/api/admin/productos/limite-venta/${idProducto}`, {
@@ -96,11 +103,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     tarjeta.dataset.estado = data.estado;
                     if (checkbox) checkbox.checked = (data.estado === 'activo');
                 } else {
-                    alert(data.error || 'Error al actualizar la cantidad');
+                    toast('error', data.error || 'Error al actualizar la cantidad');
                 }
             } catch (error) {
                 console.error(error);
-                alert('Error de conexión con el servidor');
+                toast('error', 'Error de conexión con el servidor');
             }
         });
     });
@@ -122,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.checked && cantidad <= 0) {
                 e.preventDefault();
                 e.target.checked = false;
-                alert('No puedes habilitar un producto con cantidad 0 o vacía. Ingresa una cantidad válida primero.');
+                toast('advertencia', 'No puedes habilitar un producto con cantidad 0 o vacía. Ingresa una cantidad válida primero.');
                 
                 if (inputCantidad) inputCantidad.focus();
                 return;

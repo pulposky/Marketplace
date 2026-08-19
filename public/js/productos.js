@@ -238,17 +238,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const esHuevo = formularioApartado.dataset.esHuevo === 'true';
 
             if (!idVal) {
-                alert('Error: No se ha detectado la ID del producto.');
+                toast('error', 'Error: No se ha detectado la ID del producto.');
                 return;
             }
 
             if (cantidadVal > limiteMax) {
-                alert(`No puedes apartar más de la cantidad disponible (${limiteMax}).`);
+                toast('advertencia', `No puedes apartar más de la cantidad disponible (${limiteMax}).`);
                 return;
             }
 
             if (cantidadVal <= 0) {
-                alert('La cantidad a apartar debe ser mayor a 0.');
+                toast('advertencia', 'La cantidad a apartar debe ser mayor a 0.');
                 return;
             }
 
@@ -289,9 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 200);
                 } else if (respuestaApartar.status === 401) {
                     if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                    alert(datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
+                    toast('advertencia', datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
                 } else {
-                    alert(datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
+                    toast('error', datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
                 }
             } catch (error) {
                 console.error('Error al apartar producto:', error);
