@@ -7,13 +7,58 @@
     <link rel="stylesheet" href="/css/admin/mainAdmin.css" />
 </head>
 <body>
+
+    <!-- TOAST DE NOTIFICACIÓN
+         Aparece fijo en la esquina superior derecha cuando llega
+         una notificación nueva. Se desliza desde fuera de la pantalla
+         y se oculta solo después de 5 segundos. Tiene un botón X
+         para cerrarlo manualmente. -->
+    <div class="toast-notificacion" id="toastNotificacion">
+        <div class="toast-icono">🔔</div>
+        <div class="toast-contenido">
+            <strong class="toast-titulo"></strong>
+            <p class="toast-mensaje"></p>
+        </div>
+        <button class="toast-cerrar">&times;</button>
+    </div>
+
     <main class="admin-panel">
         <header class="admin-header">
-            <h1>Panel de Administración</h1>
-            <p>Bienvenido, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong></p>
-            <p>Estado de sesión: <span class="rol-badge"><%= usuario.role %></span></p>
+            <div class="header-izquierda">
+                <h1>Panel de Administración</h1>
+                <p>Bienvenido, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong></p>
+                <p>Estado de sesión: <span class="rol-badge"><%= usuario.role %></span></p>
+            </div>
+
+            <!-- CAMPANA DE NOTIFICACIONES
+                 Botón con ícono de campana y badge rojo que muestra
+                 cuántas notificaciones hay sin leer. Al hacer click
+                 se abre un dropdown con la lista de notificaciones.
+                 El JavaScript (mainAdmin.js) hace polling cada 10
+                 segundos al endpoint /api/admin/notificaciones. -->
+            <div class="campana-contenedor" id="campanaContenedor">
+                <button class="campana-boton" id="campanaBoton" title="Notificaciones">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="campana-badge" id="campanaBadge">0</span>
+                </button>
+                <div class="campana-dropdown" id="campanaDropdown">
+                    <div class="dropdown-header">
+                        <span>Notificaciones</span>
+                        <button class="btn-marcar-todas" id="btnMarcarTodas">Marcar todo leído</button>
+                    </div>
+                    <div class="dropdown-lista" id="dropdownLista">
+                        <p class="dropdown-vacio">Sin notificaciones nuevas</p>
+                    </div>
+                </div>
+            </div>
         </header>
 
+        <!-- SECCIÓN DE CARDS -->
+        <!-- Cada card describe una funcionalidad del panel admin.
+             Son informativas, no tienen botón propio. -->
         <section class="admin-content">
             <article class="admin-card">
                 <h2>Gestión de Productos</h2>
@@ -30,11 +75,15 @@
             </article>
         </section>
 
+        <!-- BOTONES DE ACCIÓN -->
+        <!-- Links a las diferentes secciones del admin y logout -->
         <nav class="admin-actions">
             <a href="/admin/habilitar-producto" class="btn-principal">Habilitar Producto</a>
             <a href="/admin/pedidos" class="btn-secundario">Ver Pedidos</a>
             <a href="/logout" class="btn-danger">Cerrar Sesión</a>
         </nav>
     </main>
+
+    <script src="/js/admin/mainAdmin.js"></script>
 </body>
 </html>

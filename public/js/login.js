@@ -1,8 +1,22 @@
-// Login.js controla el inicio de sesión desde los modales de la vista.
-// Se usa en main.ejs y productos.ejs para autenticar al usuario.
+// =============================================
+// LOGIN - JAVASCRIPT COMPARTIDO
+// =============================================
+// Función para procesar el login desde los modales.
+// Se usa tanto en main.ejs como en productos.ejs.
+//
+// Soporta dos tipos de payload:
+//   - { documento } → login de cliente
+//   - { usuario, password } → login de admin/aprendiz
+//
+// Muestra mensajes de error o éxito en el
+// elemento #mensaje del modal.
+// =============================================
+
+// Variable global para guardar el último resultado del login
+// (por si otro script necesita acceder a ella)
 window.resultadoLoginUltimo = null;
 
-// payload: { documento }  OR { usuario, password }
+// Recibe el payload, hace POST a /login, y muestra el resultado
 async function procesarLogin(payload) {
     const etiquetaMensaje = document.getElementById('mensaje');
 
@@ -18,6 +32,7 @@ async function procesarLogin(payload) {
         window.resultadoLoginUltimo = datos;
 
         if (datos.ok) {
+            // Login exitoso: limpio el mensaje de error si existía
             if (etiquetaMensaje) {
                 etiquetaMensaje.style.display = 'none';
                 etiquetaMensaje.textContent = '';
@@ -25,11 +40,14 @@ async function procesarLogin(payload) {
             }
             return datos;
         } else {
+            // Login fallido: muestro el mensaje de error
+            // Color naranja si el campo está vacío, rojo si las credenciales son incorrectas
             if (etiquetaMensaje) {
                 etiquetaMensaje.style.display = 'block';
                 etiquetaMensaje.textContent = datos.mensaje;
                 etiquetaMensaje.className = datos.tipo === 'vacio' ? 'mensaje-error mensaje-naranja' : 'mensaje-error mensaje-rojo';
             }
+            // Limpio los campos de entrada
             const docInput = document.getElementById('doc');
             const pwdInput = document.getElementById('pwd');
             const userInput = document.getElementById('user');
@@ -39,6 +57,7 @@ async function procesarLogin(payload) {
             return datos;
         }
     } catch (error) {
+        // Error de red o del servidor
         console.error('Error en login:', error);
         if (etiquetaMensaje) {
             etiquetaMensaje.style.display = 'block';

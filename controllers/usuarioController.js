@@ -1,12 +1,21 @@
+// =============================================
+// CONTROLADOR DE USUARIOS
+// =============================================
+// Maneja el login y logout de usuarios.
+// Soporta dos tipos de login:
+//   1. Por usuario + password (admin/aprendiz)
+//   2. Por documento (clientes)
+// La sesión se guarda en req.session y el rol
+// se determina buscando en la BD.
+// =============================================
+
 const UsuarioModel = require('../model/usuariosModel');
 
-// Controladores para la gestión de usuario y sesión del marketplace.
-
 const loginUsuarioController = async (req, res) => {
-    // Recibe los datos enviados desde el formulario de login
+    // Extraigo los campos del body, puede venir usuario+password o solo documento
     const { documento, usuario, password } = req.body;
 
-    // Si se intentó login como 'usuario' (campo usuario + password)
+    // ----- LOGIN POR USUARIO (admin / aprendiz) -----
     if (usuario) {
         if (!password) {
             return res.json({ ok: false, tipo: 'vacio', mensaje: 'El campo password no puede estar vacío' });
@@ -19,7 +28,8 @@ const loginUsuarioController = async (req, res) => {
             }
 
             const usuarioBD = registros[0];
-            // Determinar rol con campos comunes de la tabla usuarios
+
+            // Determino el rol: primero miro la columna 'role', luego 'rol', y también 'is_admin'
             let role = 'usuario';
             const roleCampo = usuarioBD.role ? String(usuarioBD.role).trim().toLowerCase() : '';
             const rolAlternativo = usuarioBD.rol ? String(usuarioBD.rol).trim().toLowerCase() : '';
@@ -29,6 +39,7 @@ const loginUsuarioController = async (req, res) => {
             if (['aprendiz', 'apprentice'].includes(roleValue)) role = 'aprendiz';
             if (usuarioBD.is_admin === 1 || usuarioBD.is_admin === '1') role = 'admin';
 
+            // Guardo los datos del usuario en la sesión
             req.session.usuario = {
                 id: usuarioBD.id,
                 usuario: usuarioBD.usuario,
@@ -36,7 +47,7 @@ const loginUsuarioController = async (req, res) => {
                 role
             };
 
-            // Si es admin o aprendiz, redirigir al área admin
+            // Si es admin o aprendiz, le digo al frontend que redirija al panel admin
             if (role === 'admin' || role === 'aprendiz') {
                 return res.json({ ok: true, mensaje: 'Login correcto', redirect: '/admin' });
             }
@@ -48,7 +59,7 @@ const loginUsuarioController = async (req, res) => {
         }
     }
 
-    // Si no es 'usuario', intentamos login como cliente por documento
+    // ----- LOGIN POR DOCUMENTO (clientes) -----
     if (!documento) {
         return res.json({ ok: false, tipo: 'vacio', mensaje: 'El campo documento no puede estar vacío' });
     }
@@ -61,6 +72,7 @@ const loginUsuarioController = async (req, res) => {
         }
 
         const clienteBD = resultado[0];
+        // Guardo los datos del cliente en la sesión con rol de cliente
         req.session.usuario = {
             id: clienteBD.id,
             documento: clienteBD.documento,
@@ -75,8 +87,8 @@ const loginUsuarioController = async (req, res) => {
     }
 };
 
+// Cierra la sesión y limpia la cookie
 const logoutUsuarioController = (req, res) => {
-    // Destruye la sesión y limpia la cookie del navegador
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).send('Error al cerrar sesión');

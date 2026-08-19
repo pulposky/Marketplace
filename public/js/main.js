@@ -1,13 +1,28 @@
+// =============================================
+// PÁGINA PRINCIPAL - JAVASCRIPT
+// =============================================
 // Script de la página principal del marketplace.
-// Controla los modales de login y apartado, la verificación de sesión y el envío de apartados.
+// Controla los modales de login y apartado, la
+// verificación de sesión y el envío de apartados.
+//
+// Cuando un usuario quiere apartar un producto:
+//   1. Se abre el modal de apartado
+//   2. Si no está logueado, se abre el modal de login
+//   3. Se envía el apartado a la API
+//   4. Se recarga la página
+// =============================================
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Referencias a los modales
     const ventanaApartar = document.getElementById('modalApartarProducto');
     const ventanaLogin = document.getElementById('modalLogin');
 
+    // Botones para cerrar los modales
     const botonCerrarApartar = document.getElementById('cerrarModalProducto');
     const botonCerrarLogin = document.getElementById('cerrarModal');
     const botonAbrirLogin = document.getElementById('abrirModalLogin');
 
+    // Elementos del modal de apartado
     const textoNombreProducto = document.getElementById('apartarNombreProducto');
     const textoPrecioProducto = document.getElementById('apartarPrecioProducto');
     const campoIdProducto = document.getElementById('apartarProductoId');
@@ -16,19 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const formularioLogin = document.getElementById('formLogin');
     const imagenApartar = document.getElementById('apartarImagenProducto');
 
+    // -----------------------------------------------
+    // ABRIR MODAL DE APARTADO
+    // -----------------------------------------------
+    // Llena los datos del producto en el modal y lo muestra
     function mostrarVentanaApartado(datosProducto) {
         if (textoNombreProducto) textoNombreProducto.textContent = datosProducto.nombre || '';
         if (textoPrecioProducto) textoPrecioProducto.textContent = datosProducto.precio || '';
         if (campoIdProducto) campoIdProducto.value = datosProducto.id || '';
 
-        // CONFIGURAR EL INPUT DE CANTIDAD CON EL LÍMITE
+        // Configuro el input de cantidad con el límite disponible
         if (inputCantidadApartar) {
             const limite = parseInt(datosProducto.limite) || 0;
             inputCantidadApartar.value = limite > 0 ? 1 : 0;
             inputCantidadApartar.min = limite > 0 ? 1 : 0;
-            inputCantidadApartar.max = limite; // Se establece el máximo según el stock/límite disponible
+            inputCantidadApartar.max = limite;
         }
 
+        // Muestro u oculto la imagen del producto
         if (imagenApartar) {
             if (datosProducto.imagen) {
                 imagenApartar.src = datosProducto.imagen;
@@ -44,6 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ventanaApartar) ventanaApartar.style.display = 'flex';
     }
 
+    // -----------------------------------------------
+    // VERIFICAR SI HAY SESIÓN ACTIVA
+    // -----------------------------------------------
     async function verificarSesion() {
         try {
             const respuestaSesion = await fetch('/api/verificar-sesion');
@@ -54,13 +77,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // -----------------------------------------------
+    // BOTONES DE "APARTAR" EN CADA PRODUCTO
+    // -----------------------------------------------
+    // Cuando hago click en un botón de apartar, abro el modal
+    // con los datos de ese producto específico
     document.querySelectorAll('.btn-accion-apartar').forEach(botonApartar => {
         botonApartar.addEventListener('click', () => {
             const idObtenido = botonApartar.dataset.id || botonApartar.getAttribute('data-id');
             const nombreObtenido = botonApartar.dataset.nombre || botonApartar.getAttribute('data-nombre');
             const precioObtenido = botonApartar.dataset.precio || botonApartar.getAttribute('data-precio');
             const imgObtenida = botonApartar.dataset.imagen || botonApartar.getAttribute('data-imagen');
-            // EXTRAEMOS EL LÍMITE/CANTIDAD DESDE EL BOTÓN
             const limiteObtenido = botonApartar.dataset.limite || botonApartar.getAttribute('data-limite');
 
             mostrarVentanaApartado({
@@ -68,13 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 nombre: nombreObtenido,
                 precio: precioObtenido,
                 imagen: imgObtenida,
-                limite: limiteObtenido // PASSING LIMITE TO THE FUNCTION
+                limite: limiteObtenido
             });
         });
     });
 
+    // -----------------------------------------------
+    // FORMULARIO DE LOGIN (DENTRO DEL MODAL)
+    // -----------------------------------------------
     if (formularioLogin) {
-        // Mostrar/ocultar campos según tipo de login
+        // Muestro/oculto campos según si es login de cliente o usuario
         const tipoCliente = document.getElementById('tipo_cliente');
         const tipoUsuario = document.getElementById('tipo_usuario');
         const clienteFields = document.getElementById('clienteFields');
@@ -93,9 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (tipoCliente) tipoCliente.addEventListener('change', actualizarCampos);
         if (tipoUsuario) tipoUsuario.addEventListener('change', actualizarCampos);
-        // Inicializar estado
-        actualizarCampos();
+        actualizarCampos(); // Estado inicial
 
+        // Envío del formulario de login
         formularioLogin.addEventListener('submit', async (evento) => {
             evento.preventDefault();
             const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
@@ -110,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const resultado = await procesarLogin(payload);
             if (resultado && resultado.ok) {
+                // Si es admin/aprendiz, redirijo al panel; si no, recargo la página
                 if (resultado.redirect) {
                     window.location.href = resultado.redirect;
                     return;
@@ -119,6 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // -----------------------------------------------
+    // FORMULARIO DE APARTADO
+    // -----------------------------------------------
+    // Valida los datos, verifica la sesión, y envía el apartado
     if (formularioApartado) {
         formularioApartado.addEventListener('submit', async (evento) => {
             evento.preventDefault();
@@ -138,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Si no está logueado, abro el modal de login
             const estadoSesion = await verificarSesion();
             if (!estadoSesion.login) {
                 if (ventanaLogin) ventanaLogin.style.display = 'flex';
@@ -181,6 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // -----------------------------------------------
+    // ABRIR / CERRAR MODALES
+    // -----------------------------------------------
     if (botonAbrirLogin && ventanaLogin) {
         botonAbrirLogin.addEventListener('click', () => {
             ventanaLogin.style.display = 'flex';
@@ -190,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (botonCerrarApartar) botonCerrarApartar.addEventListener('click', () => ventanaApartar.style.display = 'none');
     if (botonCerrarLogin) botonCerrarLogin.addEventListener('click', () => ventanaLogin.style.display = 'none');
 
+    // Si hago click afuera del modal (en el overlay), se cierra
     window.addEventListener('click', (evento) => {
         if (evento.target === ventanaApartar) ventanaApartar.style.display = 'none';
         if (evento.target === ventanaLogin) ventanaLogin.style.display = 'none';

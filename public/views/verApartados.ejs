@@ -45,8 +45,12 @@
 
                     // 4. Calcular el total acumulado real a pagar
                     const totalPagar = esHuevo ? cubetas * precioCubeta : cantidadHuevosUnidades * precioUnitarioReal;
+
+                    // 5. Estado del apartado
+                    const estadoApartado = item.estado_apartado || 'pendiente';
+                    const esFinalizado = estadoApartado === 'confirmado' || estadoApartado === 'cancelado';
                     %>
-                    <div class="tarjeta-producto" id="apartado-<%= item.id_apartado %>">
+                    <div class="tarjeta-producto" id="apartado-<%= item.id_apartado %>" data-estado="<%= estadoApartado %>">
                         <div class="imagen-producto">
                             <% if (item.imagenUpload) { %>
                                 <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
@@ -55,8 +59,8 @@
                                         <%= item.nombre %>
                                     </span>
                                     <% } %>
-                                        <span class="badge-estado <%= (item.estado || 'activo').toLowerCase() %>">
-                                            <%= item.estado || 'Activo' %>
+                                        <span class="badge-estado <%= estadoApartado %>">
+                                            <%= estadoApartado === 'confirmado' ? 'Confirmado' : estadoApartado === 'cancelado' ? 'Cancelado' : 'Pendiente' %>
                                         </span>
                         </div>
 
@@ -89,10 +93,17 @@
                             Total: $<%= totalPagar.toLocaleString("es-CO") %>
                         </div>
 
-                        <button type="button" class="btn-cancelar btn-accion-cancelar"
-                            data-id="<%= item.id_apartado %>">
-                            Cancelar Apartado
-                        </button>
+                        <% if (esFinalizado) { %>
+                            <button type="button" class="btn-dismiss btn-dismiss-<%= estadoApartado %>"
+                                data-id="<%= item.id_apartado %>">
+                                Eliminar
+                            </button>
+                        <% } else { %>
+                            <button type="button" class="btn-cancelar btn-accion-cancelar"
+                                data-id="<%= item.id_apartado %>">
+                                Cancelar Apartado
+                            </button>
+                        <% } %>
                     </div>
                     <% }) %>
             </div>

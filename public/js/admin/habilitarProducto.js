@@ -1,4 +1,17 @@
+// =============================================
+// HABILITAR PRODUCTO - JAVASCRIPT
+// =============================================
+// Maneja la vista de gestión de productos del admin.
+// Permite buscar/filtrar productos, cambiar la cantidad
+// a vender, y habilitar/deshabilitar productos con
+// un switch. Los cambios se guardan directo en la BD.
+//
+// Maneja la conversión de cubetas de huevos (x30)
+// para que en la BD se guarden unidades reales.
+// =============================================
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Referencias a los filtros del DOM
     const inputBuscar = document.querySelector('.campo-busqueda input');
     const selectEstado = document.querySelector('.ordenar-por select');
     const chkDisponibles = document.getElementById('filtro-disponibles');
@@ -6,7 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnFiltrar = document.querySelector('.boton-filtrar');
     const tarjetas = document.querySelectorAll('.tarjeta-producto');
 
-    // Filtrado local en la vista
+    // -----------------------------------------------
+    // FILTRADO LOCAL DE PRODUCTOS
+    // -----------------------------------------------
+    // Filtra las tarjetas según la búsqueda, el estado
+    // seleccionado y si se quieren disponibles/agotados
     function aplicarFiltros() {
         const busqueda = inputBuscar ? inputBuscar.value.trim().toLowerCase() : '';
         const estadoSeleccionado = selectEstado ? selectEstado.value : 'todos';
@@ -21,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const coincideNombre = nombre.includes(busqueda);
             let coincideEstado = estadoSeleccionado === 'todos' || estado === estadoSeleccionado;
 
+            // Filtro por cantidad: disponibles (> 0) o agotados (=== 0)
             let coincideCantidad = true;
             if (soloDisponibles && !soloAgotados) {
                 coincideCantidad = cantidad > 0;
@@ -36,15 +54,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Asigno los eventos de filtrado
     if (inputBuscar) inputBuscar.addEventListener('input', aplicarFiltros);
     if (selectEstado) selectEstado.addEventListener('change', aplicarFiltros);
     if (btnFiltrar) btnFiltrar.addEventListener('click', aplicarFiltros);
 
-    // Cambiar la cantidad a vender (Guardado en BD)
+    // -----------------------------------------------
+    // CAMBIAR CANTIDAD A VENDER
+    // -----------------------------------------------
+    // Cuando el admin cambia la cantidad de un producto,
+    // hago PATCH a la API con la nueva cantidad.
+    // Si es huevo, multiplico por 30 antes de enviar a la BD.
     document.querySelectorAll('.campo-cantidad').forEach(input => {
         input.addEventListener('change', async (e) => {
             const idProducto = e.target.dataset.id;
-            const esHuevo = e.target.dataset.esHuevo === 'true'; // Verificamos si es cubeta
+            const esHuevo = e.target.dataset.esHuevo === 'true';
             const nuevaCantidad = parseInt(e.target.value, 10);
             const tarjeta = e.target.closest('.tarjeta-producto');
             const checkbox = tarjeta.querySelector('.check-habilitar');
@@ -54,19 +78,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Conversión: Si es huevo multiplicamos x 30, sino, enviamos la cantidad normal
+            // Si es huevo, multiplico por 30 para enviar unidades reales a la BD
             const cantidadEnviar = esHuevo ? nuevaCantidad * 30 : nuevaCantidad;
 
             try {
                 const response = await fetch(`/api/admin/productos/limite-venta/${idProducto}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cantidad: cantidadEnviar }) // Enviamos el valor ya calculado
+                    body: JSON.stringify({ cantidad: cantidadEnviar })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
+                    // Actualizo los atributos data de la tarjeta para que los filtros funcionen
                     tarjeta.dataset.cantidad = data.limite;
                     tarjeta.dataset.estado = data.estado;
                     if (checkbox) checkbox.checked = (data.estado === 'activo');
@@ -80,32 +105,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Switch manual de estado (Guardado en BD)
+    // -----------------------------------------------
+    // SWITCH DE HABILITAR / DESHABILITAR
+    // -----------------------------------------------
+    // Cuando el admin cambia el switch de estado de un producto,
+    // verifico que no esté intentando activar con cantidad 0.
     document.querySelectorAll('.check-habilitar').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const idProducto = e.target.dataset.id;
-            // Buscamos el input de cantidad correspondiente al mismo producto
             const inputCantidad = document.querySelector(`.campo-cantidad[data-id="${idProducto}"]`);
             
-            const esHuevo = inputCantidad?.dataset.esHuevo === 'true'; // Verificamos si es cubeta
+            const esHuevo = inputCantidad?.dataset.esHuevo === 'true';
             const cantidad = Number(inputCantidad?.value || 0);
 
-            // Si intenta marcar 'activo' pero la cantidad es 0 o menor (evaluando lo que se ve en pantalla)
+            // No permito activar un producto con cantidad 0
             if (e.target.checked && cantidad <= 0) {
                 e.preventDefault();
-                e.target.checked = false; // Desmarcamos el checkbox de nuevo
+                e.target.checked = false;
                 alert('No puedes habilitar un producto con cantidad 0 o vacía. Ingresa una cantidad válida primero.');
                 
-                // Opcional: poner el foco en el campo de cantidad para que lo corrija
                 if (inputCantidad) inputCantidad.focus();
                 return;
             }
 
-            // Conversión: Si la función actualizarEstadoProducto necesita la cantidad para la BD
             const cantidadEnviar = esHuevo ? cantidad * 30 : cantidad;
 
-            // Aquí continúa tu lógica actual para enviar el cambio de estado al servidor mediante fetch
-            // Enviamos 'cantidadEnviar' (unidades reales) en lugar de 'cantidad' (cubetas)
+            // Llamo a la función que hace el PATCH (si existe)
             if (typeof actualizarEstadoProducto === 'function') {
                 actualizarEstadoProducto(idProducto, e.target.checked ? 'activo' : 'inactivo', cantidadEnviar);
             } else {

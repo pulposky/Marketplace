@@ -158,6 +158,18 @@ body {
     border: 1px solid #a7f3d0;
 }
 
+.badge-estado.pendiente {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.badge-estado.confirmado {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
 .badge-estado.cancelado {
     background-color: #fee2e2;
     color: #991b1b;
@@ -203,6 +215,44 @@ body {
 
 .btn-cancelar:hover {
     background-color: #b91c1c;
+}
+
+/* BOTÓN DISMISS (confirmado/cancelado) */
+.btn-dismiss {
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.btn-dismiss:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.btn-dismiss-confirmado {
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.btn-dismiss-confirmado:hover {
+    background-color: #d1fae5;
+}
+
+.btn-dismiss-cancelado {
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.btn-dismiss-cancelado:hover {
+    background-color: #fee2e2;
 }
 
 /* ESTADO VACÍO */

@@ -373,3 +373,154 @@ body {
         width: 100%;
     }
 }
+
+/* ========== CARRITO ANIMADO ========== */
+.carrito-fijo {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 64px;
+    height: 64px;
+    background-color: #006837;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 104, 55, 0.35);
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.carrito-fijo.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.carrito-fijo svg {
+    width: 30px;
+    height: 30px;
+}
+
+/* El carrito recorre toda la pantalla de izquierda a derecha */
+@keyframes carritoRecorrer {
+    0% {
+        left: 30px;
+        transform: rotate(0deg);
+    }
+    15% {
+        transform: rotate(-8deg);
+    }
+    30% {
+        transform: rotate(5deg);
+    }
+    50% {
+        transform: rotate(-3deg);
+    }
+    70% {
+        transform: rotate(2deg);
+    }
+    85% {
+        transform: rotate(-4deg);
+    }
+    100% {
+        left: calc(100vw + 80px);
+        transform: rotate(0deg);
+    }
+}
+
+.carrito-fijo.andando {
+    animation: carritoRecorrer 1.8s cubic-bezier(0.4, 0, 0.1, 1) forwards;
+}
+
+/* ========== BOLA VOLADORA (ESTRELLA) ========== */
+.bola-voladora {
+    position: fixed;
+    width: 28px;
+    height: 28px;
+    z-index: 10001;
+    pointer-events: none;
+    opacity: 1;
+    transition: left 1s linear, top 1s linear;
+}
+
+.bola-voladora::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
+    background: #fffbe6;
+    clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 57%,
+        79% 91%, 50% 70%, 21% 91%, 32% 57%,
+        2% 35%, 39% 35%
+    );
+    filter: drop-shadow(0 0 6px #ffe066) drop-shadow(0 0 12px #ffaa00);
+}
+
+/* Cola / estela de la estrella */
+.bola-voladora::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: -30px;
+    width: 40px;
+    height: 8px;
+    background: linear-gradient(to left, rgba(255, 230, 100, 0.9), rgba(255, 170, 0, 0.4), transparent);
+    border-radius: 50%;
+    filter: blur(2px);
+}
+
+/* Partículas que salen de la bola durante el vuelo */
+.particula {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 1;
+    animation: partivolar 0.6s ease-out forwards;
+}
+
+@keyframes partivolar {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--px), var(--py)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* ========== EXPLOSIÓN ========== */
+.explosion {
+    position: fixed;
+    z-index: 10002;
+    pointer-events: none;
+}
+
+.explosion-particula {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: explosolar 0.7s ease-out forwards;
+}
+
+@keyframes explosolar {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--ex), var(--ey)) scale(0);
+        opacity: 0;
+    }
+}
