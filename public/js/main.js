@@ -13,6 +13,69 @@
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // -----------------------------------------------
+    // CARRUSEL DE IMÁGENES
+    // -----------------------------------------------
+    const carruselContenedor = document.getElementById('carruselContenedor');
+    const carruselBtnIzq = document.getElementById('carruselBtnIzq');
+    const carruselBtnDer = document.getElementById('carruselBtnDer');
+    const carruselIndicadores = document.getElementById('carruselIndicadores');
+
+    if (carruselContenedor) {
+        const diapositivas = carruselContenedor.querySelectorAll('.carrusel-diapositiva');
+        const puntos = carruselIndicadores ? carruselIndicadores.querySelectorAll('.carrusel-punto') : [];
+        let indiceActual = 0;
+        let temporizadorCarrusel;
+
+        function mostrarDiapositiva(index) {
+            diapositivas.forEach(d => d.classList.remove('activa'));
+            puntos.forEach(p => p.classList.remove('activo'));
+            diapositivas[index].classList.add('activa');
+            if (puntos[index]) puntos[index].classList.add('activo');
+            indiceActual = index;
+        }
+
+        function siguienteDiapositiva() {
+            mostrarDiapositiva((indiceActual + 1) % diapositivas.length);
+        }
+
+        function anteriorDiapositiva() {
+            mostrarDiapositiva((indiceActual - 1 + diapositivas.length) % diapositivas.length);
+        }
+
+        function iniciarTemporizador() {
+            detenerTemporizador();
+            temporizadorCarrusel = setInterval(siguienteDiapositiva, 10000);
+        }
+
+        function detenerTemporizador() {
+            if (temporizadorCarrusel) clearInterval(temporizadorCarrusel);
+        }
+
+        if (carruselBtnDer) {
+            carruselBtnDer.addEventListener('click', () => {
+                siguienteDiapositiva();
+                iniciarTemporizador();
+            });
+        }
+
+        if (carruselBtnIzq) {
+            carruselBtnIzq.addEventListener('click', () => {
+                anteriorDiapositiva();
+                iniciarTemporizador();
+            });
+        }
+
+        puntos.forEach(punto => {
+            punto.addEventListener('click', () => {
+                mostrarDiapositiva(parseInt(punto.dataset.index));
+                iniciarTemporizador();
+            });
+        });
+
+        iniciarTemporizador();
+    }
+
     // Referencias a los modales
     const ventanaApartar = document.getElementById('modalApartarProducto');
     const ventanaLogin = document.getElementById('modalLogin');

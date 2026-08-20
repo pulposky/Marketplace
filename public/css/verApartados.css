@@ -1,3 +1,36 @@
+:root {
+    /* Paleta Oficial SENA 2024 */
+    --verde-sena: #39A900;
+    --verde-oscuro: #006837;
+    --violeta: #71277B;
+    --azul-oscuro: #003B4C;
+    --azul-claro: #00A1DE;
+    --amarillo: #FFD100;
+    
+    /* Neutros */
+    --blanco: #FFFFFF;
+    --gris-claro: #F2F2F2;
+    --negro: #000000;
+    --texto-primario: #1E1E1E;
+    --texto-secundario: #555555;
+    --borde: #E5E7EB;
+
+    /* Estados */
+    --rojo-cancelar: #DC2626;
+    --rojo-cancelar-hover: #B91C1C;
+    --fondo-rojo: #FEE2E2;
+    --borde-rojo: #FCA5A5;
+    --texto-rojo: #991B1B;
+
+    --fondo-amarillo: #FEF3C7;
+    --borde-amarillo: #FCD34D;
+    --texto-amarillo: #92400E;
+
+    --fondo-verde: #D1FAE5;
+    --borde-verde: #A7F3D0;
+    --texto-verde: #065F46;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -6,21 +39,24 @@
 }
 
 body {
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--gris-claro);
+    color: var(--texto-primario);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* HEADER Y BOTÓN REGRESAR */
+/* ============================
+    HEADER Y BOTÓN REGRESAR
+============================ */
 .header-catalogo {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: var(--blanco);
+    border-bottom: 3px solid var(--verde-sena);
     padding: 12px 24px;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .contenedor-header {
@@ -32,8 +68,8 @@ body {
 }
 
 .marca-catalogo span {
-    font-weight: 700;
-    color: #0f5132;
+    font-weight: 800;
+    color: var(--verde-oscuro);
     letter-spacing: 0.5px;
 }
 
@@ -42,24 +78,26 @@ body {
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    color: #374151;
+    color: var(--verde-oscuro);
     font-weight: 600;
     font-size: 0.9rem;
-    background-color: #f9fafb;
+    background-color: var(--blanco);
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--verde-sena);
     transition: all 0.2s ease;
 }
 
 .btn-regresar:hover {
-    background-color: #0f5132;
-    color: #ffffff;
-    border-color: #0f5132;
+    background-color: var(--verde-oscuro);
+    color: var(--blanco);
+    border-color: var(--verde-oscuro);
     transform: translateX(-3px);
 }
 
-/* CONTENEDOR PRINCIPAL */
+/* ============================
+    CONTENEDOR PRINCIPAL
+============================ */
 .contenedor-principal {
     width: 100%;
     max-width: 1200px;
@@ -79,17 +117,22 @@ body {
 .titulo-catalogo {
     font-size: 1.6rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--verde-oscuro);
     letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--verde-sena);
+    padding-bottom: 4px;
+    display: inline-block;
 }
 
 .subtitulo-seccion {
     font-size: 0.9rem;
-    color: #6b7280;
+    color: var(--texto-secundario);
     margin-top: 4px;
 }
 
-/* REJILLA Y TARJETAS DE PRODUCTO / APARTADO */
+/* ============================
+    REJILLA Y TARJETAS
+============================ */
 .rejilla-productos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -97,10 +140,10 @@ body {
 }
 
 .tarjeta-producto {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 12px;
     padding: 16px;
-    background-color: #ffffff;
+    background-color: var(--blanco);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -109,14 +152,15 @@ body {
 
 .tarjeta-producto:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 10px 20px rgba(0, 104, 55, 0.1);
+    border-color: var(--verde-sena);
 }
 
 .imagen-producto {
     width: 100%;
     min-height: 120px;
     max-height: 160px;
-    background-color: #f3f4f6;
+    background-color: var(--gris-claro);
     border-radius: 12px;
     overflow: hidden;
     display: flex;
@@ -134,13 +178,14 @@ body {
 }
 
 .imagen-producto span {
-    color: #374151;
+    color: var(--texto-secundario);
     font-size: 0.85rem;
     text-align: center;
     padding: 0 10px;
     line-height: 1.2;
 }
 
+/* BADGES DE ESTADO */
 .badge-estado {
     position: absolute;
     top: 8px;
@@ -153,33 +198,33 @@ body {
 }
 
 .badge-estado.activo {
-    background-color: #d1fae5;
-    color: #0f5132;
-    border: 1px solid #a7f3d0;
+    background-color: var(--fondo-verde);
+    color: var(--verde-oscuro);
+    border: 1px solid var(--borde-verde);
 }
 
 .badge-estado.pendiente {
-    background-color: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fcd34d;
+    background-color: var(--fondo-amarillo);
+    color: var(--texto-amarillo);
+    border: 1px solid var(--borde-amarillo);
 }
 
 .badge-estado.confirmado {
-    background-color: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
+    background-color: var(--fondo-verde);
+    color: var(--texto-verde);
+    border: 1px solid #6EE7B7;
 }
 
 .badge-estado.cancelado {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
+    background-color: var(--fondo-rojo);
+    color: var(--texto-rojo);
+    border: 1px solid var(--borde-rojo);
 }
 
 .nombre-producto {
     font-size: 0.95rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--texto-primario);
     line-height: 1.3;
     margin-bottom: 4px;
     text-transform: uppercase;
@@ -187,25 +232,27 @@ body {
 
 .presentacion-producto {
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--texto-secundario);
     margin-bottom: 4px;
 }
 
 .precio-producto {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #0f5132;
+    color: var(--verde-oscuro);
     margin-bottom: 12px;
 }
 
-/* BOTÓN DE CANCELAR */
+/* ============================
+    ACCIONES Y BOTONES
+============================ */
 .btn-cancelar {
-    background-color: #dc2626;
-    color: #ffffff;
+    background-color: var(--rojo-cancelar);
+    color: var(--blanco);
     text-align: center;
     padding: 10px 0;
     border-radius: 20px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
     border: none;
@@ -214,10 +261,9 @@ body {
 }
 
 .btn-cancelar:hover {
-    background-color: #b91c1c;
+    background-color: var(--rojo-cancelar-hover);
 }
 
-/* BOTÓN DISMISS (confirmado/cancelado) */
 .btn-dismiss {
     width: 100%;
     text-align: center;
@@ -226,56 +272,60 @@ body {
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    border: 1px solid #d1d5db;
-    background-color: #f9fafb;
-    color: #6b7280;
+    border: 1px solid var(--borde);
+    background-color: var(--blanco);
+    color: var(--texto-secundario);
     transition: all 0.2s ease;
 }
 
 .btn-dismiss:hover {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
+    background-color: var(--gris-claro);
+    border-color: #9CA3AF;
 }
 
 .btn-dismiss-confirmado {
-    border-color: #a7f3d0;
-    color: #065f46;
+    border-color: var(--borde-verde);
+    color: var(--texto-verde);
 }
 
 .btn-dismiss-confirmado:hover {
-    background-color: #d1fae5;
+    background-color: var(--fondo-verde);
 }
 
 .btn-dismiss-cancelado {
-    border-color: #fca5a5;
-    color: #991b1b;
+    border-color: var(--borde-rojo);
+    color: var(--texto-rojo);
 }
 
 .btn-dismiss-cancelado:hover {
-    background-color: #fee2e2;
+    background-color: var(--fondo-rojo);
 }
 
-/* ESTADO VACÍO */
+/* ============================
+    ESTADO VACÍO
+============================ */
 .estado-vacio {
     text-align: center;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    background-color: var(--blanco);
+    border: 1px solid var(--borde);
+    border-top: 4px solid var(--verde-sena);
     border-radius: 12px;
     padding: 40px 20px;
     max-width: 480px;
     margin: 40px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .estado-vacio h3 {
     font-size: 1.25rem;
-    font-weight: 700;
-    color: #111827;
+    font-weight: 800;
+    color: var(--verde-oscuro);
     margin-bottom: 8px;
 }
 
 .estado-vacio p {
     font-size: 0.9rem;
-    color: #6b7280;
+    color: var(--texto-secundario);
     margin-bottom: 20px;
 }
 
@@ -283,21 +333,23 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 20px;
+    padding: 10px 22px;
     border-radius: 20px;
-    background-color: #0f5132;
-    color: #ffffff;
+    background-color: var(--verde-sena);
+    color: var(--blanco);
     font-weight: 700;
     font-size: 0.85rem;
     text-decoration: none;
-    transition: background-color 0.2s ease;
-    box-shadow: 0 4px 10px rgba(15, 81, 50, 0.2);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(57, 169, 0, 0.25);
 }
 
 .btn-explorar:hover {
-    background-color: #0b3d26;
+    background-color: var(--verde-oscuro);
+    transform: translateY(-1px);
 }
 
+/* RESPONSIVE */
 @media (max-width: 850px) {
     .encabezado-seccion {
         flex-direction: column;

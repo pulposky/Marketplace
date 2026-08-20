@@ -305,12 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Si es huevo, multiplico por 30 para enviar unidades reales a la BD
-            const cantidadAEnviar = esHuevo ? cantidadVal * 30 : cantidadVal;
-
             const datosApartado = {
                 productoId: idVal,
-                cantidad: cantidadAEnviar
+                cantidad: cantidadVal
             };
 
             try {

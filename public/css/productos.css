@@ -1,3 +1,21 @@
+:root {
+    /* Paleta Oficial SENA 2024 */
+    --verde-sena: #39A900;
+    --verde-oscuro: #006837;
+    --violeta: #71277B;
+    --azul-oscuro: #003B4C;
+    --azul-claro: #00A1DE;
+    --amarillo: #FFD100;
+    
+    /* Neutros */
+    --blanco: #FFFFFF;
+    --gris-claro: #F2F2F2;
+    --negro: #000000;
+    --texto-primario: #1E1E1E;
+    --texto-secundario: #555555;
+    --borde: #E5E7EB;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -6,22 +24,24 @@
 }
 
 body {
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--gris-claro);
+    color: var(--texto-primario);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-
-/* HEADER Y BOTÓN REGRESAR */
+/* ============================
+    HEADER Y BOTÓN REGRESAR
+============================ */
 .header-catalogo {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: var(--blanco);
+    border-bottom: 3px solid var(--verde-sena);
     padding: 12px 24px;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .contenedor-header {
@@ -37,35 +57,50 @@ body {
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    color: #374151;
+    color: var(--verde-oscuro);
     font-weight: 600;
     font-size: 0.9rem;
-    background-color: #f9fafb;
+    background-color: var(--blanco);
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--verde-sena);
     transition: all 0.2s ease;
 }
 
 .btn-regresar:hover {
-    background-color: #0f5132;
-    color: #ffffff;
-    border-color: #0f5132;
+    background-color: var(--verde-oscuro);
+    color: var(--blanco);
+    border-color: var(--verde-oscuro);
     transform: translateX(-3px);
 }
 
+.btn-iniciar-sesion {
+    background-color: var(--amarillo);
+    color: var(--negro);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
 .btn-iniciar-sesion:hover {
-    background-color: #0b3d26;
+    background-color: var(--verde-sena);
+    color: var(--blanco);
     transform: translateY(-1px);
 }
 
 .marca-catalogo span {
-    font-weight: 700;
-    color: #0f5132;
+    font-weight: 800;
+    color: var(--verde-oscuro);
     letter-spacing: 0.5px;
 }
 
-/* CONTENEDOR PRINCIPAL */
+/* ============================
+    CONTENEDOR PRINCIPAL
+============================ */
 .contenedor-principal {
     width: 100%;
     max-width: 1200px;
@@ -85,11 +120,15 @@ body {
 .titulo-catalogo {
     font-size: 1.6rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--verde-oscuro);
     letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--verde-sena);
+    padding-bottom: 4px;
 }
 
-/* BARRA SUPERIOR (BUSCADOR Y FILTROS) */
+/* ============================
+    BARRA SUPERIOR (BUSCADOR Y FILTROS)
+============================ */
 .barra-superior {
     display: flex;
     gap: 12px;
@@ -109,10 +148,12 @@ body {
     gap: 8px;
     cursor: pointer;
     font-size: 14px;
+    color: var(--texto-secundario);
 }
 
 .opcion-categoria input[type="checkbox"] {
     cursor: pointer;
+    accent-color: var(--verde-sena);
 }
 
 .campo-busqueda input {
@@ -120,30 +161,38 @@ body {
     height: 40px;
     padding: 0 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde);
     outline: none;
     font-size: 0.9rem;
-    background-color: #ffffff;
-    transition: border-color 0.2s;
+    background-color: var(--blanco);
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .campo-busqueda input:focus {
-    border-color: #0f5132;
+    border-color: var(--verde-sena);
+    box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.2);
 }
 
 .ordenar-por select {
     height: 40px;
     padding: 0 14px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde);
     outline: none;
     font-size: 0.85rem;
-    background-color: #ffffff;
+    background-color: var(--blanco);
     cursor: pointer;
-    color: #4b5563;
+    color: var(--texto-secundario);
+    transition: border-color 0.2s;
 }
 
-/* CONTENIDO EN DOS COLUMNAS */
+.ordenar-por select:focus {
+    border-color: var(--verde-sena);
+}
+
+/* ============================
+    CONTENIDO EN DOS COLUMNAS
+============================ */
 .contenido-principal {
     display: grid;
     grid-template-columns: 240px 1fr;
@@ -153,8 +202,9 @@ body {
 
 /* PANEL LATERAL (FILTROS) */
 .panel-lateral {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    background-color: var(--blanco);
+    border: 1px solid var(--borde);
+    border-top: 4px solid var(--verde-sena);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -163,13 +213,13 @@ body {
 .titulo-categoria {
     font-weight: 700;
     font-size: 1rem;
-    color: #1f2937;
+    color: var(--verde-oscuro);
     margin-bottom: 8px;
 }
 
 .linea-divisora {
     height: 1px;
-    background-color: #e5e7eb;
+    background-color: var(--borde);
     margin-bottom: 15px;
 }
 
@@ -182,31 +232,37 @@ body {
 
 .item-filtro {
     font-size: 0.9rem;
-    color: #4b5563;
+    color: var(--texto-secundario);
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
 }
 
+.item-filtro input[type="checkbox"] {
+    accent-color: var(--verde-sena);
+}
+
 .boton-filtrar {
     width: 100%;
     height: 38px;
-    background-color: #006837; 
-    color: #ffffff;
+    background-color: var(--verde-oscuro); 
+    color: var(--blanco);
     border: none;
     border-radius: 20px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .boton-filtrar:hover {
-    background-color: #0b3d26;
+    background-color: var(--verde-sena);
 }
 
-/* TARJETAS Y REJILLA DE PRODUCTOS */
+/* ============================
+    TARJETAS Y REJILLA DE PRODUCTOS
+============================ */
 .rejilla-productos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -214,10 +270,10 @@ body {
 }
 
 .tarjeta-producto {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 12px;
     padding: 16px;
-    background-color: #ffffff;
+    background-color: var(--blanco);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -226,14 +282,15 @@ body {
 
 .tarjeta-producto:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 10px 20px rgba(0, 104, 55, 0.1);
+    border-color: var(--verde-sena);
 }
 
 .imagen-producto {
     width: 100%;
     min-height: 120px;
     max-height: 160px;
-    background-color: #f3f4f6;
+    background-color: var(--gris-claro);
     border-radius: 12px;
     overflow: hidden;
     display: flex;
@@ -251,7 +308,7 @@ body {
 }
 
 .imagen-producto span {
-    color: #374151;
+    color: var(--texto-secundario);
     font-size: 0.85rem;
     text-align: center;
     padding: 0 10px;
@@ -261,7 +318,7 @@ body {
 .nombre-producto {
     font-size: 0.95rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--texto-primario);
     line-height: 1.3;
     margin-bottom: 4px;
     text-transform: uppercase;
@@ -269,24 +326,24 @@ body {
 
 .presentacion-producto {
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--texto-secundario);
     margin-bottom: 8px;
 }
 
 .precio-producto {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #006837;
+    color: var(--verde-oscuro);
     margin-bottom: 12px;
 }
 
 .boton-apartar {
-    background-color: #006837;
-    color: #ffffff;
+    background-color: var(--verde-sena);
+    color: var(--blanco);
     text-align: center;
     padding: 10px 0;
     border-radius: 20px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
     border: none;
@@ -295,10 +352,12 @@ body {
 }
 
 .boton-apartar:hover {
-    background-color: #0b3d26;
+    background-color: var(--verde-oscuro);
 }
 
-/* ESTILOS DEL MODAL */
+/* ============================
+    ESTILOS DEL MODAL
+============================ */
 .modal-fondo {
     display: none;
     position: fixed;
@@ -306,20 +365,21 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.65);
+    background-color: rgba(0, 59, 76, 0.65);
     z-index: 2000;
     justify-content: center;
     align-items: center;
 }
 
 .modal-contenido {
-    background-color: #ffffff;
+    background-color: var(--blanco);
     border-radius: 12px;
     padding: 30px 25px;
     width: 90%;
     max-width: 420px;
     position: relative;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    border-top: 5px solid var(--verde-sena);
     animation: abrirModal 0.25s ease-out;
 }
 
@@ -338,8 +398,12 @@ body {
     right: 18px;
     font-size: 26px;
     font-weight: bold;
-    color: #888;
+    color: var(--texto-secundario);
     cursor: pointer;
+}
+
+.cerrar-modal:hover {
+    color: var(--negro);
 }
 
 @keyframes abrirModal {
@@ -353,7 +417,9 @@ body {
     }
 }
 
-/* RESPONSIVE */
+/* ============================
+    RESPONSIVE
+============================ */
 @media (max-width: 850px) {
     .contenido-principal {
         grid-template-columns: 1fr;
@@ -374,20 +440,22 @@ body {
     }
 }
 
-/* ========== CARRITO ANIMADO ========== */
+/* ============================
+    CARRITO ANIMADO Y EFECTOS
+============================ */
 .carrito-fijo {
     position: fixed;
     bottom: 30px;
     left: 30px;
     width: 64px;
     height: 64px;
-    background-color: #006837;
-    color: #ffffff;
+    background-color: var(--verde-oscuro);
+    color: var(--blanco);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 20px rgba(0, 104, 55, 0.35);
+    box-shadow: 0 4px 20px rgba(0, 104, 55, 0.4);
     z-index: 9999;
     pointer-events: none;
     opacity: 0;
@@ -405,7 +473,6 @@ body {
     height: 30px;
 }
 
-/* El carrito recorre toda la pantalla de izquierda a derecha */
 @keyframes carritoRecorrer {
     0% {
         left: 30px;
@@ -436,7 +503,7 @@ body {
     animation: carritoRecorrer 1.8s cubic-bezier(0.4, 0, 0.1, 1) forwards;
 }
 
-/* ========== BOLA VOLADORA (ESTRELLA) ========== */
+/* BOLA VOLADORA (ESTRELLA) */
 .bola-voladora {
     position: fixed;
     width: 28px;
@@ -454,16 +521,15 @@ body {
     left: 0;
     width: 28px;
     height: 28px;
-    background: #fffbe6;
+    background: #FFFBE6;
     clip-path: polygon(
         50% 0%, 61% 35%, 98% 35%, 68% 57%,
         79% 91%, 50% 70%, 21% 91%, 32% 57%,
         2% 35%, 39% 35%
     );
-    filter: drop-shadow(0 0 6px #ffe066) drop-shadow(0 0 12px #ffaa00);
+    filter: drop-shadow(0 0 6px var(--amarillo)) drop-shadow(0 0 12px #FF8C00);
 }
 
-/* Cola / estela de la estrella */
 .bola-voladora::after {
     content: '';
     position: absolute;
@@ -471,12 +537,12 @@ body {
     left: -30px;
     width: 40px;
     height: 8px;
-    background: linear-gradient(to left, rgba(255, 230, 100, 0.9), rgba(255, 170, 0, 0.4), transparent);
+    background: linear-gradient(to left, rgba(255, 209, 0, 0.9), rgba(57, 169, 0, 0.4), transparent);
     border-radius: 50%;
     filter: blur(2px);
 }
 
-/* Partículas que salen de la bola durante el vuelo */
+/* PARTICULAS Y EXPLOSIÓN */
 .particula {
     position: fixed;
     width: 6px;
@@ -499,7 +565,6 @@ body {
     }
 }
 
-/* ========== EXPLOSIÓN ========== */
 .explosion {
     position: fixed;
     z-index: 10002;
