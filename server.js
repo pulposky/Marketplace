@@ -4,7 +4,7 @@
 // Este es el archivo que arranca todo el servidor.
 // Acá cargo las variables de entorno, configuro
 // Express con sus middlewares, las sesiones y
-//最后 levanto el servidor en el puerto que diga el .env
+// levanto el servidor en el puerto que diga el .env
 // =============================================
 console.clear();
 
