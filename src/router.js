@@ -10,6 +10,8 @@
 
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 
 const ViewController = require('../controllers/viewController');
 const ProductoController = require('../controllers/productosController');
@@ -120,6 +122,22 @@ router.get('/api/verificar-sesion', (req, res) => {
         return res.json({ login: true });
     }
     res.json({ login: false });
+});
+
+// API pública: imágenes del carrusel (lee la carpeta img/carrusel dinámicamente)
+router.get('/api/carrusel-imagenes', (req, res) => {
+    const carpetaCarrusel = path.join(__dirname, '..', 'public', 'img', 'carrusel');
+    const extensionesValidas = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
+    fs.readdir(carpetaCarrusel, (error, archivos) => {
+        if (error) {
+            return res.json([]);
+        }
+        const imagenes = archivos
+            .filter(archivo => extensionesValidas.includes(path.extname(archivo).toLowerCase()))
+            .sort();
+        res.json(imagenes);
+    });
 });
 
 // API pública: lista de productos en JSON (la usa el catálogo)

@@ -14,24 +14,38 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
-    // CARRUSEL DE IMÁGENES
+    // CARRUSEL DE IMÁGENES (dinámico desde /api/carrusel-imagenes)
     // -----------------------------------------------
     const carruselContenedor = document.getElementById('carruselContenedor');
-    const carruselBtnIzq = document.getElementById('carruselBtnIzq');
-    const carruselBtnDer = document.getElementById('carruselBtnDer');
-    const carruselIndicadores = document.getElementById('carruselIndicadores');
 
-    if (carruselContenedor) {
+    async function cargarCarrusel() {
+        try {
+            const respuesta = await fetch('/api/carrusel-imagenes');
+            const imagenes = await respuesta.json();
+
+            if (!Array.isArray(imagenes) || imagenes.length === 0) return;
+
+            imagenes.forEach((imagen, i) => {
+                const diapositiva = document.createElement('div');
+                diapositiva.className = 'carrusel-diapositiva' + (i === 0 ? ' activa' : '');
+                diapositiva.innerHTML = `<img src="/img/carrusel/${imagen}" alt="Imagen ${i + 1}">`;
+                carruselContenedor.appendChild(diapositiva);
+            });
+
+            iniciarCarrusel();
+        } catch (error) {
+            console.error('Error al cargar imágenes del carrusel:', error);
+        }
+    }
+
+    function iniciarCarrusel() {
         const diapositivas = carruselContenedor.querySelectorAll('.carrusel-diapositiva');
-        const puntos = carruselIndicadores ? carruselIndicadores.querySelectorAll('.carrusel-punto') : [];
         let indiceActual = 0;
         let temporizadorCarrusel;
 
         function mostrarDiapositiva(index) {
             diapositivas.forEach(d => d.classList.remove('activa'));
-            puntos.forEach(p => p.classList.remove('activo'));
             diapositivas[index].classList.add('activa');
-            if (puntos[index]) puntos[index].classList.add('activo');
             indiceActual = index;
         }
 
@@ -45,36 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function iniciarTemporizador() {
             detenerTemporizador();
-            temporizadorCarrusel = setInterval(siguienteDiapositiva, 10000);
+            temporizadorCarrusel = setInterval(siguienteDiapositiva, 2000);
         }
 
         function detenerTemporizador() {
             if (temporizadorCarrusel) clearInterval(temporizadorCarrusel);
         }
 
-        if (carruselBtnDer) {
-            carruselBtnDer.addEventListener('click', () => {
-                siguienteDiapositiva();
-                iniciarTemporizador();
-            });
-        }
-
-        if (carruselBtnIzq) {
-            carruselBtnIzq.addEventListener('click', () => {
-                anteriorDiapositiva();
-                iniciarTemporizador();
-            });
-        }
-
-        puntos.forEach(punto => {
-            punto.addEventListener('click', () => {
-                mostrarDiapositiva(parseInt(punto.dataset.index));
-                iniciarTemporizador();
-            });
-        });
-
         iniciarTemporizador();
     }
+
+    cargarCarrusel();
 
     // Referencias a los modales
     const ventanaApartar = document.getElementById('modalApartarProducto');
