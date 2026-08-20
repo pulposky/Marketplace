@@ -1,0 +1,271 @@
+/* =============================================
+   ESTILOS DE HISTÓRICOS / ESTADÍSTICAS
+   ============================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f6f8;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* HEADER */
+.header-catalogo {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.contenedor-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-regresar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background-color: #f9fafb;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #d1d5db;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-regresar:hover {
+    background-color: #0f5132;
+    color: #ffffff;
+    border-color: #0f5132;
+    transform: translateX(-3px);
+}
+
+.marca-catalogo {
+    font-size: 1rem;
+}
+
+.marca-catalogo span {
+    font-weight: 700;
+    color: #0f5132;
+    letter-spacing: 0.5px;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.contenedor-principal {
+    width: 100%;
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 20px 40px 20px;
+}
+
+/* ========== TARJETAS RESUMEN ========== */
+.resumen-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.resumen-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.resumen-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.resumen-icono {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.resumen-ventas .resumen-icono {
+    background: #d1fae5;
+    color: #0f5132;
+}
+
+.resumen-clientes .resumen-icono {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.resumen-visitas .resumen-icono {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.resumen-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.resumen-valor {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.1;
+}
+
+.resumen-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* ========== GRÁFICOS ========== */
+.graficos-fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.grafico-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px;
+    min-width: 0;
+}
+
+.grafico-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 2px;
+}
+
+.grafico-subtitulo {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+.grafico-contenedor {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+
+.grafico-contenedor-circular {
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========== RESPONSIVE TABLETS ========== */
+@media (max-width: 900px) {
+    .resumen-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .graficos-fila {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .grafico-contenedor {
+        height: 260px;
+    }
+}
+
+/* ========== RESPONSIVE CELULARES ========== */
+@media (max-width: 600px) {
+    .header-catalogo {
+        padding: 10px 14px;
+    }
+
+    .contenedor-header {
+        gap: 10px;
+    }
+
+    .marca-catalogo {
+        font-size: 0.85rem;
+    }
+
+    .btn-regresar {
+        font-size: 0.78rem;
+        padding: 6px 12px;
+    }
+
+    .contenedor-principal {
+        padding: 0 12px 24px 12px;
+        margin: 14px auto;
+    }
+
+    .resumen-card {
+        padding: 16px 18px;
+        gap: 12px;
+    }
+
+    .resumen-icono {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    .resumen-icono svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .resumen-valor {
+        font-size: 1.4rem;
+    }
+
+    .resumen-label {
+        font-size: 0.78rem;
+    }
+
+    .grafico-card {
+        padding: 16px;
+    }
+
+    .grafico-card h3 {
+        font-size: 0.95rem;
+    }
+
+    .grafico-contenedor {
+        height: 220px;
+    }
+
+    .grafico-contenedor-circular {
+        height: 240px;
+    }
+}

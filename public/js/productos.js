@@ -187,6 +187,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
+    // FORMULARIO DE LOGIN (DENTRO DEL MODAL)
+    // -----------------------------------------------
+    if (formularioLogin) {
+        const tipoCliente = document.getElementById('tipo_cliente');
+        const tipoUsuario = document.getElementById('tipo_usuario');
+        const clienteFields = document.getElementById('clienteFields');
+        const usuarioFields = document.getElementById('usuarioFields');
+
+        function actualizarCampos() {
+            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
+            if (tipo === 'cliente') {
+                if (clienteFields) clienteFields.style.display = 'block';
+                if (usuarioFields) usuarioFields.style.display = 'none';
+            } else {
+                if (clienteFields) clienteFields.style.display = 'none';
+                if (usuarioFields) usuarioFields.style.display = 'block';
+            }
+        }
+
+        if (tipoCliente) tipoCliente.addEventListener('change', actualizarCampos);
+        if (tipoUsuario) tipoUsuario.addEventListener('change', actualizarCampos);
+        actualizarCampos();
+
+        formularioLogin.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
+
+            let payload = {};
+            if (tipo === 'cliente') {
+                payload.documento = document.getElementById('doc')?.value || '';
+            } else {
+                payload.usuario = document.getElementById('user')?.value || '';
+                payload.password = document.getElementById('pwd')?.value || '';
+            }
+
+            const resultado = await procesarLogin(payload);
+            if (resultado && resultado.ok) {
+                if (resultado.redirect) {
+                    window.location.href = resultado.redirect;
+                    return;
+                }
+                window.location.reload();
+            }
+        });
+    }
+
+    // -----------------------------------------------
     // VERIFICAR SESIÓN
     // -----------------------------------------------
     async function verificarSesion() {

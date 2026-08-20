@@ -42,6 +42,10 @@ app.use(session({
     }
 }));
 
+// Registro de visitas para las estadísticas
+const contarVisita = require('./middleware/contadorVisitas');
+app.use(contarVisita);
+
 // Cargo todas las rutas del proyecto
 const misRutas = require('./src/router');
 app.use('/', misRutas);

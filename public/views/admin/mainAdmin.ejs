@@ -10,10 +10,10 @@
 <body>
 
     <!-- TOAST DE NOTIFICACIÓN
-         Aparece fijo en la esquina superior derecha cuando llega
-         una notificación nueva. Se desliza desde fuera de la pantalla
-         y se oculta solo después de 5 segundos. Tiene un botón X
-         para cerrarlo manualmente. -->
+        Aparece fijo en la esquina superior derecha cuando llega
+        una notificación nueva. Se desliza desde fuera de la pantalla
+        y se oculta solo después de 5 segundos. Tiene un botón X
+        para cerrarlo manualmente. -->
     <div class="toast-notificacion" id="toastNotificacion">
         <div class="toast-icono">🔔</div>
         <div class="toast-contenido">
@@ -74,6 +74,13 @@
                     Revisa el historial, el estado de las entregas y el detalle de cada compra realizada en la plataforma.
                 </p>
             </article>
+
+            <article class="admin-card">
+                <h2>Históricos y Estadísticas</h2>
+                <p>
+                    Visualiza gráficos de productos más vendidos, clientes que más compran, visitas a la página y más.
+                </p>
+            </article>
         </section>
 
         <!-- BOTONES DE ACCIÓN -->
@@ -81,6 +88,7 @@
         <nav class="admin-actions">
             <a href="/admin/habilitar-producto" class="btn-principal">Habilitar Producto</a>
             <a href="/admin/pedidos" class="btn-secundario">Ver Pedidos</a>
+            <a href="/admin/historicos" class="btn-secundario">Históricos</a>
             <a href="/logout" class="btn-danger">Cerrar Sesión</a>
         </nav>
     </main>

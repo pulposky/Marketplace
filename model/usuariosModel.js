@@ -71,7 +71,7 @@ const UsuarioModel = {
     existeDocumento: (documento) => {
         return new Promise((resuelta, rechazada) => {
             conexion.query(
-                'SELECT id FROM clientes WHERE documento = ?',
+                'SELECT * FROM clientes WHERE documento = ?',
                 [documento],
                 (error, registros) => {
                     if (error) {

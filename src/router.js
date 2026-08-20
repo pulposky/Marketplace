@@ -15,6 +15,7 @@ const ViewController = require('../controllers/viewController');
 const ProductoController = require('../controllers/productosController');
 const ProductoModel = require('../model/productoModel');
 const UsuarioController = require('../controllers/usuarioController');
+const HistoricosController = require('../controllers/historicosController');
 const protegerRuta = require('../middleware/verificarUsuario');
 
 // -----------------------------------------------
@@ -42,6 +43,7 @@ router.get('/verApartados', protegerRuta, ViewController.mostrarVerApartados);
 router.get('/admin', protegerRuta, ViewController.mostrarMainAdmin);
 router.get('/admin/habilitar-producto', protegerRuta, ViewController.mostrarHabilitarProducto);
 router.get('/admin/pedidos', protegerRuta, ViewController.mostrarPedidos);
+router.get('/admin/historicos', protegerRuta, HistoricosController.mostrarHistoricos);
 
 // -----------------------------------------------
 // API DE PRODUCTOS (admin)
@@ -125,5 +127,15 @@ router.get('/api/productos', ProductoController.obtenerTodos);
 
 // API protegida: crear un apartado nuevo
 router.post('/api/apartar-producto', protegerRuta, ProductoController.apartarProducto);
+
+// -----------------------------------------------
+// API DE HISTÓRICOS / ESTADÍSTICAS (admin)
+// -----------------------------------------------
+router.get('/api/admin/historicos/productos', protegerRuta, HistoricosController.apiProductosMasVendidos);
+router.get('/api/admin/historicos/clientes', protegerRuta, HistoricosController.apiClientesQueMasCompran);
+router.get('/api/admin/historicos/estados', protegerRuta, HistoricosController.apiPedidosPorEstado);
+router.get('/api/admin/historicos/ventas-dia', protegerRuta, HistoricosController.apiVentasPorDia);
+router.get('/api/admin/historicos/visitas-dia', protegerRuta, HistoricosController.apiVisitasPorDia);
+router.get('/api/admin/historicos/rutas', protegerRuta, HistoricosController.apiVisitasPorRuta);
 
 module.exports = router;
