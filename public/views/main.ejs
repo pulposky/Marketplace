@@ -76,27 +76,45 @@
                         <div class="detalles-estadistica">
                             <span class="titulo-estadistica">Productos disponibles</span>
                             <h3 class="valor-estadistica"></h3>
-                            Ver catálogo
-                            <img class="catalogoimg" src="/img/catalogo.png" alt="">
+                            Explorar productos
+                            <svg class="icono-estadistica" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <rect x="2" y="2" width="44" height="44" rx="12" fill="#39A900"/>
+                                <path d="M14 17l10-5 10 5-10 5-10-5z" fill="#fff"/>
+                                <path d="M14 24l10 5 10-5M14 31l10 5 10-5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </div>
                     </div>
                 </a>
                 <% if (usuario) { %>
-                    <div class="tarjeta-estadistica">
-                        <div class="detalles-estadistica requiere-login">
-                            <span class="titulo-estadistica">Apartados activos</span>
-                            <h3 class="valor-estadistica"></h3>
-                            <a href="/verApartados" class="enlace-estadistica enlace-protegido">Ver mis apartados</a>
-                        </div>
-                    </div>
-                    <% } %>
+                    <a class="enlace-estadistica navegacion" href="/verApartados">
                         <div class="tarjeta-estadistica">
                             <div class="detalles-estadistica requiere-login">
-                                <span class="titulo-estadistica">Ofertas activas</span>
+                                <span class="titulo-estadistica">Apartados activos</span>
                                 <h3 class="valor-estadistica"></h3>
-                                <a href="#" class="enlace-estadistica enlace-protegido">Ver ofertas</a>
+                                Ver mis apartados
+                                <svg class="icono-estadistica" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <rect x="2" y="2" width="44" height="44" rx="12" fill="#00A1DE"/>
+                                    <path d="M17 13h14a2 2 0 0 1 2 2v20l-9-5-9 5V15a2 2 0 0 1 2-2z" fill="#fff"/>
+                                </svg>
                             </div>
                         </div>
+                    </a>
+                    <% } %>
+                        <a class="enlace-estadistica navegacion" href="#">
+                            <div class="tarjeta-estadistica">
+                                <div class="detalles-estadistica requiere-login">
+                                    <span class="titulo-estadistica">Ofertas activas</span>
+                                    <h3 class="valor-estadistica"></h3>
+                                    Ver ofertas
+                                    <svg class="icono-estadistica" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <rect x="2" y="2" width="44" height="44" rx="12" fill="#8E44AD"/>
+                                        <g transform="translate(12 12)">
+                                            <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" fill="#fff"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                        </a>
             </div>
 
             <!-- SECCIÓN PRODUCTOS DESTACADOS -->

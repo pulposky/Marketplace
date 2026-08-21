@@ -33,10 +33,16 @@ router.post('/registro', UsuarioController.registroUsuarioController);
 // RUTAS DE VISTAS PÚBLICAS Y PRIVADAS
 // -----------------------------------------------
 // La página principal ("/") y el catálogo ("/catalogo") son públicos
-// verApartados solo lo puede ver un usuario logueado
+// verApartados solo lo puede ver un usuario logueado; si no,
+// lo regreso al catálogo con el modal de login abierto (?login=1)
 router.get('/', ViewController.mostrarMain);
 router.get('/catalogo', ViewController.mostrarCatalogo);
-router.get('/verApartados', protegerRuta, ViewController.mostrarVerApartados);
+router.get('/verApartados', (req, res, next) => {
+    if (!req.session || !req.session.usuario) {
+        return res.redirect('/catalogo?login=1');
+    }
+    next();
+}, ViewController.mostrarVerApartados);
 
 // -----------------------------------------------
 // RUTAS DEL PANEL ADMIN

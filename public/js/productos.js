@@ -39,116 +39,204 @@ document.addEventListener('DOMContentLoaded', () => {
     // Guardo el botón que abrió el modal para la animación del carrito
     let botonOrigenActual = null;
 
+    // Bandera: si el usuario quiso ver sus apartados sin sesión,
+    // tras loguearse lo llevo directo a /verApartados
+    let irApartadosTrasLogin = false;
+
+    // -----------------------------------------------
+    // CARRITO FIJO (ESQUINA INFERIOR DERECHA)
+    // -----------------------------------------------
+    // Visible desde que se entra al catálogo. Al hacer
+    // clic lleva a mis apartados; si no hay sesión, abre
+    // el login y después de loguearse redirige solo.
+    async function irAMisApartados() {
+        const estadoSesion = await verificarSesion();
+        if (estadoSesion.login) {
+            window.location.href = '/verApartados';
+            return;
+        }
+        irApartadosTrasLogin = true;
+        if (ventanaLogin) ventanaLogin.style.display = 'flex';
+        toast('info', 'Inicia sesión para ver tus apartados.');
+    }
+
+    if (carritoAnimado) {
+        carritoAnimado.classList.add('visible');
+        carritoAnimado.addEventListener('click', irAMisApartados);
+        carritoAnimado.addEventListener('keydown', (evento) => {
+            if (evento.key === 'Enter' || evento.key === ' ') {
+                evento.preventDefault();
+                irAMisApartados();
+            }
+        });
+    }
+
+    // Si llegaron redirigidos desde /verApartados sin sesión (?login=1),
+    // abro el modal de login directamente y limpio la URL
+    const parametrosUrl = new URLSearchParams(window.location.search);
+    if (parametrosUrl.get('login') === '1') {
+        irApartadosTrasLogin = true;
+        if (ventanaLogin) ventanaLogin.style.display = 'flex';
+        toast('advertencia', 'Inicia sesión para ver tus apartados.');
+        window.history.replaceState({}, '', '/catalogo');
+    }
+
     // -----------------------------------------------
     // ANIMACIÓN DEL CARRITO DE COMPRAS
     // -----------------------------------------------
-    // Colores aleatorios para las partículas de la explosión
-    const COLORES_ESTRELLA = ['#ffe066', '#ffaa00', '#ff8800', '#ffcc33', '#ffffff', '#ff6600', '#ffee88'];
+    // Paleta del proyecto para el confeti
+    const COLORES_CONFETI = ['#39A900', '#00A1DE', '#F5A623', '#8E44AD', '#FFD700', '#FFFFFF'];
 
-    // Crea partículas pequeñas que salen volando desde una posición
-    function crearParticulas(x, y, contenedor) {
-        const cantidad = 3 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < cantidad; i++) {
-            const p = document.createElement('div');
-            p.className = 'particula';
-            p.style.left = (x - 3) + 'px';
-            p.style.top = (y - 3) + 'px';
-            p.style.backgroundColor = COLORES_ESTRELLA[Math.floor(Math.random() * COLORES_ESTRELLA.length)];
-            // Ángulo y distancia aleatorios para que cada partícula vaya en una dirección
-            const angulo = Math.random() * Math.PI * 2;
-            const dist = 15 + Math.random() * 25;
-            p.style.setProperty('--px', Math.cos(angulo) * dist + 'px');
-            p.style.setProperty('--py', Math.sin(angulo) * dist + 'px');
-            (contenedor || document.body).appendChild(p);
-            setTimeout(() => p.remove(), 600);
+    // Hace volar la imagen del producto en un arco suave hasta el carrito.
+    // Devuelve una promesa que se resuelve cuando el producto "llega".
+    function volarProductoHaciaCarrito(origenX, origenY, imagenSrc) {
+        return new Promise((resolver) => {
+            const rectCarrito = carritoAnimado.getBoundingClientRect();
+            const destinoX = rectCarrito.left + rectCarrito.width / 2;
+            const destinoY = rectCarrito.top + rectCarrito.height / 2;
+
+            const volador = document.createElement('div');
+            volador.className = 'producto-volador';
+            if (imagenSrc) {
+                const imagen = document.createElement('img');
+                imagen.src = imagenSrc;
+                imagen.alt = '';
+                volador.appendChild(imagen);
+            } else {
+                volador.innerHTML =
+                    '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<path d="M21 8l-9-5-9 5v10l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v10"/>' +
+                    '</svg>';
+            }
+            document.body.appendChild(volador);
+
+            // Punto de control del arco: elevado sobre la línea recta origen→destino
+            const controlX = (origenX + destinoX) / 2;
+            const controlY = Math.min(origenY, destinoY) - Math.max(160, Math.abs(destinoX - origenX) * 0.25);
+
+            const duracion = 800;
+            const inicio = performance.now();
+
+            function paso(now) {
+                const t = Math.min((now - inicio) / duracion, 1);
+                const facilidad = t * t; // ease-in: acelera como si cayera al carrito
+
+                // Curva bezier cuadrática
+                const x = (1 - facilidad) * (1 - facilidad) * origenX +
+                    2 * (1 - facilidad) * facilidad * controlX +
+                    facilidad * facilidad * destinoX;
+                const y = (1 - facilidad) * (1 - facilidad) * origenY +
+                    2 * (1 - facilidad) * facilidad * controlY +
+                    facilidad * facilidad * destinoY;
+
+                const escala = 1 - 0.45 * facilidad;
+                volador.style.transform =
+                    `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${escala}) rotate(${facilidad * 200}deg)`;
+
+                if (t < 1) {
+                    requestAnimationFrame(paso);
+                } else {
+                    volador.remove();
+                    resolver();
+                }
+            }
+            requestAnimationFrame(paso);
+        });
+    }
+
+    // Rebote squash & stretch del carrito al recibir el producto
+    function rebotarCarrito() {
+        carritoAnimado.classList.remove('recibiendo');
+        void carritoAnimado.offsetWidth; // reinicia la animación si estaba corriendo
+        carritoAnimado.classList.add('recibiendo');
+        setTimeout(() => carritoAnimado.classList.remove('recibiendo'), 650);
+    }
+
+    // Anillo que se expande desde el carrito
+    function crearOnda(x, y) {
+        const onda = document.createElement('div');
+        onda.className = 'onda-carrito';
+        onda.style.left = x + 'px';
+        onda.style.top = y + 'px';
+        document.body.appendChild(onda);
+        setTimeout(() => onda.remove(), 750);
+    }
+
+    // Badge "+N" que flota hacia arriba desde el carrito
+    function crearBadgeCantidad(x, y, cantidad) {
+        const badge = document.createElement('div');
+        badge.className = 'badge-apartado';
+        badge.textContent = '+' + cantidad;
+        badge.style.left = x + 'px';
+        badge.style.top = (y - 44) + 'px';
+        document.body.appendChild(badge);
+        setTimeout(() => badge.remove(), 950);
+    }
+
+    // Confeti sutil que salta y cae alrededor del carrito
+    function crearConfeti(x, y) {
+        for (let i = 0; i < 10; i++) {
+            const pieza = document.createElement('div');
+            pieza.className = 'confeti-apartado';
+            pieza.style.left = x + 'px';
+            pieza.style.top = y + 'px';
+            pieza.style.backgroundColor = COLORES_CONFETI[i % COLORES_CONFETI.length];
+            const angulo = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.2;
+            const distancia = 45 + Math.random() * 55;
+            pieza.style.setProperty('--cx', (Math.cos(angulo) * distancia) + 'px');
+            pieza.style.setProperty('--cy', (Math.sin(angulo) * distancia + 70) + 'px');
+            document.body.appendChild(pieza);
+            setTimeout(() => pieza.remove(), 1100);
         }
     }
 
-    // Crea una explosión más grande (16 partículas) en el destino
-    function crearExplosion(x, y) {
-        const cont = document.createElement('div');
-        cont.className = 'explosion';
-        cont.style.left = x + 'px';
-        cont.style.top = y + 'px';
-        const colores = ['#ffe066', '#ffaa00', '#ff8800', '#ffffff', '#ffcc33', '#ff6600', '#ffee88', '#ffd700'];
-        for (let i = 0; i < 16; i++) {
-            const p = document.createElement('div');
-            p.className = 'explosion-particula';
-            p.style.backgroundColor = colores[i % colores.length];
-            const angulo = (Math.PI * 2 / 16) * i + (Math.random() * 0.3);
-            const dist = 40 + Math.random() * 50;
-            p.style.setProperty('--ex', Math.cos(angulo) * dist + 'px');
-            p.style.setProperty('--ey', Math.sin(angulo) * dist + 'px');
-            cont.appendChild(p);
-        }
-        document.body.appendChild(cont);
-        setTimeout(() => cont.remove(), 700);
-    }
+    // Secuencia completa al confirmar un apartado:
+    // vuelo → rebote del carrito → onda + badge + confeti
+    async function animarApartado(botonOrigen, cantidadApartada) {
+        if (!carritoAnimado) return;
 
-    // Animación completa: bola voladora → explosión → carrito se mueve → recarga
-    function animarCarrito(botonOrigen) {
-        if (!botonOrigen || !carritoAnimado) return;
-
-        const rectBoton = botonOrigen.getBoundingClientRect();
-        const rectCarrito = carritoAnimado.getBoundingClientRect();
-
-        const origenX = rectBoton.left + rectBoton.width / 2;
-        const origenY = rectBoton.top + rectBoton.height / 2;
-        const destinoX = rectCarrito.left + rectCarrito.width / 2;
-        const destinoY = rectCarrito.top + rectCarrito.height / 2;
-
-        // 1. Muestro el carrito
         carritoAnimado.classList.add('visible');
 
-        // 2. Creo la bola que va a volar desde el botón hasta el carrito
-        const bola = document.createElement('div');
-        bola.className = 'bola-voladora';
-        bola.style.left = (origenX - 14) + 'px';
-        bola.style.top = (origenY - 14) + 'px';
-        document.body.appendChild(bola);
+        let origenX = window.innerWidth / 2;
+        let origenY = window.innerHeight / 2;
+        let imagenSrc = null;
 
-        // 3. Cada 60ms suelto partículas mientras la bola vuela
-        letPosX = origenX;
-        letPosY = origenY;
-        const intervaloParticulas = setInterval(() => {
-            crearParticulas(letPosX, letPosY);
-        }, 60);
-
-        // 4. Fuerzo reflow y lanzo la bola al carrito (1 segundo de vuelo)
-        bola.offsetHeight;
-        requestAnimationFrame(() => {
-            bola.style.left = (destinoX - 14) + 'px';
-            bola.style.top = (destinoY - 14) + 'px';
-        });
-
-        // Actualizo la posición de las partículas para que sigan a la bola
-        const inicioVuelo = performance.now();
-        function actualizarParticulas(now) {
-            const progreso = Math.min((now - inicioVuelo) / 1000, 1);
-            letPosX = origenX + (destinoX - origenX) * progreso;
-            letPosY = origenY + (destinoY - origenY) * progreso;
-            if (progreso < 1) {
-                requestAnimationFrame(actualizarParticulas);
-            }
+        if (botonOrigen && document.contains(botonOrigen)) {
+            const rectBoton = botonOrigen.getBoundingClientRect();
+            origenX = rectBoton.left + rectBoton.width / 2;
+            origenY = rectBoton.top + rectBoton.height / 2;
+            imagenSrc = botonOrigen.dataset.imagen || null;
         }
-        requestAnimationFrame(actualizarParticulas);
 
-        // 5. A los 1s: la bola llega, exploto, paro las partículas
-        setTimeout(() => {
-            clearInterval(intervaloParticulas);
-            bola.remove();
-            crearExplosion(destinoX, destinoY);
-        }, 1000);
+        await volarProductoHaciaCarrito(origenX, origenY, imagenSrc);
 
-        // 6. Un instante después, el carrito arranca de esquina a esquina
-        setTimeout(() => {
-            carritoAnimado.classList.add('andando');
-        }, 1150);
+        const rectCarrito = carritoAnimado.getBoundingClientRect();
+        const centroX = rectCarrito.left + rectCarrito.width / 2;
+        const centroY = rectCarrito.top + rectCarrito.height / 2;
 
-        // 7. Cuando el carrito termina de recorrer la pantalla, recargo la página
-        setTimeout(() => {
-            window.location.reload();
-        }, 3100);
+        rebotarCarrito();
+        crearOnda(centroX, centroY);
+        crearBadgeCantidad(centroX, centroY, cantidadApartada || 1);
+        crearConfeti(centroX, centroY);
+    }
+
+    // Actualiza el stock de la tarjeta al momento, sin recargar la página
+    function actualizarStockTarjeta(botonOrigen, cantidadRestada) {
+        if (!botonOrigen) return;
+
+        const nuevoLimite = Math.max(0, (Number(botonOrigen.dataset.limite) || 0) - cantidadRestada);
+        botonOrigen.dataset.limite = String(nuevoLimite);
+
+        const tarjeta = botonOrigen.closest('.tarjeta-producto');
+        if (tarjeta) {
+            const strongStock = tarjeta.querySelector('.stock-producto strong');
+            if (strongStock) strongStock.textContent = nuevoLimite;
+        }
+
+        if (nuevoLimite === 0) {
+            botonOrigen.disabled = true;
+            botonOrigen.textContent = 'Agotado';
+        }
     }
 
     // -----------------------------------------------
@@ -226,6 +314,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resultado && resultado.ok) {
                 if (resultado.redirect) {
                     window.location.href = resultado.redirect;
+                    return;
+                }
+                // Si el login salió por querer ver apartados, lo llevo directo
+                if (irApartadosTrasLogin) {
+                    window.location.href = '/verApartados';
                     return;
                 }
                 window.location.reload();
@@ -326,11 +419,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (respuestaApartar.ok) {
-                    // Cierro el modal primero y luego lanzo la animación
+                    // Cierro el modal, actualizo el stock en vivo y lanzo la animación
+                    const cantidadRestada = cantidadVal;
                     if (ventanaApartar) ventanaApartar.style.display = 'none';
-                    setTimeout(() => {
-                        animarCarrito(botonOrigenActual);
-                    }, 200);
+                    actualizarStockTarjeta(botonOrigenActual, cantidadRestada);
+                    toast('exito', 'Producto apartado correctamente.');
+                    animarApartado(botonOrigenActual, cantidadRestada);
                 } else if (respuestaApartar.status === 401) {
                     if (ventanaLogin) ventanaLogin.style.display = 'flex';
                     toast('advertencia', datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');

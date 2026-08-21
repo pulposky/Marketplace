@@ -413,7 +413,7 @@ body {
 }
 
 .enlace-estadistica {
-    grid-column: 1;
+    display: block;
     font-size: 0.85rem;
     color: var(--verde-sena);
     text-decoration: none;
@@ -425,13 +425,19 @@ body {
     color: var(--verde-oscuro);
 }
 
-.catalogoimg {
+.icono-estadistica {
     grid-column: 2;
     grid-row: 1 / 4;
     width: 45px;
     height: 45px;
-    object-fit: contain;
     justify-self: end;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.18));
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.tarjeta-estadistica:hover .icono-estadistica {
+    transform: scale(1.08) rotate(-4deg);
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.25));
 }
 
 /* ============================
