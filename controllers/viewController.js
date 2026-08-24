@@ -13,6 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const ProductoModel = require('../model/productoModel');
+const UsuarioModel = require('../model/usuariosModel');
 
 // Quita tildes, caracteres especiales y convierte a minúsculas.
 // Lo uso para comparar nombres de producto con nombres de archivo de imagen.
@@ -109,15 +110,24 @@ const ViewController = {
     },
 
     // Catálogo de productos
-    // Solo muestra los activos, y filtra por categoría si el usuario eligió alguna
+    // Solo muestra los activos, filtra por categoría y por texto de búsqueda
     mostrarCatalogo: (req, res) => {
         const categoriasSeleccionadas = normalizarCategorias(req.query.categoria || req.query.categorias);
+        const busqueda = String(req.query.busqueda || '').trim();
+        const busquedaLower = busqueda.toLowerCase();
 
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
 
             // Solo productos activos en el catálogo público
-            const productosActivos = listaProductosRaw.filter((producto) => producto.estado === 'activo');
+            let productosActivos = listaProductosRaw.filter((producto) => producto.estado === 'activo');
+
+            // Si escribió algo en el buscador, filtro por nombre
+            if (busquedaLower) {
+                productosActivos = productosActivos.filter((producto) =>
+                    producto.nombre && producto.nombre.toLowerCase().includes(busquedaLower)
+                );
+            }
 
             // Si eligió categorías, filtro; si no, muestro todos los activos
             const productosFiltrados = categoriasSeleccionadas.length > 0
@@ -128,6 +138,7 @@ const ViewController = {
                 res.render("productos", {
                     productos: productosConImagen,
                     categoriasSeleccionadas,
+                    busqueda,
                     usuario: req.session?.usuario || null
                 });
             });
@@ -192,7 +203,8 @@ const ViewController = {
     },
 
     // Panel de pedidos del admin
-    // Muestra todos los apartados pendientes para que los confirme o cancele
+    // Muestra SOLO los pedidos pendientes; el historial completo
+    // (confirmados, entregados y cancelados) vive en su propia vista.
     mostrarPedidos: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
@@ -200,19 +212,75 @@ const ViewController = {
             return res.redirect('/');
         }
 
-        ProductoModel.obtenerTodosApartados((error, apartados) => {
-            if (error) {
-                console.error('Error al consultar apartados:', error);
-                return res.status(500).send('Error en el servidor');
+        // La lista la carga el JS vía /api/admin/apartados?estado=pendiente;
+        // acá solo renderizo el esqueleto de la vista.
+        res.render('admin/pedidosAdmin', {
+            usuario: usuarioSesion,
+            modo: 'pendientes',
+            titulo: 'Gestión de Pedidos'
+        });
+    },
+
+    // Historial de pedidos del admin
+    // Muestra todos los pedidos que ya NO están pendientes:
+    // confirmados, entregados y cancelados.
+    mostrarHistorialPedidos: (req, res) => {
+        const usuarioSesion = req.session?.usuario;
+        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
+        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+            return res.redirect('/');
+        }
+
+        res.render('admin/pedidosAdmin', {
+            usuario: usuarioSesion,
+            modo: 'historial',
+            titulo: 'Historial de Pedidos'
+        });
+    },
+
+    // Vista "Mi perfil" del cliente
+    // Muestra sus datos y le permite editarlos.
+    // Es solo para clientes; el admin va a su panel.
+    mostrarPerfil: async (req, res) => {
+        const usuarioSesion = req.session?.usuario;
+        if (!usuarioSesion) {
+            return res.redirect('/');
+        }
+
+        const rol = String(usuarioSesion.role || '').trim().toLowerCase();
+        if (rol === 'admin' || rol === 'aprendiz') {
+            return res.redirect('/admin');
+        }
+
+        try {
+            // Traigo los datos frescos desde la BD por si cambiaron
+            const cliente = await UsuarioModel.obtenerClientePorId(usuarioSesion.id);
+
+            if (!cliente) {
+                req.session.destroy(() => {});
+                return res.redirect('/catalogo?login=1');
             }
 
-            const listaApartados = Array.isArray(apartados) ? apartados : [];
-
-            res.render('admin/pedidosAdmin', {
-                usuario: usuarioSesion,
-                apartados: listaApartados
+            res.render('perfil', {
+                cliente,
+                usuario: usuarioSesion
             });
-        });
+        } catch (error) {
+            console.error('Error al cargar el perfil:', error);
+            return res.status(500).send('Error en el servidor');
+        }
+    },
+
+    // Vista de gestión de clientes del admin.
+    // La lista la carga el JS con la API para poder buscar en vivo.
+    mostrarGestionClientes: (req, res) => {
+        const usuarioSesion = req.session?.usuario;
+        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
+        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+            return res.redirect('/');
+        }
+
+        res.render('admin/gestionClientes', { usuario: usuarioSesion });
     },
 };
 

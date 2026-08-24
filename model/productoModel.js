@@ -118,31 +118,64 @@ const ProductoModel = {
         conexion.query(sql, [cantidad, idProducto], callback);
     },
 
-    // Trae todos los apartados pendientes (lo usa el admin en la vista de pedidos)
-    obtenerTodosApartados: (callback) => {
-        const sql = `
+    // Trae los apartados para el admin.
+    // Estados de filtro aceptados:
+    //   'pendiente' | 'confirmado' | 'entregado' | 'cancelado' -> ese estado
+    //   'activos'   -> pendientes + confirmados (fila de trabajo)
+    //   'historial' -> entregados + cancelados (pedidos terminados)
+    //   otro / 'todos' -> historial completo
+        obtenerTodosApartados: (estado, callback) => {
+        if (typeof estado === 'function') {
+            callback = estado;
+            estado = 'todos';
+        }
+
+        let filtro = '';
+        let parametros = [];
+
+        if (estado === 'activos') {
+            filtro = "WHERE a.estado IN ('pendiente', 'confirmado')";
+        } else if (estado === 'historial') {
+            filtro = "WHERE a.estado IN ('entregado', 'cancelado')";
+        } else if (estado && estado !== 'todos') {
+            filtro = 'WHERE a.estado = ?';
+            parametros = [estado];
+        }
+
+    const sql = `
             SELECT 
                 a.id_apartado,
                 a.nombre_cliente,
                 a.cantidad,
-                a.estado,
+                a.estado AS estado_apartado,
                 p.id_producto,
-                p.nombre AS nombre_producto,
+                p.nombre,
                 p.precio,
                 p.unidad,
-                p.estado AS estado_producto
+                p.estado AS estado
             FROM apartados a
             JOIN producto p ON a.producto = p.id_producto
-            WHERE a.estado = 'pendiente'
+            WHERE a.nombre_cliente = ?
+            AND a.estado NOT IN ('entregado', 'cancelado')
             ORDER BY a.id_apartado DESC
         `;
-        conexion.query(sql, callback);
+        conexion.query(sql, parametros, callback);
     },
 
     // Cambia el estado de un apartado a "confirmado"
     confirmarApartado: (idApartado, callback) => {
         const sql = 'UPDATE apartados SET estado = ? WHERE id_apartado = ?';
         conexion.query(sql, ['confirmado', idApartado], callback);
+    },
+
+    // Cambia el estado de un apartado a "entregado"
+    // Solo se puede entregar un pedido que esté confirmado
+    marcarEntregado: (idApartado, callback) => {
+        const sql = `
+            UPDATE apartados SET estado = ?
+            WHERE id_apartado = ? AND estado IN ('pendiente', 'confirmado')
+        `;
+        conexion.query(sql, ['entregado', idApartado], callback);
     },
 
     // Cambia el estado de un apartado a "cancelado" (lo hace el admin)

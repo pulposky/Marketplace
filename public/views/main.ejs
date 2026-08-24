@@ -30,9 +30,15 @@
             <% if (usuario) { %>
                 <nav class="navegacion-navbar">
                     <ul class="lista-menu">
-                        <li class="item-menu requiere-login">
-                            <a href="/logout" class="btn-cerrar">Cerrar Sesión</a>
-                        </li>
+                        <% const rolNav=String(usuario.role || '').trim().toLowerCase(); %>
+                            <% if (rolNav !== 'admin' && rolNav !== 'aprendiz') { %>
+                                <li class="item-menu requiere-login">
+                                    <a href="/perfil" class="btn-perfil-nav">Mi Perfil</a>
+                                </li>
+                                <% } %>
+                                    <li class="item-menu requiere-login">
+                                        <a href="/logout" class="btn-cerrar">Cerrar Sesión</a>
+                                    </li>
                     </ul>
                 </nav>
                 <% } %>

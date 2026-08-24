@@ -1,201 +1,378 @@
-// =============================================
-// PEDIDOS ADMIN - JAVASCRIPT
-// =============================================
-// Maneja la vista de pedidos/apartados del admin.
-// Carga la lista de apartados pendientes, y permite
-// confirmar o cancelar cada uno. Al hacerlo, la card
-// se anima y se elimina de la lista.
-// =============================================
+    // =============================================
+    // PEDIDOS ADMIN - JAVASCRIPT
+    // =============================================
+    // Sirve a las DOS vistas del admin (la distinción la hace
+    // window.MODO_PEDIDOS que pinta el EJS). En ambas, los pedidos
+    // se AGRUPAN POR CLIENTE: una tarjeta por cliente con un botón
+    // "Ver" que despliega su información y sus productos.
+    //
+    //   - modo 'pendientes' (/admin/pedidos):
+    //       pendientes + confirmados (fila de trabajo).
+    //       UN SOLO BOTÓN para todo el pedido del cliente:
+    //         Si hay pendientes  -> "Confirmar" (los confirma todos)
+    //         Si están confirmados -> "Entregar" (los entrega todos)
+    //   - modo 'historial' (/admin/historial-pedidos):
+    //       entregados + cancelados; SOLO LECTURA (Ver / Ver Todo).
+    // =============================================
 
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
 
-    const contenedorPedidos = document.getElementById('contenedor-pedidos');
-    const btnRefrescar = document.getElementById('btnRefrescar');
+        const contenedorPedidos = document.getElementById('contenedor-pedidos');
+        const btnRefrescar = document.getElementById('btnRefrescar');
+        const filtrosEstado = document.getElementById('filtrosEstado');
 
-    // -----------------------------------------------
-    // RENDERIZAR LA LISTA DE PEDIDOS
-    // -----------------------------------------------
-    // Si no hay pedidos, muestro un mensaje vacío.
-    // Si hay, armo las cards con la info de cada apartado.
-    function renderizarPedidos(pedidos) {
-        if (!pedidos || pedidos.length === 0) {
-            contenedorPedidos.innerHTML = `
-                <div class="estado-vacio">
-                    <h3>No hay pedidos pendientes</h3>
-                    <p>Cuando los clientes realicen pedidos, apareceran aqui.</p>
-                </div>
-            `;
-            return;
+        // Modo de la vista actual ('pendientes' | 'historial');
+        // si el EJS no lo pintó, asumo pendientes por seguridad.
+        const modoVista = (window.MODO_PEDIDOS === 'historial') ? 'historial' : 'pendientes';
+
+        // Filtro activo según el modo:
+        //   pendientes -> activos = pendientes + confirmados
+        //   historial  -> entregados + cancelados
+        let estadoFiltro = (modoVista === 'historial') ? 'historial' : 'activos';
+
+        // Textos legibles para cada estado
+        const TEXTO_ESTADO = {
+            pendiente: 'Pendiente',
+            confirmado: 'Confirmado',
+            entregado: 'Entregado',
+            cancelado: 'Cancelado'
+        };
+
+        // -----------------------------------------------
+        // UTILIDADES
+        // -----------------------------------------------
+        // Escapa HTML para que los datos del cliente no
+        // inyecten etiquetas al armar las cards
+        function escaparHTML(texto) {
+            return String(texto ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
 
-        let html = '<div class="lista-pedidos">';
-        pedidos.forEach(function(item) {
-            html += `
-                <div class="pedido-card" data-id="${item.id_apartado}">
-                    <div class="pedido-info">
-                        <div class="pedido-campo">
-                            <span class="campo-label">Cliente</span>
-                            <span class="campo-valor">${item.nombre_cliente}</span>
+        function formatearFecha(fecha) {
+            if (!fecha) return '';
+            const d = new Date(fecha);
+            return isNaN(d.getTime()) ? String(fecha) : d.toLocaleString('es-CO');
+        }
+
+        // Mensaje vacío según el filtro activo
+        function renderizarVacio() {
+            const mensajes = {
+                historial: ['No hay pedidos en el historial', 'Los pedidos entregados o cancelados aparecerán aquí.'],
+                activos: ['No hay pedidos por gestionar', 'Cuando los clientes realicen pedidos, aparecerán aquí.'],
+                confirmado: ['No hay pedidos confirmados', 'Confirma pedidos pendientes para verlos aquí.'],
+                entregado: ['No hay pedidos entregados', 'Los pedidos confirmados que entregues aparecerán aquí.'],
+                cancelado: ['No hay pedidos cancelados', 'Los pedidos cancelados aparecerán aquí.']
+            };
+            const [titulo, texto] = mensajes[estadoFiltro] || mensajes.activos;
+
+            contenedorPedidos.innerHTML = `
+                <div class="estado-vacio">
+                    <h3>${titulo}</h3>
+                    <p>${texto}</p>
+                </div>
+            `;
+        }
+
+        // -----------------------------------------------
+        // AGRUPAR PEDIDOS POR CLIENTE
+        // -----------------------------------------------
+        // Un cliente puede apartar varios productos; en vez de
+        // repetir su nombre en varias tarjetas, armo UNA tarjeta
+        // por cliente con todos sus pedidos adentro.
+        function agruparPorCliente(pedidos) {
+            const grupos = new Map();
+
+            pedidos.forEach((item) => {
+                const clave = String(item.nombre_cliente ?? '').trim().toLowerCase() || 'sin nombre';
+                if (!grupos.has(clave)) {
+                    grupos.set(clave, {
+                        clave: clave,
+                        nombre: item.nombre_cliente || 'Sin nombre',
+                        documento: item.cliente_documento,
+                        telefono: item.cliente_telefono,
+                        direccion: item.cliente_direccion,
+                        items: []
+                    });
+                }
+                grupos.get(clave).items.push(item);
+            });
+
+            return Array.from(grupos.values());
+        }
+
+        // -----------------------------------------------
+        // RENDERIZAR LA LISTA DE PEDIDOS (AGRUPADA)
+        // -----------------------------------------------
+        function renderizarPedidos(pedidos) {
+            if (!pedidos || pedidos.length === 0) {
+                renderizarVacio();
+                return;
+            }
+
+            const grupos = agruparPorCliente(pedidos);
+            let html = '<div class="lista-pedidos">';
+
+            grupos.forEach((grupo) => {
+                const totalGrupo = grupo.items.reduce(
+                    (suma, i) => suma + Number(i.precio || 0) * Number(i.cantidad || 0), 0
+                );
+
+                // UNA sola acción para todo el pedido del cliente,
+                // según lo que falte por gestionar:
+                let botonGrupo = '';
+                if (modoVista === 'pendientes') {
+                    const hayPendiente = grupo.items.some((i) => (i.estado || 'pendiente') === 'pendiente');
+                    const hayConfirmado = grupo.items.some((i) => i.estado === 'confirmado');
+
+                    if (hayPendiente) {
+                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>';
+                    } else if (hayConfirmado) {
+                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>';
+                    }
+                }
+
+                html += `
+                    <div class="pedido-grupo" data-grupo="${escaparHTML(grupo.clave)}">
+                        <div class="grupo-cabecera">
+                            <div class="grupo-cliente">
+                                <span class="grupo-nombre">${escaparHTML(grupo.nombre)}</span>
+                                <span class="grupo-meta">${grupo.items.length} producto(s)</span>
+                            </div>
+                            <span class="grupo-total">Total: $${totalGrupo.toLocaleString('es-CO')}</span>
+                            <button class="btn-ver-grupo">Ver</button>
                         </div>
-                        <div class="pedido-campo">
-                            <span class="campo-label">Producto</span>
-                            <span class="campo-valor">${item.nombre_producto}</span>
-                        </div>
-                        <div class="pedido-campo">
-                            <span class="campo-label">Cantidad</span>
-                            <span class="campo-valor">${item.cantidad} ${item.unidad || 'ud'}</span>
+                        <div class="grupo-detalle" hidden>
+                            <div class="grupo-info-cliente">
+                                <div class="info-campo">
+                                    <span class="campo-label">Documento</span>
+                                    <span class="campo-valor">${escaparHTML(grupo.documento || '—')}</span>
+                                </div>
+                                <div class="info-campo">
+                                    <span class="campo-label">Teléfono</span>
+                                    <span class="campo-valor">${escaparHTML(grupo.telefono || '—')}</span>
+                                </div>
+                                <div class="info-campo">
+                                    <span class="campo-label">Dirección</span>
+                                    <span class="campo-valor">${escaparHTML(grupo.direccion || '—')}</span>
+                                </div>
+                            </div>
+                            <div class="grupo-productos">
+                                ${grupo.items.map(renderizarFilaPedido).join('')}
+                            </div>
+                            ${botonGrupo ? `<div class="grupo-acciones">${botonGrupo}</div>` : ''}
                         </div>
                     </div>
-                    <div class="pedido-acciones">
-                        <button class="btn-confirmar" data-id="${item.id_apartado}">Confirmar</button>
-                        <button class="btn-cancelar-admin" data-id="${item.id_apartado}">Cancelar</button>
+                `;
+            });
+
+            html += '</div>';
+            contenedorPedidos.innerHTML = html;
+        }
+
+        // -----------------------------------------------
+        // FILA DE UN PRODUCTO DENTRO DEL GRUPO
+        // -----------------------------------------------
+        // Las filas son SOLO lectura: el estado viaja en
+        // data-estado para que la acción del grupo sepa a cuáles
+        // productos afectar. Los botones van UNOS SOLOS por grupo.
+        function renderizarFilaPedido(item) {
+            const estado = item.estado || 'pendiente';
+
+            return `
+                <div class="pedido-fila" data-id="${item.id_apartado}" data-estado="${estado}">
+                    <div class="fila-principal">
+                        <span class="fila-producto">${escaparHTML(item.nombre_producto)}</span>
+                        <span class="pedido-badge ${estado}">${TEXTO_ESTADO[estado] || estado}</span>
+                    </div>
+                    <div class="fila-detalles">
+                        <span>Cant: <strong>${escaparHTML(item.cantidad)} ${escaparHTML(item.unidad || 'ud')}</strong></span>
+                        <span>$${Number(item.precio || 0).toLocaleString('es-CO')} c/u</span>
+                        <span class="campo-fecha">${formatearFecha(item.fecha)}</span>
                     </div>
                 </div>
             `;
+        }
+
+        // -----------------------------------------------
+        // CARGAR PEDIDOS DESDE LA API
+        // -----------------------------------------------
+        async function cargarPedidos() {
+            btnRefrescar.disabled = true;
+            btnRefrescar.textContent = 'Cargando...';
+
+            try {
+                const respuesta = await fetch(`/api/admin/apartados?estado=${encodeURIComponent(estadoFiltro)}`);
+                if (!respuesta.ok) throw new Error('Error al cargar pedidos');
+
+                const pedidos = await respuesta.json();
+                renderizarPedidos(pedidos);
+            } catch (error) {
+                console.error('Error:', error);
+                contenedorPedidos.innerHTML = `
+                    <div class="estado-vacio">
+                        <h3>Error al cargar pedidos</h3>
+                        <p>${escaparHTML(error.message)}</p>
+                    </div>
+                `;
+            } finally {
+                btnRefrescar.disabled = false;
+                btnRefrescar.textContent = 'Refrescar';
+            }
+        }
+
+        // -----------------------------------------------
+        // ACCIÓN GRUPAL (UN SOLO BOTÓN POR CLIENTE)
+        // -----------------------------------------------
+        // Aplica la misma acción a todos los productos del cliente
+        // que estén en el estado de origen:
+        //   Confirmar -> confirma todos los pendientes
+        //   Entregar  -> entrega todos los confirmados y el grupo
+        //                sale de la vista pendientes
+        async function accionGrupo(boton, estadoOrigen, endpoint) {
+            const grupo = boton.closest('.pedido-grupo');
+            if (!grupo) return;
+
+            const filas = Array.from(grupo.querySelectorAll(`.pedido-fila[data-estado="${estadoOrigen}"]`));
+            let exitos = 0;
+
+            for (const fila of filas) {
+                try {
+                    const respuesta = await fetch(`/api/admin/apartados/${endpoint}/${fila.dataset.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        exitos++;
+                        const nuevoEstado = (endpoint === 'confirmar') ? 'confirmado' : 'entregado';
+                        fila.dataset.estado = nuevoEstado;
+
+                        const badge = fila.querySelector('.pedido-badge');
+                        if (badge) {
+                            badge.classList.remove('pendiente', 'confirmado', 'entregado', 'cancelado');
+                            badge.classList.add(nuevoEstado);
+                            badge.textContent = TEXTO_ESTADO[nuevoEstado] || nuevoEstado;
+                        }
+                    } else {
+                        toast('error', data.error || 'No se pudo procesar la acción.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    toast('error', 'Error de conexion con el servidor.');
+                }
+            }
+
+            if (exitos > 0) {
+                toast('exito', `${exitos} producto(s) procesado(s) correctamente.`);
+            }
+
+            // Refresco el botón según lo que quede por gestionar
+            const zonaAcciones = grupo.querySelector('.grupo-acciones');
+            if (!zonaAcciones) return;
+
+            if (endpoint === 'confirmar') {
+                if (grupo.querySelector('.pedido-fila[data-estado="pendiente"]')) {
+                    // Algunos fallaron: sigue habiendo pendientes
+                    zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>';
+                } else {
+                    zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>';
+                }
+            } else {
+                if (grupo.querySelector('.pedido-fila[data-estado="confirmado"]')) {
+                    // Algunos fallaron: aún hay confirmados por entregar
+                    zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>';
+                } else {
+                    // Todo entregado: el pedido completo se va al historial
+                    grupo.remove();
+                    revisarListaVacia();
+                }
+            }
+        }
+
+        // Si al quitar tarjetas la lista queda vacía, muestro el aviso
+        function revisarListaVacia() {
+            if (!contenedorPedidos.querySelector('.pedido-grupo')) {
+                renderizarVacio();
+            }
+        }
+
+        // -----------------------------------------------
+        // EVENTOS DE CLICK EN BOTONES
+        // -----------------------------------------------
+        // Delegación de eventos sobre el contenedor
+        contenedorPedidos.addEventListener('click', (e) => {
+            // Ver / Ocultar el detalle de un cliente
+            const btnVer = e.target.closest('.btn-ver-grupo');
+            if (btnVer) {
+                const detalle = btnVer.closest('.pedido-grupo')?.querySelector('.grupo-detalle');
+                if (detalle) {
+                    const abrir = detalle.hidden;
+                    detalle.hidden = !abrir;
+                    btnVer.textContent = abrir ? 'Ocultar' : 'Ver';
+                }
+                return;
+            }
+
+            // UN solo botón para todo el pedido del cliente
+            const btnConfirmarGrupo = e.target.closest('.btn-grupo-confirmar');
+            if (btnConfirmarGrupo) {
+                if (confirm('Confirmar TODOS los pedidos de este cliente?')) {
+                    accionGrupo(btnConfirmarGrupo, 'pendiente', 'confirmar');
+                }
+                return;
+            }
+
+            const btnEntregarGrupo = e.target.closest('.btn-grupo-entregar');
+            if (btnEntregarGrupo) {
+                if (confirm('Marcar TODOS los pedidos como ENTREGADOS?')) {
+                    accionGrupo(btnEntregarGrupo, 'confirmado', 'entregado');
+                }
+                return;
+            }
         });
-        html += '</div>';
-        contenedorPedidos.innerHTML = html;
-    }
 
-    // -----------------------------------------------
-    // CARGAR PEDIDOS DESDE LA API
-    // -----------------------------------------------
-    async function cargarPedidos() {
-        btnRefrescar.disabled = true;
-        btnRefrescar.textContent = 'Cargando...';
+        // -----------------------------------------------
+        // VER TODO / OCULTAR TODO (solo historial)
+        // -----------------------------------------------
+        const btnVerTodo = document.getElementById('btnVerTodo');
+        if (btnVerTodo) {
+            btnVerTodo.addEventListener('click', () => {
+                const abrir = btnVerTodo.textContent.trim().toLowerCase() === 'ver todo';
 
-        try {
-            const respuesta = await fetch('/api/admin/apartados');
-            if (!respuesta.ok) throw new Error('Error al cargar pedidos');
+                contenedorPedidos.querySelectorAll('.grupo-detalle').forEach((d) => { d.hidden = !abrir; });
+                contenedorPedidos.querySelectorAll('.btn-ver-grupo').forEach((b) => { b.textContent = abrir ? 'Ocultar' : 'Ver'; });
 
-            const pedidos = await respuesta.json();
-            renderizarPedidos(pedidos);
-        } catch (error) {
-            console.error('Error:', error);
-            contenedorPedidos.innerHTML = `
-                <div class="estado-vacio">
-                    <h3>Error al cargar pedidos</h3>
-                    <p>${error.message}</p>
-                </div>
-            `;
-        } finally {
-            btnRefrescar.disabled = false;
-            btnRefrescar.textContent = 'Refrescar';
-        }
-    }
-
-    // -----------------------------------------------
-    // CONFIRMAR UN PEDIDO
-    // -----------------------------------------------
-    // Hace PATCH a la API, y si sale bien la card se
-    // desliza hacia la derecha y se elimina con animación
-    async function confirmarPedido(id) {
-        try {
-            const respuesta = await fetch(`/api/admin/apartados/confirmar/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' }
+                btnVerTodo.textContent = abrir ? 'Ocultar Todo' : 'Ver Todo';
             });
-
-            const data = await respuesta.json();
-
-            if (respuesta.ok) {
-                // Animación de salida: la card se va hacia la derecha
-                const card = contenedorPedidos.querySelector(`[data-id="${id}"]`);
-                if (card) {
-                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateX(30px)';
-                    setTimeout(() => card.remove(), 300);
-                }
-                // Después de la animación, verifico si quedan pedidos
-                setTimeout(() => {
-                    const cards = contenedorPedidos.querySelectorAll('.pedido-card');
-                    if (cards.length === 0) {
-                        contenedorPedidos.innerHTML = `
-                            <div class="estado-vacio">
-                                <h3>No hay pedidos pendientes</h3>
-                                <p>Cuando los clientes realicen pedidos, apareceran aqui.</p>
-                            </div>
-                        `;
-                    }
-                }, 350);
-            } else {
-                toast('error', data.error || 'Error al confirmar el pedido.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            toast('error', 'Error de conexion con el servidor.');
         }
-    }
 
-    // -----------------------------------------------
-    // CANCELAR UN PEDIDO
-    // -----------------------------------------------
-    // Similar a confirmar, pero la card se va hacia la izquierda
-    async function cancelarPedido(id) {
-        try {
-            const respuesta = await fetch(`/api/admin/apartados/cancelar/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' }
+        // -----------------------------------------------
+        // FILTROS POR ESTADO
+        // -----------------------------------------------
+        if (filtrosEstado) {
+            filtrosEstado.addEventListener('click', (e) => {
+                const chip = e.target.closest('.chip-filtro');
+                if (!chip) return;
+
+                // Marco el chip activo y recargo con el nuevo filtro
+                filtrosEstado.querySelectorAll('.chip-filtro').forEach((c) => c.classList.remove('activo'));
+                chip.classList.add('activo');
+
+                estadoFiltro = chip.dataset.estado;
+                cargarPedidos();
             });
-
-            const data = await respuesta.json();
-
-            if (respuesta.ok) {
-                // Animación de salida: la card se va hacia la izquierda
-                const card = contenedorPedidos.querySelector(`[data-id="${id}"]`);
-                if (card) {
-                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateX(-30px)';
-                    setTimeout(() => card.remove(), 300);
-                }
-                setTimeout(() => {
-                    const cards = contenedorPedidos.querySelectorAll('.pedido-card');
-                    if (cards.length === 0) {
-                        contenedorPedidos.innerHTML = `
-                            <div class="estado-vacio">
-                                <h3>No hay pedidos pendientes</h3>
-                                <p>Cuando los clientes realicen pedidos, apareceran aqui.</p>
-                            </div>
-                        `;
-                    }
-                }, 350);
-            } else {
-                toast('error', data.error || 'Error al cancelar el pedido.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            toast('error', 'Error de conexion con el servidor.');
-        }
-    }
-
-    // -----------------------------------------------
-    // EVENTOS DE CLICK EN BOTONES
-    // -----------------------------------------------
-    // Uso delegación de eventos: un solo listener en el contenedor
-    // y verifico qué botón se clickeó con closest()
-    contenedorPedidos.addEventListener('click', (e) => {
-        const btnConfirmar = e.target.closest('.btn-confirmar');
-        if (btnConfirmar) {
-            const id = btnConfirmar.dataset.id;
-            if (confirm('Confirmar este pedido?')) {
-                confirmarPedido(id);
-            }
-            return;
         }
 
-        const btnCancelar = e.target.closest('.btn-cancelar-admin');
-        if (btnCancelar) {
-            const id = btnCancelar.dataset.id;
-            if (confirm('Cancelar este pedido? El stock sera devuelto.')) {
-                cancelarPedido(id);
-            }
-            return;
-        }
+        // Botón de refrescar: vuelve a cargar los pedidos desde la API
+        btnRefrescar.addEventListener('click', cargarPedidos);
+
+        // Carga inicial
+        cargarPedidos();
+
     });
-
-    // Botón de refrescar: vuelve a cargar los pedidos desde la API
-    btnRefrescar.addEventListener('click', cargarPedidos);
-
-});

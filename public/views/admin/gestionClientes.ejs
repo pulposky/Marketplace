@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/admin/gestionClientes.css">
+    <link rel="stylesheet" href="/css/toast.css">
+    <title>Gestión de Clientes - Panel Admin</title>
+</head>
+
+<body>
+
+    <!-- HEADER Y BARRA SUPERIOR -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Clientes</span> - Panel Admin
+            </div>
+            <div class="header-accesos">
+                <a href="/admin/pedidos" class="btn-acceso-admin">Pedidos</a>
+                <a href='/admin' class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="encabezado-seccion">
+            <div class="titulo-catalogo">Gestión de Clientes</div>
+
+            <div class="barra-superior">
+                <!-- Exporta el listado completo en CSV -->
+                <a class="btn-exportar" id="btnExportar"
+                    href="/api/admin/reportes/clientes.csv" download>
+                    ⬇ Exportar CSV
+                </a>
+                <a class="boton-filtrar" id="btnRefrescar">Refrescar</a>
+            </div>
+        </div>
+
+        <!-- BUSCADOR DE CLIENTES -->
+        <div class="zona-buscador">
+            <input type="text" id="inputBuscarCliente" placeholder="Buscar por nombre o documento...">
+        </div>
+
+        <!-- TABLA DE CLIENTES -->
+        <div class="tabla-contenedor">
+            <table class="tabla-clientes">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Documento</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Rol</th>
+                        <th>Pedidos</th>
+                        <th>Compras</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTablaClientes"></tbody>
+            </table>
+            <div id="estadoVacioClientes" class="estado-vacio" style="display:none;">
+                <h3>No hay clientes</h3>
+                <p>No se encontraron clientes con ese criterio de búsqueda.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR CLIENTE -->
+    <div class="modal-fondo" id="modalEditarCliente">
+        <div class="modal-contenido">
+            <span class="cerrar-modal" id="cerrarModalCliente">&times;</span>
+
+            <h2 class="modal-titulo">Editar Cliente</h2>
+            <p class="modal-subtitulo" id="modalInfoCliente"></p>
+
+            <form id="formEditarCliente" autocomplete="off">
+                <div class="campo">
+                    <label for="editarNombre">Nombre completo *</label>
+                    <input type="text" id="editarNombre" name="nombre" required maxlength="255">
+                </div>
+                <div class="campo">
+                    <label for="editarTelefono">Teléfono</label>
+                    <input type="text" id="editarTelefono" name="telefono" maxlength="50">
+                </div>
+                <div class="campo">
+                    <label for="editarDireccion">Dirección</label>
+                    <input type="text" id="editarDireccion" name="direccion" maxlength="255">
+                </div>
+                <button type="submit" class="btn-guardar-modal" id="btnGuardarCliente">Guardar cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/gestionClientes.js"></script>
+</body>
+
+</html>

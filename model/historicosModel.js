@@ -21,7 +21,7 @@ const HistoricosModel = {
                 COUNT(a.id_apartado) AS total_pedidos
             FROM apartados a
             JOIN producto p ON a.producto = p.id_producto
-            WHERE a.estado = 'confirmado'
+            WHERE a.estado IN ('confirmado', 'entregado')
             GROUP BY p.id_producto, p.nombre, p.unidad, p.categoria
             ORDER BY total_vendido DESC
             LIMIT 10
@@ -37,7 +37,7 @@ const HistoricosModel = {
                 COUNT(a.id_apartado) AS total_pedidos,
                 SUM(a.cantidad) AS total_unidades
             FROM apartados a
-            WHERE a.estado = 'confirmado'
+            WHERE a.estado IN ('confirmado', 'entregado')
             GROUP BY a.nombre_cliente
             ORDER BY total_pedidos DESC
             LIMIT 10
@@ -69,7 +69,7 @@ const HistoricosModel = {
                 DATE(fecha) AS dia,
                 COUNT(*) AS total_ventas
             FROM apartados
-            WHERE estado = 'confirmado'
+            WHERE estado IN ('confirmado', 'entregado')
                 AND fecha >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             GROUP BY DATE(fecha)
             ORDER BY dia ASC
@@ -77,14 +77,14 @@ const HistoricosModel = {
         conexion.query(sql, callback);
     },
 
-    // Total de apartados confirmados (resumen)
+    // Total de ventas (confirmados + entregados)
     totalVentas: (callback) => {
         const sql = `
-            SELECT 
+            SELECT
                 COUNT(*) AS total_ventas,
                 IFNULL(SUM(cantidad), 0) AS total_unidades
             FROM apartados
-            WHERE estado = 'confirmado'
+            WHERE estado IN ('confirmado', 'entregado')
         `;
         conexion.query(sql, callback);
     },
@@ -132,11 +132,12 @@ const HistoricosModel = {
 
     // Resumen general del dashboard
     resumen: (callback) => {
-        const sqlApartados = 'SELECT COUNT(*) AS total FROM apartados WHERE estado = ?';
+        // Ventas = pedidos confirmados + entregados
+        const sqlApartados = "SELECT COUNT(*) AS total FROM apartados WHERE estado IN ('confirmado', 'entregado')";
         const sqlVisitas = 'SELECT COUNT(*) AS total FROM page_views WHERE fecha >= DATE_SUB(NOW(), INTERVAL 30 DAY)';
-        const sqlClientes = 'SELECT COUNT(DISTINCT nombre_cliente) AS total FROM apartados WHERE estado = \'confirmado\'';
+        const sqlClientes = "SELECT COUNT(DISTINCT nombre_cliente) AS total FROM apartados WHERE estado IN ('confirmado', 'entregado')";
 
-        conexion.query(sqlApartados, ['confirmado'], (err1, ventas) => {
+        conexion.query(sqlApartados, (err1, ventas) => {
             conexion.query(sqlVisitas, (err2, visitas) => {
                 conexion.query(sqlClientes, (err3, clientes) => {
                     callback(null, {
@@ -151,3 +152,4 @@ const HistoricosModel = {
 };
 
 module.exports = HistoricosModel;
+

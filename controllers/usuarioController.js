@@ -73,8 +73,9 @@ const loginUsuarioController = async (req, res) => {
 
         const clienteBD = resultado[0];
         // Guardo los datos del cliente en la sesión con rol de cliente
+        // (en la BD la llave es id_cliente; uso ?? por si cambia el nombre)
         req.session.usuario = {
-            id: clienteBD.id,
+            id: clienteBD.id_cliente ?? clienteBD.id,
             documento: clienteBD.documento,
             nombre: clienteBD.nombre,
             role: 'cliente'
@@ -130,8 +131,86 @@ const registroUsuarioController = async (req, res) => {
     }
 };
 
+// Actualiza el perfil del cliente que está en sesión
+// Solo permite cambiar nombre, dirección y teléfono
+// (el documento no se puede modificar)
+const actualizarPerfilController = async (req, res) => {
+    if (!req.session || !req.session.usuario) {
+        return res.status(401).json({ ok: false, mensaje: 'Debes iniciar sesión.' });
+    }
+
+    // El perfil editable es solo para clientes;
+    // admin y aprendiz no tienen esta vista
+    const rolSesion = String(req.session.usuario.role || '').trim().toLowerCase();
+    if (rolSesion === 'admin' || rolSesion === 'aprendiz') {
+        return res.status(403).json({ ok: false, mensaje: 'Los administradores no tienen perfil de cliente.' });
+    }
+
+    const { nombre, direccion, telefono } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+        return res.json({ ok: false, mensaje: 'El nombre no puede estar vacío' });
+    }
+    if (!telefono || !String(telefono).trim()) {
+        return res.json({ ok: false, mensaje: 'El teléfono no puede estar vacío' });
+    }
+
+    try {
+        await UsuarioModel.actualizarCliente(req.session.usuario.id, {
+            nombre: String(nombre).trim(),
+            direccion: String(direccion || '').trim(),
+            telefono: String(telefono).trim()
+        });
+
+        // Actualizo la sesión para que el resto del sitio
+        // muestre el nuevo nombre de una vez
+        req.session.usuario.nombre = String(nombre).trim();
+
+        return res.json({ ok: true, mensaje: 'Perfil actualizado correctamente.' });
+    } catch (error) {
+        console.error('Error en actualizarPerfilController:', error);
+        return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });
+    }
+};
+
+// Actualiza un cliente desde el panel admin
+// Sirve para la vista de gestión de clientes
+const actualizarClienteAdminController = async (req, res) => {
+    // Validación de rol: solo admin o aprendiz pueden editar clientes.
+    // Lo reviso acá porque las APIs de admin solo piden sesión activa.
+    const rolSesion = String(req.session?.usuario?.role || '').trim().toLowerCase();
+    if (rolSesion !== 'admin' && rolSesion !== 'aprendiz') {
+        return res.status(403).json({ ok: false, mensaje: 'No tienes permisos para gestionar clientes.' });
+    }
+
+    const { id } = req.params;
+    const { nombre, direccion, telefono } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ ok: false, mensaje: 'Falta el ID del cliente.' });
+    }
+    if (!nombre || !nombre.trim()) {
+        return res.json({ ok: false, mensaje: 'El nombre no puede estar vacío' });
+    }
+
+    try {
+        await UsuarioModel.actualizarCliente(id, {
+            nombre: String(nombre).trim(),
+            direccion: String(direccion || '').trim(),
+            telefono: String(telefono || '').trim()
+        });
+
+        return res.json({ ok: true, mensaje: 'Cliente actualizado correctamente.' });
+    } catch (error) {
+        console.error('Error en actualizarClienteAdminController:', error);
+        return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });
+    }
+};
+
 module.exports = {
     loginUsuarioController,
     logoutUsuarioController,
-    registroUsuarioController
+    registroUsuarioController,
+    actualizarPerfilController,
+    actualizarClienteAdminController
 };

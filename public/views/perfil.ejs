@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - SENAEMPRESA</title>
+    <link rel="stylesheet" href="/css/perfil.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+
+<body>
+
+    <!-- HEADER Y BOTÓN REGRESAR -->
+    <header class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>SENAEMPRESA</span>
+            </div>
+            <a href="/" class="btn-regresar">← Regresar al Inicio</a>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="contenedor-principal">
+        <div class="encabezado-seccion">
+            <h1 class="titulo-perfil">MI PERFIL</h1>
+            <p class="subtitulo-perfil">Consulta y actualiza tus datos personales.</p>
+        </div>
+
+        <!-- TARJETA DE PERFIL -->
+        <section class="tarjeta-perfil">
+
+            <!-- DATOS SOLO LECTURA -->
+            <div class="grupo-datos-lectura">
+                <div class="dato-lectura">
+                    <span class="dato-label">Documento</span>
+                    <span class="dato-valor"><%= cliente.documento %></span>
+                </div>
+                <div class="dato-lectura">
+                    <span class="dato-label">Rol</span>
+                    <span class="badge-rol"><%= cliente.rol || 'cliente' %></span>
+                </div>
+            </div>
+
+            <!-- FORMULARIO EDITABLE -->
+            <form id="formPerfil" class="formulario-perfil" autocomplete="off">
+                <div class="campo">
+                    <label for="perfilNombre">Nombre completo *</label>
+                    <input type="text" id="perfilNombre" name="nombre"
+                        value="<%= cliente.nombre %>" required maxlength="255">
+                    <small>Si cambias tu nombre se actualiza también en tus apartados.</small>
+                </div>
+
+                <div class="campo">
+                    <label for="perfilTelefono">Teléfono *</label>
+                    <input type="text" id="perfilTelefono" name="telefono"
+                        value="<%= cliente.telefono || '' %>" required maxlength="50">
+                </div>
+
+                <div class="campo">
+                    <label for="perfilDireccion">Dirección</label>
+                    <input type="text" id="perfilDireccion" name="direccion"
+                        value="<%= cliente.direccion || '' %>" maxlength="255">
+                </div>
+
+                <button type="submit" class="btn-guardar" id="btnGuardarPerfil">Guardar cambios</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="/js/toast.js"></script>
+    <script src="/js/perfil.js"></script>
+</body>
+
+</html>

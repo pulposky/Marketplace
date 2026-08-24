@@ -119,6 +119,7 @@ body {
     BOTONES NAVBAR (MISMO TAMAÑO)
 ============================ */
 .item-menu a.btn-cerrar,
+.item-menu a.btn-perfil-nav,
 .btn-iniciar-sesion {
     display: inline-flex;
     align-items: center;
@@ -167,6 +168,22 @@ body {
     border-color: #c0392b;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+}
+
+/* Mi Perfil: mismo tamaño que Cerrar Sesión,
+   pero con hover violeta institucional */
+.item-menu a.btn-perfil-nav {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: var(--blanco);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.item-menu a.btn-perfil-nav:hover {
+    background-color: #71277B;
+    color: var(--blanco);
+    border-color: #71277B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(113, 39, 123, 0.3);
 }
 
 /* ============================

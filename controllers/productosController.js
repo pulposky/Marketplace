@@ -25,18 +25,28 @@ const normalizarCategorias = (valor) => {
 const ProductoController = {
 
     // Devuelve todos los productos como JSON
-    // Opcionalmente filtra por categoría si viene el query param ?categoria=xxx
+    // Opcionalmente filtra por categoría (?categoria=xxx)
+    // o por texto de búsqueda (?busqueda=xxx)
     obtenerTodos: (req, res) => {
         const categorias = normalizarCategorias(req.query.categoria || req.query.categorias);
+        const busqueda = String(req.query.busqueda || '').trim().toLowerCase();
 
         ProductoModel.obtenerTodos((error, resultados) => {
             if (error) {
                 return res.status(500).json({ error: 'Error al consultar la BD' });
             }
 
-            const productosFiltrados = categorias.length > 0
-                ? resultados.filter((producto) => categorias.includes(producto.categoria))
-                : resultados;
+            let productosFiltrados = resultados;
+
+            if (categorias.length > 0) {
+                productosFiltrados = productosFiltrados.filter((producto) => categorias.includes(producto.categoria));
+            }
+
+            if (busqueda) {
+                productosFiltrados = productosFiltrados.filter((producto) =>
+                    producto.nombre && producto.nombre.toLowerCase().includes(busqueda)
+                );
+            }
 
             res.json(productosFiltrados);
         });
@@ -192,6 +202,41 @@ const ProductoController = {
             }
 
             res.render('verApartados', { apartados });
+        });
+    },
+
+    // Marca un pedido como "entregado" (fin del ciclo)
+    // Solo aplica a pedidos pendientes o confirmados;
+    // no toca el stock porque ya se descontó al apartar
+    marcarEntregado: (req, res) => {
+        if (!req.session || !req.session.usuario) {
+            return res.status(401).json({ error: 'Sesión no válida.' });
+        }
+
+        // Validación de rol para las APIs del admin
+        const rolSesion = String(req.session.usuario.role || '').trim().toLowerCase();
+        if (rolSesion !== 'admin' && rolSesion !== 'aprendiz') {
+            return res.status(403).json({ error: 'No tienes permisos para entregar pedidos.' });
+        }
+
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
+        }
+
+        ProductoModel.marcarEntregado(id, (error, resultado) => {
+            if (error) {
+                console.error('Error al marcar entregado:', error);
+                return res.status(500).json({ error: 'Error al marcar el pedido como entregado.' });
+            }
+
+            // Si no afectó ninguna fila es porque el pedido ya estaba cancelado o entregado
+            if (!resultado || resultado.affectedRows === 0) {
+                return res.status(400).json({ error: 'Solo se pueden entregar pedidos pendientes o confirmados.' });
+            }
+
+            return res.status(200).json({ mensaje: 'Pedido marcado como entregado correctamente.' });
         });
     },
 

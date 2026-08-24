@@ -267,3 +267,357 @@ body {
         align-items: flex-start;
     }
 }
+
+/* =============================================
+    HISTORIAL COMPLETO: FILTROS, BADGES Y EXPORT
+============================================= */
+
+/* ACCESOS DEL HEADER */
+.header-accesos {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-acceso-admin {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #0f5132;
+    color: #0f5132;
+    background-color: transparent;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-acceso-admin:hover {
+    background-color: #0f5132;
+    color: #ffffff;
+}
+
+/* BOTÓN EXPORTAR CSV */
+.btn-exportar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 38px;
+    padding: 0 20px;
+    background-color: #1d4ed8;
+    color: #ffffff;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-exportar:hover {
+    background-color: #1e40af;
+}
+
+/* FILTROS POR ESTADO (CHIPS) */
+.filtros-estado {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+.chip-filtro {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chip-filtro:hover {
+    border-color: #0f5132;
+    color: #0f5132;
+}
+
+.chip-filtro.activo {
+    background-color: #0f5132;
+    border-color: #0f5132;
+    color: #ffffff;
+}
+
+/* BADGE DE ESTADO DEL PEDIDO */
+.pedido-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.pedido-badge.pendiente {
+    background-color: #fef9c3;
+    color: #a16207;
+    border: 1px solid #fde047;
+}
+
+.pedido-badge.confirmado {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+
+.pedido-badge.entregado {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #34d399;
+}
+
+.pedido-badge.cancelado {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+
+/* BOTÓN ENTREGAR */
+.btn-entregar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid #059669;
+    background-color: #059669;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-entregar:hover {
+    background-color: #047857;
+    border-color: #047857;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+/* FECHA EN LA CARD */
+.campo-fecha {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+}
+
+/* DESCRIPCIÓN DE LA VISTA (modo pendientes) */
+.descripcion-vista {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin: -10px 0 18px 0;
+}
+
+/* =============================================
+    TARJETAS AGRUPADAS POR CLIENTE
+   ============================================= */
+
+/* Tarjeta contenedora de un cliente */
+.pedido-grupo {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px 22px;
+    transition: box-shadow 0.2s ease;
+}
+
+.pedido-grupo:hover {
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Cabecera visible del grupo */
+.grupo-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.grupo-cliente {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.grupo-nombre {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.grupo-meta {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.grupo-total {
+    font-weight: 700;
+    color: #0f5132;
+    margin-left: auto;
+}
+
+.btn-ver-grupo {
+    padding: 9px 24px;
+    border-radius: 20px;
+    border: none;
+    background-color: #0f5132;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-ver-grupo:hover {
+    background-color: #0b3d26;
+}
+
+/* Detalle desplegable del grupo */
+.grupo-detalle {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #d1d5db;
+}
+
+/* El atributo hidden debe ganarle al display:flex de arriba,
+   o el botón Ver/Ocultar no haría nada visualmente */
+.grupo-detalle[hidden] {
+    display: none;
+}
+
+/* Información del cliente */
+.grupo-info-cliente {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    background-color: #f9fafb;
+    border-radius: 10px;
+    padding: 12px 18px;
+}
+
+.info-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-campo .campo-valor {
+    font-size: 0.92rem;
+}
+
+/* Lista de productos del cliente */
+.grupo-productos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pedido-fila {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.fila-principal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+}
+
+.fila-producto {
+    font-weight: 700;
+    color: #111827;
+    font-size: 0.95rem;
+}
+
+.fila-detalles {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    color: #6b7280;
+    font-size: 0.85rem;
+    flex: 1;
+}
+
+@media (max-width: 700px) {
+    .grupo-cabecera {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .grupo-total {
+        margin-left: 0;
+    }
+
+    .pedido-fila {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fila-principal {
+        justify-content: space-between;
+    }
+}
+
+/* BOTÓN ÚNICO DE ACCIÓN DEL GRUPO */
+.grupo-acciones {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-grupo-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 32px;
+    border-radius: 10px;
+    border: none;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Confirmar (verde oscuro) */
+.btn-grupo-confirmar {
+    background-color: #0f5132;
+}
+
+.btn-grupo-confirmar:hover {
+    background-color: #0b3d26;
+    box-shadow: 0 4px 12px rgba(15, 81, 50, 0.25);
+}
+
+/* Entregar (verde esmeralda) */
+.btn-grupo-entregar {
+    background-color: #059669;
+}
+
+.btn-grupo-entregar:hover {
+    background-color: #047857;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}

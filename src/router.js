@@ -17,8 +17,11 @@ const ViewController = require('../controllers/viewController');
 const ProductoController = require('../controllers/productosController');
 const ProductoModel = require('../model/productoModel');
 const UsuarioController = require('../controllers/usuarioController');
+const UsuarioModel = require('../model/usuariosModel');
 const HistoricosController = require('../controllers/historicosController');
+const ReportesController = require('../controllers/reportesController');
 const protegerRuta = require('../middleware/verificarUsuario');
+const verificarAdmin = require('../middleware/verificarAdmin');
 
 // -----------------------------------------------
 // RUTAS DE AUTENTICACIÓN
@@ -28,6 +31,14 @@ const protegerRuta = require('../middleware/verificarUsuario');
 router.post('/login', UsuarioController.loginUsuarioController);
 router.get('/logout', UsuarioController.logoutUsuarioController);
 router.post('/registro', UsuarioController.registroUsuarioController);
+
+// -----------------------------------------------
+// RUTAS DE PERFIL DEL CLIENTE
+// -----------------------------------------------
+// Vista "Mi perfil" (solo clientes logueados)
+// PATCH: guarda los cambios de nombre, dirección y teléfono
+router.get('/perfil', protegerRuta, ViewController.mostrarPerfil);
+router.patch('/api/perfil', protegerRuta, UsuarioController.actualizarPerfilController);
 
 // -----------------------------------------------
 // RUTAS DE VISTAS PÚBLICAS Y PRIVADAS
@@ -51,7 +62,10 @@ router.get('/verApartados', (req, res, next) => {
 router.get('/admin', protegerRuta, ViewController.mostrarMainAdmin);
 router.get('/admin/habilitar-producto', protegerRuta, ViewController.mostrarHabilitarProducto);
 router.get('/admin/pedidos', protegerRuta, ViewController.mostrarPedidos);
+// Historial: pedidos confirmados, entregados y cancelados (no pendientes)
+router.get('/admin/historial-pedidos', protegerRuta, ViewController.mostrarHistorialPedidos);
 router.get('/admin/historicos', protegerRuta, HistoricosController.mostrarHistoricos);
+router.get('/admin/clientes', verificarAdmin, ViewController.mostrarGestionClientes);
 
 // -----------------------------------------------
 // API DE PRODUCTOS (admin)
@@ -63,11 +77,16 @@ router.patch('/api/admin/productos/estado/:id', protegerRuta, ProductoController
 // -----------------------------------------------
 // API DE PEDIDOS/APARTADOS (admin)
 // -----------------------------------------------
-// GET: trae todos los apartados pendientes para mostrar en la tabla
+// GET: trae los apartados para la tabla. Acepta ?estado=
+// (pendiente | confirmado | entregado | cancelado | historial =
+// todos menos pendientes) o sin filtro devuelve el historial completo.
 // PATCH confirmar: cambia estado a "confirmado"
+// PATCH entregado: marca el pedido como entregado
 // PATCH cancelar: cambia estado a "cancelado" y devuelve el stock
 router.get('/api/admin/apartados', protegerRuta, (req, res) => {
-    ProductoModel.obtenerTodosApartados((error, apartados) => {
+    const estado = String(req.query.estado || 'todos').trim();
+
+    ProductoModel.obtenerTodosApartados(estado, (error, apartados) => {
         if (error) {
             return res.status(500).json({ error: 'Error al consultar apartados.' });
         }
@@ -75,7 +94,34 @@ router.get('/api/admin/apartados', protegerRuta, (req, res) => {
     });
 });
 router.patch('/api/admin/apartados/confirmar/:id', protegerRuta, ProductoController.confirmarApartado);
+router.patch('/api/admin/apartados/entregado/:id', verificarAdmin, ProductoController.marcarEntregado);
 router.patch('/api/admin/apartados/cancelar/:id', protegerRuta, ProductoController.cancelarApartadoAdmin);
+
+// -----------------------------------------------
+// API DE GESTIÓN DE CLIENTES (admin)
+// -----------------------------------------------
+// GET: lista de clientes con sus compras; acepta ?busqueda= para filtrar
+// PATCH: actualiza nombre, dirección y teléfono de un cliente
+router.get('/api/admin/clientes', verificarAdmin, (req, res) => {
+    const busqueda = String(req.query.busqueda || '');
+
+    UsuarioModel.obtenerClientesAdmin(busqueda, (error, clientes) => {
+        if (error) {
+            console.error('Error al consultar clientes:', error);
+            return res.status(500).json({ error: 'Error al consultar clientes.' });
+        }
+        res.json(Array.isArray(clientes) ? clientes : []);
+    });
+});
+
+router.patch('/api/admin/clientes/:id', verificarAdmin, UsuarioController.actualizarClienteAdminController);
+
+// -----------------------------------------------
+// API DE REPORTES CSV (admin)
+// -----------------------------------------------
+// Descargan un archivo .csv con todos los pedidos o clientes
+router.get('/api/admin/reportes/pedidos.csv', verificarAdmin, ReportesController.exportarPedidosCSV);
+router.get('/api/admin/reportes/clientes.csv', verificarAdmin, ReportesController.exportarClientesCSV);
 
 // -----------------------------------------------
 // API PARA EL CLIENTE

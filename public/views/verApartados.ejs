@@ -17,7 +17,7 @@
             <div class="marca-catalogo">
                 <span>SENAEMPRESA</span>
             </div>
-            <a href="/" class="btn-regresar">&larr; Regresar</a>
+            <a href="/" class="btn-inicio">← Regresar al Inicio</a>
         </div>
     </header>
 
@@ -30,9 +30,19 @@
             </div>
         </div>
 
-        <% if (typeof apartados !=='undefined' && apartados.length> 0) { %>
+        <% 
+        // Filtrar para obtener solo los apartados que NO están entregados ni cancelados
+        const apartadosVisibles = (typeof apartados !== 'undefined') 
+            ? apartados.filter(item => {
+                const estado = item.estado_apartado || 'pendiente';
+                return estado !== 'entregado' && estado !== 'cancelado';
+            }) 
+            : [];
+        %>
+
+        <% if (apartadosVisibles.length > 0) { %>
             <div class="rejilla-productos">
-                <% apartados.forEach(item=> {
+                <% apartadosVisibles.forEach(item => {
                     // 1. Detectar si el ítem es huevo
                     const esHuevo = item.es_huevo || (item.nombre && item.nombre.toLowerCase().includes('huevo'));
 
@@ -49,20 +59,24 @@
 
                     // 5. Estado del apartado
                     const estadoApartado = item.estado_apartado || 'pendiente';
-                    const esFinalizado = estadoApartado === 'confirmado' || estadoApartado === 'cancelado';
-                    %>
+                    const esConfirmado = estadoApartado === 'confirmado';
+
+                    // Texto legible del estado
+                    const textoEstado = {
+                        confirmado: 'Confirmado',
+                        pendiente: 'Pendiente'
+                    }[estadoApartado] || 'Pendiente';
+                %>
                     <div class="tarjeta-producto" id="apartado-<%= item.id_apartado %>" data-estado="<%= estadoApartado %>">
                         <div class="imagen-producto">
                             <% if (item.imagenUpload) { %>
                                 <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
-                                <% } else { %>
-                                    <span>
-                                        <%= item.nombre %>
-                                    </span>
-                                    <% } %>
-                                        <span class="badge-estado <%= estadoApartado %>">
-                                            <%= estadoApartado === 'confirmado' ? 'Confirmado' : estadoApartado === 'cancelado' ? 'Cancelado' : 'Pendiente' %>
-                                        </span>
+                            <% } else { %>
+                                <span><%= item.nombre %></span>
+                            <% } %>
+                            <span class="badge-estado <%= estadoApartado %>">
+                                <%= textoEstado %>
+                            </span>
                         </div>
 
                         <div class="nombre-producto">
@@ -70,51 +84,45 @@
                         </div>
 
                         <p class="presentacion-producto">
-                            Cantidad: <strong>
-                                <%= esHuevo ? cubetas : cantidadHuevosUnidades %>
-                            </strong>
-                            <%= esHuevo ? 'Cubeta(s)' : (item.unidad || 'Unidad(es)' ) %>
-                                <% if (esHuevo) { %>
-                                    <small style="display: block; color: #666;">(<%= cantidadHuevosUnidades %> huevos en
-                                            total)</small>
-                                    <% } %>
+                            Cantidad: <strong><%= esHuevo ? cubetas : cantidadHuevosUnidades %></strong>
+                            <%= esHuevo ? 'Cubeta(s)' : (item.unidad || 'Unidad(es)') %>
+                            <% if (esHuevo) { %>
+                                <small style="display: block; color: #666;">(<%= cantidadHuevosUnidades %> huevos en total)</small>
+                            <% } %>
                         </p>
 
                         <p class="presentacion-producto">
                             <% if (esHuevo) { %>
                                 Precio por cubeta: <strong>$<%= precioCubeta.toLocaleString("es-CO") %></strong>
-                                <small style="display: block; color: #888;">($<%=
-                                        precioUnitarioReal.toLocaleString("es-CO") %> / huevo)</small>
-                                <% } else { %>
-                                    Precio un.: $<%= precioUnitarioReal.toLocaleString("es-CO") %>
-                                        <% } %>
+                                <small style="display: block; color: #888;">($<%= precioUnitarioReal.toLocaleString("es-CO") %> / huevo)</small>
+                            <% } else { %>
+                                Precio un.: $<%= precioUnitarioReal.toLocaleString("es-CO") %>
+                            <% } %>
                         </p>
 
                         <div class="precio-producto">
                             Total: $<%= totalPagar.toLocaleString("es-CO") %>
                         </div>
 
-                        <% if (esFinalizado) { %>
-                            <button type="button" class="btn-dismiss btn-dismiss-<%= estadoApartado %>"
-                                data-id="<%= item.id_apartado %>">
+                        <% if (esConfirmado) { %>
+                            <button type="button" class="btn-dismiss btn-dismiss-confirmado" data-id="<%= item.id_apartado %>">
                                 Eliminar
                             </button>
                         <% } else { %>
-                            <button type="button" class="btn-cancelar btn-accion-cancelar"
-                                data-id="<%= item.id_apartado %>">
+                            <button type="button" class="btn-cancelar btn-accion-cancelar" data-id="<%= item.id_apartado %>">
                                 Cancelar Apartado
                             </button>
                         <% } %>
                     </div>
-                    <% }) %>
+                <% }) %>
             </div>
-            <% } else { %>
-                <div class="estado-vacio">
-                    <h3>No tienes apartados activos</h3>
-                    <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
-                    <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
-                </div>
-                <% } %>
+        <% } else { %>
+            <div class="estado-vacio">
+                <h3>No tienes apartados activos</h3>
+                <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
+                <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
+            </div>
+        <% } %>
     </main>
 
     <script src="/js/toast.js"></script>

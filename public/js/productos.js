@@ -82,6 +82,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
+    // BÚSQUEDA EN VIVO DE PRODUCTOS
+    // -----------------------------------------------
+    // El input del catálogo filtra las tarjetas por nombre
+    // mientras se escribe, sin recargar ni tocar el diseño.
+    const inputBuscarProducto = document.getElementById('inputBuscar');
+
+    if (inputBuscarProducto) {
+        inputBuscarProducto.addEventListener('input', () => {
+            const texto = inputBuscarProducto.value.trim().toLowerCase();
+            let visibles = 0;
+
+            document.querySelectorAll('.rejilla-productos .tarjeta-producto').forEach((tarjeta) => {
+                const nombre = tarjeta.querySelector('.nombre-producto');
+                const coincide = !texto || (nombre && nombre.textContent.toLowerCase().includes(texto));
+                tarjeta.style.display = coincide ? '' : 'none';
+                if (coincide) visibles++;
+            });
+
+            // Si hay un aviso de "sin resultados" lo muestro u oculto
+            const avisoVacio = document.getElementById('avisoSinResultados');
+            if (avisoVacio) {
+                avisoVacio.style.display = (visibles === 0) ? 'block' : 'none';
+            }
+        });
+    }
+
+    // -----------------------------------------------
     // ANIMACIÓN DEL CARRITO DE COMPRAS
     // -----------------------------------------------
     // Paleta del proyecto para el confeti

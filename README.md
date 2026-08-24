@@ -78,14 +78,16 @@ npm install
 ### 1. Crear el archivo `.env`
 
 ```env
-BD_HOST="localhost"
-BD_PORT=3306
-BD_USER="root"
-BD_PASSWORD="tu_contraseña"
-BD_DATABASE="pos_db"
+DB_HOST="localhost"
+DB_PORT=3306
+DB_USER="root"
+DB_PASSWORD="tu_contraseña"
+BD_DATABASE="sena_pdv"
 
 PORT=3000
 ```
+
+> ⚠️ Ojo: las credenciales usan prefijo `DB_` y solo el nombre de la base usa `BD_DATABASE` (así lo lee `database/conexion.js`).
 
 ### 2. Ejecutar el script SQL
 
@@ -93,16 +95,28 @@ PORT=3000
 mysql -u root -p < database/schema.sql
 ```
 
+> Si ya tienes una base de datos `sena_pdv` antigua (sin el estado `entregado`), ejecuta también la migración:
+>
+> ```bash
+> mysql -u root -p < database/migracion_v2.sql
+> ```
+
 ### 📋 Tablas creadas
 
-| Tabla              | Descripción                                                |
-| ------------------ | ----------------------------------------------------------- |
-| `producto`       | Catálogo con precio, unidad, categoría y stock            |
-| `apartados`      | Reservas con estados (pendiente → confirmado → cancelado) |
-| `notificaciones` | Alertas para el admin                                       |
-| `clientes`       | Registro de clientes                                        |
-| `usuarios`       | Credenciales de admin y empleados                           |
-| `page_views`     | Registro de visitas                                         |
+| Tabla                        | Sistema      | Descripción                                                        |
+| ---------------------------- | ------------ | ------------------------------------------------------------------- |
+| `producto`                 | Compartida   | Catálogo: precio, unidad, categoría, stock y `limite_venta`       |
+| `usuarios`                 | Compartida   | Credenciales de admin/aprendiz (web) y cajeros (POS)               |
+| `clientes`                 | Compartida   | Registro de clientes de ambos canales                              |
+| `apartados`                | Solo web     | Reservas: pendiente → confirmado → entregado / cancelado           |
+| `notificaciones`           | Solo web     | Alertas para el admin                                               |
+| `page_views`               | Solo web     | Registro de visitas                                                 |
+| `venta`, `detalle_venta`   | Solo POS     | Facturación en punto de venta                                       |
+| `compras`, `detalle_compras`, `proveedores` | Solo POS | Compras a proveedores                                    |
+| `entradas`, `detalle_entradas` | Solo POS | Ajustes de inventario                                                |
+| `remision`, `detalle_remision` | Solo POS | Despachos                                                            |
+
+El script es **integrado**: crea las tablas de la web y también las del POS, todo con `CREATE TABLE IF NOT EXISTS`. Puedes usarlo si montas solo la web (las tablas del POS quedan ahí sin estorbar) o si vas a correr los dos sistemas sobre la misma base de datos.
 
 ---
 
@@ -188,6 +202,8 @@ Marketplace/
 | `POST` | `/api/apartar-producto`       | Crear apartado    |
 | `GET` | `/verApartados`               | Ver mis apartados |
 | `POST` | `/api/apartados/cancelar/:id` | Cancelar apartado |
+| `GET` | `/perfil`                     | Mi perfil         |
+| `PATCH` | `/api/perfil`                 | Editar mis datos  |
 
 ### 🛡️ Administración
 
@@ -195,13 +211,18 @@ Marketplace/
 | :-------: | ------------------------------------------ | ------------------------- |
 |  `GET`  | `/admin`                                 | Panel admin               |
 |  `GET`  | `/admin/habilitar-producto`              | Gestionar productos       |
-|  `GET`  | `/admin/pedidos`                         | Gestionar pedidos         |
+|  `GET`  | `/admin/pedidos`                         | Historial de pedidos      |
+|  `GET`  | `/admin/clientes`                        | Gestión de clientes       |
 |  `GET`  | `/admin/historicos`                      | Dashboard estadísticas   |
 | `PATCH` | `/api/admin/productos/limite-venta/:id`  | Actualizar stock          |
 | `PATCH` | `/api/admin/productos/estado/:id`        | Cambiar estado            |
 | `PATCH` | `/api/admin/apartados/confirmar/:id`     | Confirmar apartado        |
+| `PATCH` | `/api/admin/apartados/entregado/:id`     | Marcar como entregado     |
 | `PATCH` | `/api/admin/apartados/cancelar/:id`      | Cancelar (devuelve stock) |
-|  `GET`  | `/api/admin/apartados`                   | Apartados pendientes      |
+|  `GET`  | `/api/admin/apartados`                   | Apartados (filtro ?estado=) |
+| `PATCH` | `/api/admin/clientes/:id`                | Editar cliente           |
+|  `GET`  | `/api/admin/reportes/pedidos.csv`        | Exportar pedidos CSV     |
+|  `GET`  | `/api/admin/reportes/clientes.csv`       | Exportar clientes CSV    |
 |  `GET`  | `/api/admin/notificaciones`              | Notificaciones            |
 | `PATCH` | `/api/admin/notificaciones/:id/leida`    | Marcar leída             |
 | `PATCH` | `/api/admin/notificaciones/todas-leidas` | Marcar todas              |

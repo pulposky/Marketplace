@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/admin/pedidosAdmin.css">
     <link rel="stylesheet" href="/css/toast.css">
-    <title>Gestión de Pedidos - Panel Admin</title>
+    <title><%= titulo %> - Panel Admin</title>
 </head>
 
 <body>
@@ -15,9 +15,14 @@
     <div class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>Pedidos</span> - Panel Admin
+                <span><%= titulo %></span> - Panel Admin
             </div>
-            <div>
+            <div class="header-accesos">
+                <% if (modo === 'historial') { %>
+                    <!-- Desde el historial salto a los pendientes -->
+                    <a href="/admin/pedidos" class="btn-acceso-admin">Pendientes</a>
+                <% } else { %>
+                <% } %>
                 <a href='/admin' class="btn-regresar">
                     ← Regresar al Inicio
                 </a>
@@ -30,50 +35,37 @@
 
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="encabezado-seccion">
-            <div class="titulo-catalogo">Gestión de Pedidos</div>
+            <div class="titulo-catalogo"><%= titulo %></div>
 
             <div class="barra-superior">
+                <!-- En historial: despliega u oculta todos los clientes de una -->
+                <% if (modo === 'historial') { %>
+                    <a class="boton-filtrar" id="btnVerTodo">Ver Todo</a>
+                <% } %>
                 <a class="boton-filtrar" id="btnRefrescar">Refrescar</a>
             </div>
         </div>
 
+        <% if (modo === 'historial') { %>
+            <!-- FILTROS POR ESTADO (solo en el historial) -->
+            <!-- El JS recarga la lista con ?estado= según el chip activo;
+                "Historial" muestra entregados + cancelados. -->
+            <div class="filtros-estado" id="filtrosEstado">
+                <button class="chip-filtro activo" data-estado="historial">Historial</button>
+                <button class="chip-filtro" data-estado="entregado">Entregados</button>
+                <button class="chip-filtro" data-estado="cancelado">Cancelados</button>
+            </div>
+        <% } %>
+        <% if (modo === 'pendientes') { %>
+            <p class="descripcion-vista">Pedidos pendientes y confirmados que esperan entrega.</p>
+        <% } %>
+
         <!-- CONTENIDO -->
-        <div id="contenedor-pedidos">
-            <% if (typeof apartados !== 'undefined' && apartados.length > 0) { %>
-                <div class="lista-pedidos">
-                    <% apartados.forEach(function(item) { %>
-                        <div class="pedido-card" data-id="<%= item.id_apartado %>">
-                            <div class="pedido-info">
-                                <div class="pedido-campo">
-                                    <span class="campo-label">Cliente</span>
-                                    <span class="campo-valor"><%= item.nombre_cliente %></span>
-                                </div>
-                                <div class="pedido-campo">
-                                    <span class="campo-label">Producto</span>
-                                    <span class="campo-valor"><%= item.nombre_producto %></span>
-                                </div>
-                                <div class="pedido-campo">
-                                    <span class="campo-label">Cantidad</span>
-                                    <span class="campo-valor"><%= item.cantidad %> <%= item.unidad || 'ud' %></span>
-                                </div>
-                            </div>
-                            <div class="pedido-acciones">
-                                <button class="btn-confirmar" data-id="<%= item.id_apartado %>">Confirmar</button>
-                                <button class="btn-cancelar-admin" data-id="<%= item.id_apartado %>">Cancelar</button>
-                            </div>
-                        </div>
-                    <% }); %>
-                </div>
-            <% } else { %>
-                <div class="estado-vacio" id="estadoVacio">
-                    <h3>No hay pedidos pendientes</h3>
-                    <p>Cuando los clientes realicen pedidos, apareceran aqui.</p>
-                </div>
-            <% } %>
-        </div>
+        <div id="contenedor-pedidos"></div>
     </div>
 
     <script src="/js/toast.js"></script>
+    <script>window.MODO_PEDIDOS = '<%= modo %>';</script>
     <script src="/js/admin/pedidosAdmin.js"></script>
 </body>
 

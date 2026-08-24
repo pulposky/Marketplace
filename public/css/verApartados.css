@@ -356,3 +356,30 @@ body {
         align-items: flex-start;
     }
 }
+.badge-estado.entregado {
+    background-color: var(--fondo-verde);
+    color: var(--texto-verde);
+    border: 1px solid #6EE7B7;
+}
+
+/* BOTÓN REGRESAR AL INICIO EN EL HEADER */
+.btn-inicio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--verde-principal, #0f5132);
+    color: var(--verde-principal, #0f5132);
+    background-color: transparent;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-inicio:hover {
+    background-color: var(--verde-principal, #0f5132);
+    color: #ffffff;
+}

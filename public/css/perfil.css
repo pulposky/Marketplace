@@ -1,0 +1,212 @@
+/* =============================================
+    PERFIL DEL CLIENTE
+   =============================================
+    Estilos de la vista "Mi perfil".
+    Sigue la misma línea visual del catálogo
+    (header blanco, tarjetas con borde suave,
+    verde institucional del SENA).
+============================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f6f8;
+    color: #333;
+    min-height: 100vh;
+}
+
+/* HEADER */
+.header-catalogo {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.contenedor-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.marca-catalogo span {
+    font-weight: 700;
+    color: #0f5132;
+    letter-spacing: 0.5px;
+}
+
+.btn-regresar {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background-color: #f9fafb;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #d1d5db;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-regresar:hover {
+    background-color: #71277B;
+    color: #ffffff;
+    border-color: #71277B;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.contenedor-principal {
+    width: 100%;
+    max-width: 640px;
+    margin: 32px auto;
+    padding: 0 20px 40px 20px;
+}
+
+.encabezado-seccion {
+    margin-bottom: 20px;
+}
+
+.titulo-perfil {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: 0.5px;
+}
+
+.subtitulo-perfil {
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* TARJETA DE PERFIL */
+.tarjeta-perfil {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 28px 32px;
+}
+
+/* DATOS SOLO LECTURA */
+.grupo-datos-lectura {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dato-lectura {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dato-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.dato-valor {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.badge-rol {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background-color: rgba(57, 169, 0, 0.12);
+    color: #2e8700;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+/* FORMULARIO */
+.formulario-perfil .campo {
+    margin-bottom: 18px;
+}
+
+.formulario-perfil label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.formulario-perfil input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formulario-perfil input:focus {
+    border-color: #39A900;
+    box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.2);
+}
+
+.formulario-perfil small {
+    display: block;
+    color: #9ca3af;
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+.btn-guardar {
+    width: 100%;
+    height: 44px;
+    border-radius: 10px;
+    border: none;
+    background-color: #0f5132;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 6px;
+}
+
+.btn-guardar:hover {
+    background-color: #71277B;
+    box-shadow: 0 4px 12px rgba(113, 39, 123, 0.25);
+}
+
+.btn-guardar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+@media (max-width: 520px) {
+    .tarjeta-perfil {
+        padding: 22px 18px;
+    }
+
+    .grupo-datos-lectura {
+        gap: 20px;
+    }
+}
