@@ -44,6 +44,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let irApartadosTrasLogin = false;
 
     // -----------------------------------------------
+    // ALERTA DE TIEMPO DE APARTADO (una vez por pestaña)
+    // -----------------------------------------------
+    if (!sessionStorage.getItem('alertaApartadoMostrada')) {
+        const alertaApartado = document.getElementById('alertaApartado');
+        const cerrarAlertaApartado = document.getElementById('cerrarAlertaApartado');
+
+        alertaApartado.style.display = 'flex';
+        sessionStorage.setItem('alertaApartadoMostrada', '1');
+
+        cerrarAlertaApartado.addEventListener('click', () => {
+            alertaApartado.style.display = 'none';
+        });
+    }
+
+    // -----------------------------------------------
     // CARRITO FIJO (ESQUINA INFERIOR DERECHA)
     // -----------------------------------------------
     // Visible desde que se entra al catálogo. Al hacer

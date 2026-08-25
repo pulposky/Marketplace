@@ -423,6 +423,89 @@ body {
 }
 
 /* ============================
+    ALERTA INFORMATIVA APARTADO
+============================ */
+.alerta-fondo {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 59, 76, 0.6);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+}
+
+.alerta-contenido {
+    background-color: var(--blanco);
+    border-radius: 16px;
+    padding: 36px 30px 28px;
+    width: 90%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    border-top: 5px solid var(--verde-sena);
+    animation: abrirModal 0.3s ease-out;
+    position: relative;
+}
+
+.alerta-icono {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, var(--verde-sena), var(--verde-oscuro));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blanco);
+    box-shadow: 0 4px 15px rgba(57, 169, 0, 0.35);
+}
+
+.alerta-titulo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--texto-primario);
+    margin-bottom: 8px;
+}
+
+.alerta-mensaje {
+    font-size: 0.95rem;
+    color: var(--texto-secundario);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.alerta-mensaje strong {
+    color: var(--verde-oscuro);
+    font-weight: 700;
+}
+
+.alerta-boton {
+    background: linear-gradient(135deg, var(--verde-sena), var(--verde-oscuro));
+    color: var(--blanco);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 40px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(57, 169, 0, 0.3);
+}
+
+.alerta-boton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(57, 169, 0, 0.45);
+}
+
+.alerta-boton:active {
+    transform: translateY(0);
+}
+
+/* ============================
     RESPONSIVE
 ============================ */
 @media (max-width: 850px) {

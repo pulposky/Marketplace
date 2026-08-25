@@ -383,3 +383,51 @@ body {
     background-color: var(--verde-principal, #0f5132);
     color: #ffffff;
 }
+
+/* ============================
+    TEMPORIZADOR DE EXPIRACIÓN
+============================ */
+.temporizador-apartado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+    border: 1px solid #f0c040;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #856404;
+    letter-spacing: 0.3px;
+}
+
+.temporizador-apartado svg {
+    flex-shrink: 0;
+    color: #d4930a;
+}
+
+.temporizador-apartado.urgente {
+    background: linear-gradient(135deg, #fff0f0, #fddede);
+    border-color: #e74c3c;
+    color: #721c24;
+    animation: parpadeoUrgente 1s ease-in-out infinite;
+}
+
+.temporizador-apartado.urgente svg {
+    color: #c0392b;
+}
+
+.temporizador-apartado.expirado {
+    background: linear-gradient(135deg, #f5f5f5, #e9ecef);
+    border-color: #ced4da;
+    color: #6c757d;
+    animation: none;
+}
+
+@keyframes parpadeoUrgente {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}

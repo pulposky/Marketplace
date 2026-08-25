@@ -81,4 +81,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // -----------------------------------------------
+    // TEMPORIZADOR DE EXPIRACIÓN POR APARTADO
+    // -----------------------------------------------
+    const temporizadores = document.querySelectorAll('.temporizador-apartado');
+    const procesados = new Set();
+
+    function actualizarTemporizadores() {
+        const ahora = new Date();
+
+        temporizadores.forEach((el) => {
+            const expiraStr = el.getAttribute('data-expira');
+            const expira = new Date(expiraStr);
+            const restante = expira - ahora;
+
+            if (restante <= 0) {
+                if (procesados.has(expiraStr)) return;
+                procesados.add(expiraStr);
+
+                el.classList.add('expirado');
+                el.querySelector('.texto-temporizador').textContent = 'Apartado expirado';
+
+                const tarjeta = el.closest('.tarjeta-producto');
+                const idApartado = tarjeta ? tarjeta.id.replace('apartado-', '') : null;
+
+                if (idApartado) {
+                    fetch(`/api/apartados/cancelar/${idApartado}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(() => {
+                        if (tarjeta) {
+                            tarjeta.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                            tarjeta.style.opacity = '0';
+                            tarjeta.style.transform = 'scale(0.9)';
+                            setTimeout(() => tarjeta.remove(), 500);
+                        }
+                    });
+                }
+                return;
+            }
+
+            const horas = Math.floor(restante / (1000 * 60 * 60));
+            const minutos = Math.floor((restante % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((restante % (1000 * 60)) / 1000);
+
+            const texto = `${horas}h ${String(minutos).padStart(2, '0')}m ${String(segundos).padStart(2, '0')}s`;
+            el.querySelector('.texto-temporizador').textContent = `Expira en: ${texto}`;
+
+            if (restante < 10 * 60 * 1000) {
+                el.classList.add('urgente');
+            }
+        });
+    }
+
+    if (temporizadores.length > 0) {
+        actualizarTemporizadores();
+        setInterval(actualizarTemporizadores, 1000);
+    }
+
 });

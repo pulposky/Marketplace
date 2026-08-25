@@ -97,6 +97,7 @@ const ProductoModel = {
                 a.cantidad,
                 a.estado AS estado_apartado,
                 a.cancelado_por,
+                a.fecha,
                 p.id_producto,
                 p.nombre,
                 p.precio,
@@ -207,6 +208,27 @@ const ProductoModel = {
     cancelarApartadoCliente: (idApartado, callback) => {
         const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
         conexion.query(sql, ['cancelado', 'cliente', idApartado], callback);
+    },
+
+    // ------------------------------------------------
+    // EXPIRACIÓN AUTOMÁTICA DE APARTADOS (1 HORA)
+    // ------------------------------------------------
+
+    // Busca apartados pendientes que ya pasaron de 1 hora
+    obtenerApartadosExpirados: (callback) => {
+        const sql = `
+            SELECT a.id_apartado, a.producto, a.cantidad, a.nombre_cliente
+            FROM apartados a
+            WHERE a.estado = 'pendiente'
+              AND DATE_ADD(a.fecha, INTERVAL 10 SECOND) < NOW()
+        `;
+        conexion.query(sql, callback);
+    },
+
+    // Cancela un apartado por expiración del sistema
+    cancelarApartadoPorExpiracion: (idApartado, callback) => {
+        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
+        conexion.query(sql, ['cancelado', 'admin', idApartado], callback);
     },
 
     // ------------------------------------------------

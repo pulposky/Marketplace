@@ -50,6 +50,45 @@ app.use(contarVisita);
 const misRutas = require('./src/router');
 app.use('/', misRutas);
 
+// -----------------------------------------------
+// EXPIRACIÓN AUTOMÁTICA DE APARTADOS (1 HORA)
+// -----------------------------------------------
+// Cada 60 segundos revisa si hay apartados pendientes
+// con más de 1 hora de antigüedad. Si los encuentra,
+// los cancela y devuelve el stock al producto.
+const ProductoModel = require('./model/productoModel');
+
+function cancelarApartadosExpirados() {
+    ProductoModel.obtenerApartadosExpirados((err, apartados) => {
+        if (err) {
+            console.error('[Expiración] Error al buscar apartados expirados:', err.message);
+            return;
+        }
+
+        if (!apartados || apartados.length === 0) return;
+
+        apartados.forEach((apartado) => {
+            ProductoModel.cancelarApartadoPorExpiracion(apartado.id_apartado, (errCancel) => {
+                if (errCancel) {
+                    console.error(`[Expiración] Error cancelando apartado #${apartado.id_apartado}:`, errCancel.message);
+                    return;
+                }
+
+                // Devolver stock al producto
+                ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errStock) => {
+                    if (errStock) {
+                        console.error(`[Expiración] Error devolviendo stock del apartado #${apartado.id_apartado}:`, errStock.message);
+                        return;
+                    }
+                });
+            });
+        });
+    });
+}
+
+// Ejecutar cada 60 segundos
+setInterval(cancelarApartadosExpirados, 60 * 1000);
+
 const PORT = process.env.PORT || 3000;
 
 // Arranco el servidor, si no hay puerto en .env uso el 3000
