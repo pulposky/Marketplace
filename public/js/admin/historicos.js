@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: {
                     labels: data.map(d => d.cliente),
                     datasets: [{
-                        label: 'Pedidos confirmados',
+                        label: 'Pedidos entregados',
                         data: data.map(d => d.total_pedidos),
                         backgroundColor: coloresPastel.slice(0, data.length),
                         borderColor: colores.slice(0, data.length),

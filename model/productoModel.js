@@ -26,12 +26,26 @@ const ProductoModel = {
         conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC", callback);
     },
 
-    // Trae solo los productos destacados (hardcodeados por ID)
+    // Trae los productos más vendidos (los que más apartados confirmados/entregados tienen)
     obtenerDestacados: (callback) => {
         const sql = `
-            SELECT nombre, unidad, lugar, precio, id_producto, limite_venta
-            FROM producto
-            WHERE id_producto IN (42, 44, 402, 401)
+            SELECT 
+                p.nombre,
+                p.unidad,
+                p.lugar,
+                p.precio,
+                p.id_producto,
+                p.limite_venta,
+                p.estado,
+                SUM(a.cantidad) AS total_vendido
+            FROM producto p
+            INNER JOIN apartados a ON a.producto = p.id_producto
+            WHERE a.estado IN ('confirmado', 'entregado')
+              AND p.nombre != 'COMODIN'
+              AND p.precio > 0
+            GROUP BY p.id_producto, p.nombre, p.unidad, p.lugar, p.precio, p.limite_venta, p.estado
+            ORDER BY total_vendido DESC
+            LIMIT 4
         `;
         conexion.query(sql, callback);
     },
@@ -82,6 +96,7 @@ const ProductoModel = {
                 a.nombre_cliente,
                 a.cantidad,
                 a.estado AS estado_apartado,
+                a.cancelado_por,
                 p.id_producto,
                 p.nombre,
                 p.precio,
@@ -146,17 +161,21 @@ const ProductoModel = {
             SELECT 
                 a.id_apartado,
                 a.nombre_cliente,
+                c.documento AS cliente_documento,
+                c.telefono AS cliente_telefono,
+                c.direccion AS cliente_direccion,
                 a.cantidad,
-                a.estado AS estado_apartado,
+                a.fecha,
+                a.estado,
+                a.cancelado_por,
                 p.id_producto,
-                p.nombre,
+                p.nombre AS nombre_producto,
                 p.precio,
-                p.unidad,
-                p.estado AS estado
+                p.unidad
             FROM apartados a
             JOIN producto p ON a.producto = p.id_producto
-            WHERE a.nombre_cliente = ?
-            AND a.estado NOT IN ('entregado', 'cancelado')
+            LEFT JOIN clientes c ON a.nombre_cliente = c.nombre
+            ${filtro}
             ORDER BY a.id_apartado DESC
         `;
         conexion.query(sql, parametros, callback);
@@ -178,10 +197,16 @@ const ProductoModel = {
         conexion.query(sql, ['entregado', idApartado], callback);
     },
 
-    // Cambia el estado de un apartado a "cancelado" (lo hace el admin)
+    // Cambia el estado de un apartado a "cancelado" y registra quién canceló
     cancelarApartadoAdmin: (idApartado, callback) => {
-        const sql = 'UPDATE apartados SET estado = ? WHERE id_apartado = ?';
-        conexion.query(sql, ['cancelado', idApartado], callback);
+        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
+        conexion.query(sql, ['cancelado', 'admin', idApartado], callback);
+    },
+
+    // Cancela un apartado desde el cliente (UPDATE en vez de DELETE para que aparezca en historial)
+    cancelarApartadoCliente: (idApartado, callback) => {
+        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
+        conexion.query(sql, ['cancelado', 'cliente', idApartado], callback);
     },
 
     // ------------------------------------------------

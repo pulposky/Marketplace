@@ -561,6 +561,32 @@ body {
     flex: 1;
 }
 
+/* Botón X para cancelar un producto individual */
+.btn-fila-cancelar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #fca5a5;
+    background-color: #fee2e2;
+    color: #dc2626;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.btn-fila-cancelar:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
 @media (max-width: 700px) {
     .grupo-cabecera {
         flex-direction: column;
@@ -620,4 +646,28 @@ body {
 .btn-grupo-entregar:hover {
     background-color: #047857;
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+/* Cancelar (rojo) */
+.btn-grupo-cancelar {
+    background-color: #dc2626;
+    margin-left: 8px;
+}
+
+.btn-grupo-cancelar:hover {
+    background-color: #b91c1c;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+/* Etiqueta de quién canceló */
+.cancelado-por {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    padding: 2px 10px;
+    margin-left: 4px;
 }

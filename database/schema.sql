@@ -233,6 +233,7 @@ CREATE TABLE IF NOT EXISTS `apartados` (
   `producto` INT NOT NULL,
   `cantidad` INT NOT NULL DEFAULT 1,
   `estado` ENUM('pendiente', 'confirmado', 'cancelado', 'entregado') NOT NULL DEFAULT 'pendiente',
+  `cancelado_por` ENUM('admin', 'cliente') DEFAULT NULL,
   `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`producto`) REFERENCES `producto`(`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -35,6 +35,34 @@ body {
     align-items: center;
 }
 
+.header-derecha {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-exportar-excel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    background-color: #15803d;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-exportar-excel:hover {
+    background-color: #166534;
+}
+
+.btn-exportar-excel svg {
+    flex-shrink: 0;
+}
+
 .btn-regresar {
     display: inline-flex;
     align-items: center;

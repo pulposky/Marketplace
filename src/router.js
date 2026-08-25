@@ -207,5 +207,6 @@ router.get('/api/admin/historicos/estados', protegerRuta, HistoricosController.a
 router.get('/api/admin/historicos/ventas-dia', protegerRuta, HistoricosController.apiVentasPorDia);
 router.get('/api/admin/historicos/visitas-dia', protegerRuta, HistoricosController.apiVisitasPorDia);
 router.get('/api/admin/historicos/rutas', protegerRuta, HistoricosController.apiVisitasPorRuta);
+router.get('/api/admin/historicos/exportar', protegerRuta, HistoricosController.exportarHistoricos);
 
 module.exports = router;

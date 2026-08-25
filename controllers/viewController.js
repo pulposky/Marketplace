@@ -84,7 +84,7 @@ const ViewController = {
             return res.redirect('/admin');
         }
 
-        // Primero cargo los productos destacados, luego todos, y les asocio imágenes
+        // Cargo los productos más vendidos y todos los productos, y les asocio imágenes
         ProductoModel.obtenerDestacados((errorDestacados, destacados) => {
             const listaDestacadosRaw = (errorDestacados || !Array.isArray(destacados)) ? [] : destacados;
 
@@ -93,6 +93,22 @@ const ViewController = {
 
                 asociarImagenesAProductos(listaDestacadosRaw, (destacadosConImagen) => {
                     asociarImagenesAProductos(listaTodosRaw, (todosConImagen) => {
+
+                        // Si hay menos de 4 destacados, completo con productos del catálogo
+                        // que no estén ya en la lista de destacados
+                        if (destacadosConImagen.length < 4 && todosConImagen.length > 0) {
+                            const idsDestacados = new Set(destacadosConImagen.map(p => p.id_producto));
+                            const restantes = todosConImagen
+                                .filter(p => !idsDestacados.has(p.id_producto) && p.estado === 'activo')
+                                .sort(() => Math.random() - 0.5);
+
+                            let i = 0;
+                            while (destacadosConImagen.length < 4 && i < restantes.length) {
+                                destacadosConImagen.push(restantes[i]);
+                                i++;
+                            }
+                        }
+
                         res.render("main", {
                             destacados: destacadosConImagen,
                             productos: todosConImagen,

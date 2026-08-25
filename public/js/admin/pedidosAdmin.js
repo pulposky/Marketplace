@@ -129,9 +129,11 @@
                     const hayConfirmado = grupo.items.some((i) => i.estado === 'confirmado');
 
                     if (hayPendiente) {
-                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>';
+                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>' +
+                            '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
                     } else if (hayConfirmado) {
-                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>';
+                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>' +
+                            '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
                     }
                 }
 
@@ -181,6 +183,17 @@
         // productos afectar. Los botones van UNOS SOLOS por grupo.
         function renderizarFilaPedido(item) {
             const estado = item.estado || 'pendiente';
+            const canceladoPor = item.cancelado_por;
+            let infoCancelacion = '';
+            if (estado === 'cancelado' && canceladoPor) {
+                const quien = canceladoPor === 'admin' ? 'Administrador' : 'Cliente';
+                infoCancelacion = `<span class="cancelado-por">Cancelado por: ${quien}</span>`;
+            }
+
+            const esAccionable = modoVista === 'pendientes' && estado !== 'cancelado' && estado !== 'entregado';
+            const btnCancelar = esAccionable
+                ? `<button class="btn-fila-cancelar" data-id="${item.id_apartado}" title="Cancelar este producto">&times;</button>`
+                : '';
 
             return `
                 <div class="pedido-fila" data-id="${item.id_apartado}" data-estado="${estado}">
@@ -192,7 +205,9 @@
                         <span>Cant: <strong>${escaparHTML(item.cantidad)} ${escaparHTML(item.unidad || 'ud')}</strong></span>
                         <span>$${Number(item.precio || 0).toLocaleString('es-CO')} c/u</span>
                         <span class="campo-fecha">${formatearFecha(item.fecha)}</span>
+                        ${infoCancelacion}
                     </div>
+                    ${btnCancelar}
                 </div>
             `;
         }
@@ -303,6 +318,106 @@
         }
 
         // -----------------------------------------------
+        // ACCIÓN CANCELAR GRUPAL (el admin cancela todo el pedido)
+        // -----------------------------------------------
+        async function accionCancelarGrupo(boton) {
+            const grupo = boton.closest('.pedido-grupo');
+            if (!grupo) return;
+
+            const filas = Array.from(grupo.querySelectorAll('.pedido-fila'));
+            let exitos = 0;
+
+            for (const fila of filas) {
+                const estado = fila.dataset.estado;
+                if (estado === 'cancelado' || estado === 'entregado') continue;
+
+                try {
+                    const respuesta = await fetch(`/api/admin/apartados/cancelar/${fila.dataset.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        exitos++;
+                        fila.dataset.estado = 'cancelado';
+
+                        const badge = fila.querySelector('.pedido-badge');
+                        if (badge) {
+                            badge.classList.remove('pendiente', 'confirmado', 'entregado', 'cancelado');
+                            badge.classList.add('cancelado');
+                            badge.textContent = 'Cancelado';
+                        }
+
+                        const detalles = fila.querySelector('.fila-detalles');
+                        if (detalles && !detalles.querySelector('.cancelado-por')) {
+                            detalles.insertAdjacentHTML('beforeend',
+                                '<span class="cancelado-por">Cancelado por: Administrador</span>');
+                        }
+                    } else {
+                        toast('error', data.error || 'No se pudo cancelar el producto.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    toast('error', 'Error de conexion con el servidor.');
+                }
+            }
+
+            if (exitos > 0) {
+                toast('exito', `${exitos} producto(s) cancelado(s). Stock devuelto.`);
+            }
+
+            // Refresco el botón: si todo quedó cancelado, quito los botones de acción
+            const zonaAcciones = grupo.querySelector('.grupo-acciones');
+            if (zonaAcciones) {
+                zonaAcciones.innerHTML = '';
+            }
+        }
+
+        // -----------------------------------------------
+        // ACCIÓN CANCELAR INDIVIDUAL (una sola fila)
+        // -----------------------------------------------
+        async function accionCancelarIndividual(boton) {
+            const fila = boton.closest('.pedido-fila');
+            if (!fila) return;
+
+            try {
+                const respuesta = await fetch(`/api/admin/apartados/cancelar/${fila.dataset.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await respuesta.json();
+
+                if (respuesta.ok) {
+                    fila.dataset.estado = 'cancelado';
+
+                    const badge = fila.querySelector('.pedido-badge');
+                    if (badge) {
+                        badge.classList.remove('pendiente', 'confirmado', 'entregado', 'cancelado');
+                        badge.classList.add('cancelado');
+                        badge.textContent = 'Cancelado';
+                    }
+
+                    const detalles = fila.querySelector('.fila-detalles');
+                    if (detalles && !detalles.querySelector('.cancelado-por')) {
+                        detalles.insertAdjacentHTML('beforeend',
+                            '<span class="cancelado-por">Cancelado por: Administrador</span>');
+                    }
+
+                    boton.remove();
+                    toast('exito', 'Producto cancelado. Stock devuelto.');
+                } else {
+                    toast('error', data.error || 'No se pudo cancelar el producto.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toast('error', 'Error de conexion con el servidor.');
+            }
+        }
+
+        // -----------------------------------------------
         // EVENTOS DE CLICK EN BOTONES
         // -----------------------------------------------
         // Delegación de eventos sobre el contenedor
@@ -332,6 +447,22 @@
             if (btnEntregarGrupo) {
                 if (confirm('Marcar TODOS los pedidos como ENTREGADOS?')) {
                     accionGrupo(btnEntregarGrupo, 'confirmado', 'entregado');
+                }
+                return;
+            }
+
+            const btnCancelarGrupo = e.target.closest('.btn-grupo-cancelar');
+            if (btnCancelarGrupo) {
+                if (confirm('Cancelar TODOS los pedidos de este cliente? Se devolverá el stock.')) {
+                    accionCancelarGrupo(btnCancelarGrupo);
+                }
+                return;
+            }
+
+            const btnCancelarFila = e.target.closest('.btn-fila-cancelar');
+            if (btnCancelarFila) {
+                if (confirm('Cancelar este producto? Se devolverá el stock.')) {
+                    accionCancelarIndividual(btnCancelarFila);
                 }
                 return;
             }

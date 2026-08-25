@@ -17,8 +17,12 @@ const contarVisita = (req, res, next) => {
         return next();
     }
 
-    // Solo registro peticiones GET de páginas (no APIs, no assets estáticos)
-    if (req.method === 'GET' && !req.path.startsWith('/api/') && !req.path.includes('.')) {
+    // Solo registro peticiones GET de páginas (no APIs, no assets, no imágenes)
+    if (req.method === 'GET'
+        && !req.path.startsWith('/api/')
+        && !req.path.startsWith('/img/')
+        && !req.path.includes('.')
+    ) {
         const ruta = req.path;
         const usuario = req.session?.usuario?.nombre || req.session?.usuario?.usuario || null;
         const ip = req.ip || req.connection?.remoteAddress || null;

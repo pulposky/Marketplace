@@ -302,6 +302,7 @@ const ProductoController = {
 
     // Cancela un apartado desde el cliente
     // El cliente solo puede cancelar los suyos propios
+    // Se cambia a UPDATE para que aparezca en el historial con cancelado_por = 'cliente'
     cancelarApartado: (req, res) => {
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Sesión no válida o expirada.' });
@@ -321,10 +322,10 @@ const ProductoController = {
 
             const apartado = resultados[0];
 
-            // Elimino el registro del apartado
-            ProductoModel.eliminarApartado(idApartado, (errDelete) => {
-                if (errDelete) {
-                    console.error('Error al eliminar apartado:', errDelete);
+            // Cambio el estado a cancelado con cancelado_por = 'cliente'
+            ProductoModel.cancelarApartadoCliente(idApartado, (errCancel) => {
+                if (errCancel) {
+                    console.error('Error al cancelar apartado del cliente:', errCancel);
                     return res.status(500).json({ error: 'Error al cancelar el apartado en la BD.' });
                 }
 
