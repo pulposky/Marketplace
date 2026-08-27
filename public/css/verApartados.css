@@ -356,6 +356,74 @@ body {
         align-items: flex-start;
     }
 }
+
+/* Historial responsive en tablets */
+@media (max-width: 640px) {
+    .filtro-historial {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .filtro-campos {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .filtro-campo {
+        width: 100%;
+    }
+
+    .filtro-campo input[type="date"] {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .btn-limpiar-filtro {
+        width: 100%;
+    }
+
+    /* Tarjetas del historial: imagen más pequeña */
+    .tarjeta-historial {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .tarjeta-historial .imagen-miniatura {
+        width: 68px;
+        height: 68px;
+        min-width: 68px;
+    }
+}
+
+/* Historial responsive en celulares pequeños */
+@media (max-width: 480px) {
+    .tarjeta-historial {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .tarjeta-historial .imagen-miniatura {
+        width: 100%;
+        height: 150px;
+        min-width: 0;
+    }
+
+    .fila-historial {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .fila-historial .nombre-producto {
+        font-size: 1rem;
+    }
+
+    .detalle-historial {
+        width: 100%;
+    }
+}
 .badge-estado.entregado {
     background-color: var(--fondo-verde);
     color: var(--texto-verde);
@@ -430,4 +498,233 @@ body {
 @keyframes parpadeoUrgente {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.55; }
+}
+
+/* ============================
+    HISTORIAL DE COMPRAS
+============================ */
+.seccion-historial {
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 2px dashed var(--borde);
+}
+
+.titulo-seccion-historial {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--verde-oscuro);
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--verde-sena);
+    padding-bottom: 4px;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.seccion-historial .subtitulo-seccion {
+    margin-bottom: 20px;
+}
+
+/* FILTRO POR FECHAS */
+.filtro-historial {
+    background-color: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.filtro-historial:hover {
+    border-color: rgba(57, 169, 0, 0.35);
+    box-shadow: 0 6px 18px rgba(0, 104, 55, 0.08);
+}
+
+.filtro-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--texto-primario);
+}
+
+.icono-filtro {
+    width: 18px;
+    height: 18px;
+    color: var(--verde-sena);
+    flex-shrink: 0;
+}
+
+.filtro-campos {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filtro-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filtro-etiqueta {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--texto-secundario);
+}
+
+.filtro-campo input[type="date"] {
+    padding: 9px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--texto-primario);
+    background-color: var(--blanco);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    min-width: 150px;
+}
+
+.filtro-campo input[type="date"]:focus {
+    outline: none;
+    border-color: var(--verde-sena);
+    box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.15);
+}
+
+.btn-limpiar-filtro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--borde);
+    background-color: var(--gris-claro);
+    color: var(--texto-secundario);
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-limpiar-filtro .icono-limpiar {
+    width: 15px;
+    height: 15px;
+}
+
+.btn-limpiar-filtro:hover {
+    background-color: var(--rojo-cancelar);
+    border-color: var(--rojo-cancelar);
+    color: var(--blanco);
+    transform: translateY(-1px);
+}
+
+.filtro-historial-vacio {
+    text-align: center;
+    padding: 24px 20px;
+    color: var(--texto-secundario);
+    font-size: 0.9rem;
+    background-color: var(--blanco);
+    border: 1px dashed var(--borde);
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+.rejilla-historial {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.tarjeta-historial {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 14px;
+    background-color: var(--blanco);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.tarjeta-historial:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.tarjeta-historial .imagen-miniatura {
+    width: 84px;
+    height: 84px;
+    min-width: 84px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--gris-claro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.tarjeta-historial .imagen-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.tarjeta-historial .imagen-miniatura span {
+    font-size: 0.72rem;
+    color: var(--texto-secundario);
+    padding: 0 6px;
+    line-height: 1.2;
+}
+
+.detalle-historial {
+    flex: 1;
+    min-width: 0;
+}
+
+.fila-historial {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.fila-historial .nombre-producto {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+}
+
+.fila-historial .badge-estado {
+    position: static;
+    flex-shrink: 0;
+}
+
+.presentacion-historial {
+    font-size: 0.8rem;
+    color: var(--texto-secundario);
+    margin-bottom: 2px;
+}
+
+.fecha-historial {
+    font-size: 0.78rem;
+    color: var(--texto-secundario);
+    margin-top: 8px;
+}
+
+.nota-cancelado {
+    font-size: 0.75rem;
+    color: var(--texto-rojo);
+    font-style: italic;
+    margin-top: 4px;
 }

@@ -4,13 +4,17 @@
 
 .contenedor-registro {
     width: 100%;
-    max-width: 380px;
+    max-width: 520px;
     margin: auto;
-    padding: 25px;
+    padding: 24px 28px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 14px;
     font-family: "Segoe UI", sans-serif;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
 }
 
 /* ENCABEZADO */
@@ -19,49 +23,81 @@
 }
 
 .registro-encabezado h1 {
-    font-size: 34px;
+    font-size: 26px;
     color: #222;
-    margin-bottom: 8px;
+    margin: 0 0 4px 0;
 }
 
 .registro-encabezado p {
     color: #777;
-    font-size: 15px;
+    font-size: 14px;
+    margin: 0;
 }
 
 /* FORMULARIO */
 .registro-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.registro-form button,
+.mensaje-registro,
+.registro-pie {
+    grid-column: span 2;
+}
+
+.campo {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 4px;
+}
+
+.campo label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.campo input,
+.campo select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    transition: .2s;
+    box-sizing: border-box;
+    background: #fff;
+    color: #333;
 }
 
 /* SELECT / DROPDOWN */
 .campo select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #d5d5d5;
-    border-radius: 8px;
-    outline: none;
-    font-size: 15px;
-    transition: .2s;
-    box-sizing: border-box;
-    background: #fff;
     appearance: auto;
     cursor: pointer;
-    color: #333;
 }
 
+.campo input:focus,
 .campo select:focus {
     border-color: #39A900;
     box-shadow: 0 0 0 3px rgba(57, 169, 0, .15);
 }
 
+.registro-form button {
+    margin-top: 6px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
 /* MENSAJE REGISTRO */
 .mensaje-registro {
     display: none;
-    margin-top: 10px;
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
     text-align: center;
     font-size: 14px;

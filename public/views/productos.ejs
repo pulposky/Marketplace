@@ -265,9 +265,21 @@
                             </div>
 
                             <div id="clienteFields">
-                                <div class="campo">
+                                <div class="campo" id="campoDoc">
                                     <label for="doc">Documento</label>
                                     <input type="text" id="doc" name="documento" placeholder="Documento">
+                                </div>
+                                <div class="campo" id="campoPwd" style="display:none;">
+                                    <label for="pwdCliente">Contraseña</label>
+                                    <input type="password" id="pwdCliente" name="password" placeholder="Contraseña">
+                                </div>
+                                <div class="campo" id="campoNuevaPwd" style="display:none;">
+                                    <label for="nuevaPwd">Nueva contraseña</label>
+                                    <input type="password" id="nuevaPwd" name="nuevaPassword" placeholder="Crea tu contraseña">
+                                </div>
+                                <div class="campo" id="campoConfirmPwd" style="display:none;">
+                                    <label for="confirmPwd">Confirmar contraseña</label>
+                                    <input type="password" id="confirmPwd" placeholder="Repite tu contraseña">
                                 </div>
                             </div>
 
@@ -282,10 +294,13 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn-principal">Iniciar sesión</button>
+                            <button type="submit" id="btnLoginSubmit" class="btn-principal">Iniciar sesión</button>
                         </form>
                         <p class="login-pie">
                             ¿No tienes cuenta? <a href="#" class="enlace-fuerte enlace-registro">Regístrate</a>
+                        </p>
+                        <p class="login-pie" id="enlaceOlvideLogin" style="display:none;">
+                            ¿Olvidaste tu contraseña? <a href="#" class="enlace-fuerte enlace-olvide">Recupérala</a>
                         </p>
                         <p id="mensaje" class="mensaje-error"></p>
                     </main>
@@ -339,12 +354,62 @@
                                     <option value="administrativo">Administrativo</option>
                                 </select>
                             </div>
+                            <div class="campo">
+                                <label for="regPassword">Contraseña</label>
+                                <input type="password" id="regPassword" name="password" placeholder="Crea tu contraseña">
+                            </div>
+                            <div class="campo">
+                                <label for="regConfirmarPassword">Confirmar contraseña</label>
+                                <input type="password" id="regConfirmarPassword" placeholder="Repite tu contraseña">
+                            </div>
                             <button type="submit" class="btn-principal">Registrarme</button>
                         </form>
                         <p class="registro-pie">
                             ¿Ya tienes cuenta? <a href="#" class="enlace-fuerte" id="volverLogin">Inicia sesión</a>
                         </p>
                         <p id="mensajeRegistro" class="mensaje-registro"></p>
+                    </main>
+                    <footer class="pie-pagina">
+                        <span class="pie-punto" aria-hidden="true"></span>
+                        SENA · Colombia
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL OLVIDÉ CONTRASEÑA -->
+        <div class="modal-fondo" id="modalOlvide">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" id="cerrarModalOlvide">&times;</span>
+                <div class="contenedor-registro">
+                    <div class="marca">
+                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
+                        <span class="marca-texto">Marketplace</span>
+                    </div>
+                    <main class="registro" role="main">
+                        <div class="registro-encabezado">
+                            <h1>Olvidé mi contraseña</h1>
+                            <p>Completa tu documento y crea una nueva contraseña</p>
+                        </div>
+                        <form class="registro-form" id="formOlvide">
+                            <div class="campo">
+                                <label for="olvDocumento">Documento</label>
+                                <input type="text" id="olvDocumento" name="documento" placeholder="Número de documento">
+                            </div>
+                            <div class="campo">
+                                <label for="olvNuevaPassword">Nueva contraseña</label>
+                                <input type="password" id="olvNuevaPassword" name="nuevaPassword" placeholder="Nueva contraseña">
+                            </div>
+                            <div class="campo">
+                                <label for="olvConfirmarPassword">Confirmar contraseña</label>
+                                <input type="password" id="olvConfirmarPassword" placeholder="Repite tu contraseña">
+                            </div>
+                            <button type="submit" class="btn-principal">Restablecer contraseña</button>
+                        </form>
+                        <p class="registro-pie">
+                            ¿Ya la recordaste? <a href="#" class="enlace-fuerte" id="volverLoginOlvide">Inicia sesión</a>
+                        </p>
+                        <p id="mensajeOlvide" class="mensaje-registro"></p>
                     </main>
                     <footer class="pie-pagina">
                         <span class="pie-punto" aria-hidden="true"></span>
@@ -374,7 +439,7 @@
                     </svg>
                 </div>
                 <h3 class="alerta-titulo">Aviso importante</h3>
-                <p class="alerta-mensaje">Los productos estarán apartados por <strong>10 segundos</strong>.</p>
+                <p class="alerta-mensaje">Los productos estarán apartados por <strong>1 hora</strong>.</p>
                 <button class="alerta-boton" id="cerrarAlertaApartado">Entendido</button>
             </div>
         </div>
@@ -382,6 +447,7 @@
         <script src="/js/toast.js"></script>
         <script src="/js/login.js"></script>
         <script src="/js/registro.js"></script>
+        <script src="/js/olvide.js"></script>
         <script src="/js/productos.js"></script>
 </body>
 

@@ -142,6 +142,12 @@
     border: 1px solid #ffb74d;
 }
 
+.mensaje-exito{
+    background: #e5f7e5;
+    color: #1e7e34;
+    border: 1px solid #6fce76;
+}
+
 /* FOOTER */
 
 .pie-pagina{

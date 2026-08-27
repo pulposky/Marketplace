@@ -1,63 +1,17 @@
 // =============================================
-// MODELO DE PRODUCTOS Y NOTIFICACIONES
+// MODELO DE APARTADOS (RESERVAS)
 // =============================================
-// Acá están todas las consultas SQL del proyecto.
-// Cada función recibe un callback que se ejecuta
-// cuando la consulta termina. Usamos mysql2 con
-// callbacks (no promesas) porque es más sencillo
-// para este proyecto.
-//
-// Tablas que maneja:
-//   - producto (catálogo)
-//   - apartados (reservas de clientes)
-//   - notificaciones (para el admin)
+// Consultas SQL de la tabla 'apartados': crear,
+// consultar, confirmar, entregar y cancelar
+// apartados (incluida la expiración automática).
 // =============================================
 
 const conexion = require('../database/conexion');
 
-const ProductoModel = {
+const ApartadoModel = {
 
     // ------------------------------------------------
-    // CONSULTAS DE PRODUCTOS
-    // ------------------------------------------------
-
-    // Trae todos los productos excepto el comodín y los sin precio
-    obtenerTodos: (callback) => {
-        conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC", callback);
-    },
-
-    // Trae los productos más vendidos (los que más apartados confirmados/entregados tienen)
-    obtenerDestacados: (callback) => {
-        const sql = `
-            SELECT 
-                p.nombre,
-                p.unidad,
-                p.lugar,
-                p.precio,
-                p.id_producto,
-                p.limite_venta,
-                p.estado,
-                SUM(a.cantidad) AS total_vendido
-            FROM producto p
-            INNER JOIN apartados a ON a.producto = p.id_producto
-            WHERE a.estado IN ('confirmado', 'entregado')
-              AND p.nombre != 'COMODIN'
-              AND p.precio > 0
-            GROUP BY p.id_producto, p.nombre, p.unidad, p.lugar, p.precio, p.limite_venta, p.estado
-            ORDER BY total_vendido DESC
-            LIMIT 4
-        `;
-        conexion.query(sql, callback);
-    },
-
-    // Busca un producto por su ID (lo uso antes de crear un apartado)
-    obtenerPorId: (id, callback) => {
-        const sql = 'SELECT * FROM producto WHERE id_producto = ?';
-        conexion.query(sql, [id], callback);
-    },
-
-    // ------------------------------------------------
-    // CONSULTAS DE APARTADOS
+    // CREACIÓN
     // ------------------------------------------------
 
     // Crea un apartado nuevo cuando un cliente reserva
@@ -75,18 +29,9 @@ const ProductoModel = {
         conexion.query(sql, valores, callback);
     },
 
-    // Actualiza el límite de venta y el estado de un producto
-    // Se usa cuando se crea un apartado (descuenta stock) o cuando el admin cambia la cantidad
-    actualizarLimiteVenta: (id, limite, estado, callback) => {
-        const sql = 'UPDATE producto SET limite_venta = ?, estado = ? WHERE id_producto = ?';
-        conexion.query(sql, [limite, estado, id], callback);
-    },
-
-    // Cambia solo el estado del producto (activo/inactivo)
-    actualizarEstado: (id, estado, callback) => {
-        const sql = 'UPDATE producto SET estado = ? WHERE id_producto = ?';
-        conexion.query(sql, [estado, id], callback);
-    },
+    // ------------------------------------------------
+    // CONSULTAS
+    // ------------------------------------------------
 
     // Trae todos los apartados de un cliente específico (para la vista "mis apartados")
     obtenerApartadosPorCliente: (nombreCliente, callback) => {
@@ -117,30 +62,13 @@ const ProductoModel = {
         conexion.query(sql, [idApartado], callback);
     },
 
-    // Elimina un apartado completamente (lo usa el cliente cuando cancela)
-    eliminarApartado: (idApartado, callback) => {
-        const sql = 'DELETE FROM apartados WHERE id_apartado = ?';
-        conexion.query(sql, [idApartado], callback);
-    },
-
-    // Devuelve las unidades al stock del producto cuando se cancela un apartado
-    devolverStockProducto: (idProducto, cantidad, callback) => {
-        const sql = `
-            UPDATE producto 
-            SET limite_venta = limite_venta + ?, 
-                estado = 'activo' 
-            WHERE id_producto = ?
-        `;
-        conexion.query(sql, [cantidad, idProducto], callback);
-    },
-
     // Trae los apartados para el admin.
     // Estados de filtro aceptados:
     //   'pendiente' | 'confirmado' | 'entregado' | 'cancelado' -> ese estado
     //   'activos'   -> pendientes + confirmados (fila de trabajo)
     //   'historial' -> entregados + cancelados (pedidos terminados)
     //   otro / 'todos' -> historial completo
-        obtenerTodosApartados: (estado, callback) => {
+    obtenerTodosApartados: (estado, callback) => {
         if (typeof estado === 'function') {
             callback = estado;
             estado = 'todos';
@@ -158,7 +86,7 @@ const ProductoModel = {
             parametros = [estado];
         }
 
-    const sql = `
+        const sql = `
             SELECT 
                 a.id_apartado,
                 a.nombre_cliente,
@@ -181,6 +109,10 @@ const ProductoModel = {
         `;
         conexion.query(sql, parametros, callback);
     },
+
+    // ------------------------------------------------
+    // CAMBIOS DE ESTADO
+    // ------------------------------------------------
 
     // Cambia el estado de un apartado a "confirmado"
     confirmarApartado: (idApartado, callback) => {
@@ -229,41 +161,7 @@ const ProductoModel = {
     cancelarApartadoPorExpiracion: (idApartado, callback) => {
         const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
         conexion.query(sql, ['cancelado', 'admin', idApartado], callback);
-    },
-
-    // ------------------------------------------------
-    // CONSULTAS DE NOTIFICACIONES
-    // ------------------------------------------------
-
-    // Crea una notificación nueva (se llama cuando alguien aparta un producto)
-    crearNotificacion: (datos, callback) => {
-        const sql = 'INSERT INTO notificaciones (titulo, mensaje) VALUES (?, ?)';
-        conexion.query(sql, [datos.titulo, datos.mensaje], callback);
-    },
-
-    // Trae las notificaciones que no se han leído (máximo 20, las más recientes primero)
-    obtenerNotificacionesNoLeidas: (callback) => {
-        const sql = 'SELECT * FROM notificaciones WHERE leido = 0 ORDER BY fecha DESC LIMIT 20';
-        conexion.query(sql, callback);
-    },
-
-    // Cuenta cuántas notificaciones hay sin leer (para el badge de la campana)
-    contarNoLeidas: (callback) => {
-        const sql = 'SELECT COUNT(*) AS total FROM notificaciones WHERE leido = 0';
-        conexion.query(sql, callback);
-    },
-
-    // Marca una notificación individual como leída
-    marcarComoLeida: (id, callback) => {
-        const sql = 'UPDATE notificaciones SET leido = 1 WHERE id = ?';
-        conexion.query(sql, [id], callback);
-    },
-
-    // Marca todas las notificaciones no leídas como leídas de una vez
-    marcarTodasLeidas: (callback) => {
-        const sql = 'UPDATE notificaciones SET leido = 1 WHERE leido = 0';
-        conexion.query(sql, callback);
     }
 };
 
-module.exports = ProductoModel;
+module.exports = ApartadoModel;

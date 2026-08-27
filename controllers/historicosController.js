@@ -6,7 +6,7 @@
 // los gráficos.
 // =============================================
 
-const HistoricosModel = require('../model/historicosModel');
+const HistoricosModel = require('../models/historicosModel');
 const ExcelJS = require('exceljs');
 
 const HistoricosController = {

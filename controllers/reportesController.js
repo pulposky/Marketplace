@@ -10,8 +10,8 @@
 // para que las tildes se vean bien.
 // =============================================
 
-const ProductoModel = require('../model/productoModel');
-const UsuarioModel = require('../model/usuariosModel');
+const ApartadoModel = require('../models/apartadoModel');
+const UsuarioModel = require('../models/usuarioModel');
 
 // Convierte un arreglo de objetos a texto CSV.
 // Los valores van entre comillas y las comillas
@@ -41,7 +41,7 @@ const ReportesController = {
     // GET /api/admin/reportes/pedidos.csv
     // Descarga todos los pedidos con su estado actual
     exportarPedidosCSV: (req, res) => {
-        ProductoModel.obtenerTodosApartados('todos', (error, apartados) => {
+        ApartadoModel.obtenerTodosApartados('todos', (error, apartados) => {
             if (error) {
                 console.error('Error generando reporte de pedidos:', error);
                 return res.status(500).json({ error: 'Error al generar el reporte de pedidos.' });

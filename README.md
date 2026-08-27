@@ -134,41 +134,60 @@ Servidor disponible en: **http://localhost:3000**
 
 ```
 Marketplace/
+├── app.js                         # Construcción de la app Express (middlewares y rutas)
+├── server.js                      # Punto de entrada (levanta app, job de expiración y puerto)
+├── config/
+│   └── session.js                 # Configuración de la sesión
 ├── controllers/
-│   ├── productosController.js    # Productos y apartados
-│   ├── historicosController.js   # Estadísticas
-│   ├── usuarioController.js      # Login y registro
-│   └── viewController.js         # Renderizado de vistas
-├── model/
-│   ├── productoModel.js          # SQL de productos
-│   ├── historicosModel.js        # SQL de estadísticas
-│   └── usuarioModel.js           # SQL de usuarios
-├── database/
-│   ├── schema.sql                # Script de tablas
-│   └── conexion.js               # Conexión MySQL
+│   ├── sitioController.js         # Páginas públicas (inicio y catálogo)
+│   ├── authController.js          # Login, logout, registro y verificar sesión
+│   ├── productoController.js      # APIs de productos (catálogo y admin)
+│   ├── apartadoController.js      # Ciclo completo del apartado/pedido
+│   ├── clienteController.js       # Perfil y "mis apartados"
+│   ├── adminController.js         # Pantallas del panel y gestión de clientes
+│   ├── notificacionesController.js# Campana de alertas del admin
+│   ├── historicosController.js    # Estadísticas
+│   └── reportesController.js      # Exportación CSV
+├── models/
+│   ├── productoModel.js           # SQL de productos
+│   ├── apartadoModel.js           # SQL de apartados/pedidos y notificaciones de apartados
+│   ├── usuarioModel.js            # SQL de usuarios
+│   ├── notificacionModel.js       # SQL de las notificaciones de la campana
+│   └── historicosModel.js         # SQL de estadísticas
+├── routes/
+│   ├── index.js                   # Une los routers de cada área
+│   ├── publico.js                 # Rutas públicas
+│   ├── cliente.js                 # Rutas de cliente logueado
+│   └── admin.js                   # Rutas del panel de administración
 ├── middleware/
-│   ├── verificarUsuario.js       # Protección de rutas
-│   └── contadorVisitas.js        # Registro de tráfico
+│   ├── verificarAdmin.js          # Restricción de acceso a administradores
+│   ├── verificarUsuario.js        # Protección de rutas con sesión
+│   └── contadorVisitas.js         # Registro de tráfico
+├── services/
+│   └── expirarApartados.js        # Job que cancela apartados tras 1 hora
+├── utils/
+│   ├── helpers.js                 # Utilidades compartidas (normalizar categorías)
+│   └── imagenes.js                # Carga/depuración de imágenes de productos
+├── database/
+│   ├── schema.sql                 # Script de tablas
+│   └── conexion.js                # Conexión MySQL
 ├── public/
-│   ├── css/                      # Estilos
-│   ├── js/                       # Scripts del navegador
+│   ├── css/                       # Estilos
+│   ├── js/                        # Scripts del navegador
 │   │   ├── main.js
 │   │   ├── productos.js
 │   │   ├── login.js
 │   │   ├── registro.js
 │   │   ├── toast.js
 │   │   └── admin/
-│   ├── img/                      # Imágenes
-│   │   └── carrusel/             # Carousel dinámico
-│   └── views/                    # Plantillas EJS
+│   ├── img/                       # Imágenes
+│   │   └── carrusel/              # Carousel dinámico
+│   └── views/                     # Plantillas EJS
 │       ├── main.ejs
 │       ├── productos.ejs
 │       ├── verApartados.ejs
 │       └── admin/
-├── src/
-│   └── router.js                 # Definición de rutas
-├── .env                          # Variables de entorno
-├── server.js                     # Punto de entrada
+├── .env                           # Variables de entorno
 ├── package.json
 └── README.md
 ```

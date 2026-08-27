@@ -31,15 +31,30 @@
         </div>
 
         <% 
-        // Filtrar para obtener solo los apartados que NO están entregados ni cancelados
+        // Apartados ACTIVOS: los que todavía se pueden gestionar (pendiente/confirmado)
         const apartadosVisibles = (typeof apartados !== 'undefined') 
             ? apartados.filter(item => {
                 const estado = item.estado_apartado || 'pendiente';
                 return estado !== 'entregado' && estado !== 'cancelado';
             }) 
             : [];
+
+        // HISTORIAL: pedidos terminados (entregados o cancelados)
+        const apartadosHistorial = (typeof apartados !== 'undefined') 
+            ? apartados.filter(item => {
+                const estado = item.estado_apartado || 'pendiente';
+                return estado === 'entregado' || estado === 'cancelado';
+            }) 
+            : [];
         %>
 
+        <% if (apartadosVisibles.length === 0 && apartadosHistorial.length === 0) { %>
+            <div class="estado-vacio">
+                <h3>No tienes apartados ni historial de compras</h3>
+                <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
+                <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
+            </div>
+        <% } else { %>
         <% if (apartadosVisibles.length > 0) { %>
             <div class="rejilla-productos">
                 <% apartadosVisibles.forEach(item => {
@@ -106,7 +121,7 @@
 
                         <% if (!esConfirmado && item.fecha) { 
                             const fechaApartado = new Date(item.fecha);
-                            const expira = new Date(fechaApartado.getTime() + 10 * 1000);
+                            const expira = new Date(fechaApartado.getTime() + 60 * 60 * 1000);
                         %>
                             <div class="temporizador-apartado" data-expira="<%= expira.toISOString() %>">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -118,7 +133,7 @@
 
                         <% if (esConfirmado) { %>
                             <button type="button" class="btn-dismiss btn-dismiss-confirmado" data-id="<%= item.id_apartado %>">
-                                Eliminar
+                                Ocultar
                             </button>
                         <% } else { %>
                             <button type="button" class="btn-cancelar btn-accion-cancelar" data-id="<%= item.id_apartado %>">
@@ -128,12 +143,109 @@
                     </div>
                 <% }) %>
             </div>
-        <% } else { %>
-            <div class="estado-vacio">
-                <h3>No tienes apartados activos</h3>
-                <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
-                <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
+        <% } %>
+
+        <% if (apartadosHistorial.length > 0) { %>
+            <div class="seccion-historial">
+                <h2 class="titulo-seccion-historial">HISTORIAL DE COMPRAS</h2>
+                <p class="subtitulo-seccion">Pedidos entregados o cancelados.</p>
+
+                <div class="filtro-historial">
+                    <div class="filtro-cabecera">
+                        <svg class="icono-filtro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span>Filtrar por fecha</span>
+                    </div>
+                    <div class="filtro-campos">
+                        <label class="filtro-campo">
+                            <span class="filtro-etiqueta">Desde</span>
+                            <input type="date" id="filtro-desde" aria-label="Fecha desde">
+                        </label>
+                        <label class="filtro-campo">
+                            <span class="filtro-etiqueta">Hasta</span>
+                            <input type="date" id="filtro-hasta" aria-label="Fecha hasta">
+                        </label>
+                        <button type="button" class="btn-limpiar-filtro" id="btn-limpiar-filtro">
+                            <svg class="icono-limpiar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="1 4 1 10 7 10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                            </svg>
+                            Limpiar filtro
+                        </button>
+                    </div>
+                </div>
+
+                <div class="rejilla-historial">
+                    <% apartadosHistorial.forEach(item => {
+                        // 1. Detectar si el ítem es huevo
+                        const esHuevoH = item.es_huevo || (item.nombre && item.nombre.toLowerCase().includes('huevo'));
+
+                        // 2. Precios base
+                        const precioUnitarioH = Number(item.precio);
+                        const precioCubetaH = esHuevoH ? precioUnitarioH * 30 : precioUnitarioH;
+
+                        // 3. Convertir unidades a cubetas si aplica
+                        const cantidadUnidadesH = Number(item.cantidad);
+                        const cubetasH = esHuevoH ? Math.floor(cantidadUnidadesH / 30) : cantidadUnidadesH;
+
+                        // 4. Total pagado
+                        const totalHistorial = esHuevoH ? cubetasH * precioCubetaH : cantidadUnidadesH * precioUnitarioH;
+
+                        // 5. Estado del pedido
+                        const estadoH = item.estado_apartado || 'cancelado';
+                        const esCanceladoH = estadoH === 'cancelado';
+                        const textoEstadoH = estadoH === 'entregado' ? 'Entregado' : 'Cancelado';
+                        const fechaItemH = item.fecha ? new Date(item.fecha) : null;
+                        const fechaTextoH = fechaItemH ? fechaItemH.toLocaleString('es-CO') : '';
+                        // Fecha en formato yyyy-mm-dd para poder compararla con los inputs del filtro
+                        const fechaLocal = fechaItemH
+                            ? `${fechaItemH.getFullYear()}-${String(fechaItemH.getMonth() + 1).padStart(2, '0')}-${String(fechaItemH.getDate()).padStart(2, '0')}`
+                            : '';
+                        const motivoH = esCanceladoH && item.cancelado_por
+                            ? (item.cancelado_por === 'cliente' ? 'Cancelado por el cliente' : 'Cancelado por el administrador')
+                            : '';
+                    %>
+                        <div class="tarjeta-historial" data-fecha="<%= fechaLocal %>">
+                            <div class="imagen-miniatura">
+                                <% if (item.imagenUpload) { %>
+                                    <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
+                                <% } else { %>
+                                    <span><%= item.nombre %></span>
+                                <% } %>
+                            </div>
+                            <div class="detalle-historial">
+                                <div class="fila-historial">
+                                    <span class="nombre-producto"><%= item.nombre %></span>
+                                    <span class="badge-estado <%= estadoH %>"><%= textoEstadoH %></span>
+                                </div>
+                                <p class="presentacion-historial">
+                                    Cantidad: <strong><%= esHuevoH ? cubetasH : cantidadUnidadesH %></strong>
+                                    <%= esHuevoH ? 'Cubeta(s)' : (item.unidad || 'Unidad(es)') %>
+                                </p>
+                                <p class="presentacion-historial">
+                                    Total: <strong>$<%= totalHistorial.toLocaleString('es-CO') %></strong>
+                                </p>
+                                <% if (fechaTextoH) { %>
+                                    <p class="fecha-historial">Fecha: <%= fechaTextoH %></p>
+                                <% } %>
+                                <% if (motivoH) { %>
+                                    <p class="nota-cancelado"><%= motivoH %></p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+                <p id="filtro-historial-vacio" class="filtro-historial-vacio" style="display:none;">
+                    No hay pedidos en el rango de fechas seleccionado.
+                </p>
             </div>
+        <% } %>
         <% } %>
     </main>
 

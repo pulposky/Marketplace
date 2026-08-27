@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nombre = document.getElementById('perfilNombre')?.value.trim() || '';
         const telefono = document.getElementById('perfilTelefono')?.value.trim() || '';
         const direccion = document.getElementById('perfilDireccion')?.value.trim() || '';
+        const password = document.getElementById('perfilPassword')?.value || '';
 
         // Validaciones básicas antes de enviar
         if (!nombre) {
@@ -27,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!telefono) {
             toast('advertencia', 'El teléfono no puede estar vacío.');
+            return;
+        }
+        if (!password) {
+            toast('advertencia', 'Debes ingresar tu contraseña para guardar los cambios.');
             return;
         }
 
@@ -38,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify({ nombre, telefono, direccion })
+                body: JSON.stringify({ nombre, telefono, direccion, password })
             });
 
             let data = {};
@@ -50,6 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (respuesta.ok && data.ok) {
                 toast('exito', data.mensaje || 'Perfil actualizado correctamente.');
+                // Limpio el campo de contraseña por seguridad
+                const pwdInput = document.getElementById('perfilPassword');
+                if (pwdInput) pwdInput.value = '';
             } else {
                 toast('error', data.mensaje || 'No se pudo actualizar el perfil.');
             }

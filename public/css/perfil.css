@@ -7,6 +7,13 @@
     verde institucional del SENA).
 ============================================= */
 
+:root {
+    --verde-sena: #39A900;
+    --verde-oscuro: #006837;
+    --amarillo: #FFD100;
+    --lavanda: #71277B;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -46,6 +53,12 @@ body {
     letter-spacing: 0.5px;
 }
 
+.acciones-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .btn-regresar {
     display: inline-flex;
     align-items: center;
@@ -70,77 +83,279 @@ body {
 /* CONTENEDOR PRINCIPAL */
 .contenedor-principal {
     width: 100%;
-    max-width: 640px;
+    max-width: 1080px;
     margin: 32px auto;
     padding: 0 20px 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.encabezado-seccion {
-    margin-bottom: 20px;
+/* ===== ANIMACIONES DE ENTRADA ===== */
+@keyframes deslizarArriba {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.titulo-perfil {
-    font-size: 1.6rem;
+.cabecera-perfil,
+.tarjetas-horizontales,
+.zona-informacion {
+    animation: deslizarArriba 0.5s ease-out both;
+}
+
+.tarjetas-horizontales {
+    animation-delay: 0.08s;
+}
+
+.zona-informacion {
+    animation-delay: 0.16s;
+}
+
+/* ===== CABECERA DEL PERFIL ===== */
+.cabecera-perfil {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px 28px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.cabecera-perfil:hover {
+    box-shadow: 0 8px 24px rgba(15, 81, 50, 0.1);
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-perfil {
+    position: relative;
+    z-index: 2;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #0f5132 0%, var(--verde-sena) 55%, #86d72f 100%);
+    color: #ffffff;
+    font-size: 2.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #ffffff;
+    box-shadow:
+        0 0 0 4px rgba(255, 209, 0, 0.9),
+        0 8px 22px rgba(15, 81, 50, 0.35),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar-perfil::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 14px;
+    width: 26px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    transform: rotate(-25deg);
+}
+
+.avatar-wrapper:hover .avatar-perfil {
+    transform: scale(1.07) rotate(-4deg);
+    box-shadow:
+        0 0 0 5px rgba(255, 209, 0, 0.95),
+        0 10px 26px rgba(15, 81, 50, 0.45),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+/* Bolitas animadas alrededor del avatar (igual que en main) */
+.bolitas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.bolitas-a {
+    background-image:
+        radial-gradient(circle, var(--verde-sena) 40%, transparent 45%),
+        radial-gradient(circle, var(--verde-oscuro) 35%, transparent 40%),
+        radial-gradient(circle, var(--amarillo) 40%, transparent 45%),
+        radial-gradient(circle, var(--verde-sena) 30%, transparent 35%),
+        radial-gradient(circle, var(--verde-oscuro) 35%, transparent 40%);
+    background-size: 10px 10px, 14px 14px, 8px 8px, 12px 12px, 9px 9px;
+    background-position: 95% 15%, 75% 65%, 85% 40%, 60% 80%, 40% 25%;
+    background-repeat: no-repeat;
+    animation: flujoContinuoBolitas1 4s linear infinite;
+}
+
+.bolitas-b {
+    background-image:
+        radial-gradient(circle, var(--verde-oscuro) 35%, transparent 40%),
+        radial-gradient(circle, var(--verde-sena) 40%, transparent 45%),
+        radial-gradient(circle, var(--amarillo) 30%, transparent 35%),
+        radial-gradient(circle, var(--verde-sena) 35%, transparent 40%);
+    background-size: 12px 12px, 7px 7px, 11px 11px, 9px 9px;
+    background-position: 90% 75%, 70% 20%, 50% 60%, 30% 85%;
+    background-repeat: no-repeat;
+    animation: flujoContinuoBolitas2 4s linear infinite;
+    animation-delay: -2s;
+}
+
+@keyframes flujoContinuoBolitas1 {
+    0% { transform: translate(10px, -6px); opacity: 0; }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.8; }
+    100% { transform: translate(-50px, 30px); opacity: 0; }
+}
+
+@keyframes flujoContinuoBolitas2 {
+    0% { transform: translate(6px, 8px); opacity: 0; }
+    15% { opacity: 0.8; }
+    85% { opacity: 0.7; }
+    100% { transform: translate(40px, -40px); opacity: 0; }
+}
+
+.datos-cabecera {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nombre-perfil {
+    font-size: 1.5rem;
     font-weight: 800;
     color: #111827;
-    letter-spacing: 0.5px;
+    line-height: 1.2;
 }
 
-.subtitulo-perfil {
-    color: #6b7280;
-    margin-top: 4px;
+.badge-rol {
+    align-self: flex-start;
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background-color: rgba(57, 169, 0, 0.12);
+    color: #2e8700;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+    letter-spacing: 0.03em;
 }
 
-/* TARJETA DE PERFIL */
+/* ===== TARJETAS ===== */
 .tarjeta-perfil {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 28px 32px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
 }
 
-/* DATOS SOLO LECTURA */
-.grupo-datos-lectura {
-    display: flex;
-    gap: 32px;
-    flex-wrap: wrap;
-    padding-bottom: 20px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #e5e7eb;
+.tarjeta-perfil:hover {
+    box-shadow: 0 10px 30px rgba(15, 81, 50, 0.08);
+    border-color: rgba(57, 169, 0, 0.4);
+    transform: translateY(-2px);
 }
 
-.dato-lectura {
+.titulo-seccion {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eef0f3;
+}
+
+.texto-ayuda {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+}
+
+/* ===== DATOS DE IDENTIDAD ===== */
+.lista-datos {
     display: flex;
     flex-direction: column;
-    gap: 4px;
 }
 
-.dato-label {
-    font-size: 0.75rem;
+.dato-fila {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 8px;
+    border-bottom: 1px solid #f1f3f5;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, padding-left 0.2s ease;
+}
+
+.dato-fila:hover {
+    background-color: rgba(57, 169, 0, 0.06);
+    padding-left: 14px;
+}
+
+.dato-fila:last-child {
+    border-bottom: none;
+}
+
+.dato-icono {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background-color: rgba(57, 169, 0, 0.1);
+    color: #2e8700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.dato-icono svg {
+    width: 18px;
+    height: 18px;
+}
+
+.dato-fila:hover .dato-icono {
+    transform: scale(1.1);
+    background-color: #39A900;
+    color: #ffffff;
+}
+
+.dato-etiqueta {
+    font-size: 0.8rem;
     font-weight: 600;
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
 
-.dato-valor {
-    font-size: 1rem;
-    font-weight: 700;
+.dato-valor-fila {
+    font-size: 0.95rem;
+    font-weight: 600;
     color: #111827;
+    margin-left: auto;
+    text-align: right;
+    word-break: break-word;
 }
 
-.badge-rol {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    background-color: rgba(57, 169, 0, 0.12);
-    color: #2e8700;
-    font-weight: 700;
-    font-size: 0.85rem;
-    text-transform: capitalize;
-}
-
-/* FORMULARIO */
+/* ===== FORMULARIO ===== */
 .formulario-perfil .campo {
     margin-bottom: 18px;
 }
@@ -192,12 +407,124 @@ body {
 
 .btn-guardar:hover {
     background-color: #71277B;
-    box-shadow: 0 4px 12px rgba(113, 39, 123, 0.25);
+    box-shadow: 0 6px 16px rgba(113, 39, 123, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-guardar:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .btn-guardar:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* ===== TARJETAS HORIZONTALES (2 columnas) ===== */
+.tarjetas-horizontales {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    align-items: stretch;
+}
+
+.tarjetas-horizontales .tarjeta-perfil {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tarjetas-horizontales .tarjeta-datos {
+    justify-content: flex-start;
+}
+
+/* El formulario de edición ocupa el resto de la tarjeta para llenarla */
+.tarjetas-horizontales .formulario-perfil {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.tarjetas-horizontales .formulario-perfil .campo:last-of-type {
+    margin-bottom: auto;
+}
+
+/* ===== ZONA DE INFORMACIÓN COMPLEMENTARIA ===== */
+.zona-informacion {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    transition: box-shadow 0.3s ease;
+}
+
+.zona-informacion:hover {
+    box-shadow: 0 10px 30px rgba(15, 81, 50, 0.08);
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background-color: #f9fafb;
+    border: 1px solid #eef0f3;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.info-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(57, 169, 0, 0.12);
+    border-color: rgba(57, 169, 0, 0.4);
+}
+
+.icono-info {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    color: #39A900;
+    margin-top: 2px;
+    transition: transform 0.3s ease;
+}
+
+.info-item:hover .icono-info {
+    transform: scale(1.15) rotate(6deg);
+}
+
+.info-item h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.info-item p {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.45;
+}
+
+/* ===== ZONA DE BANNER ===== */
+.zona-imagen {
+    grid-column: 1 / -1;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fafbfc;
+}
+
+.zona-imagen .banner-perfil {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
 }
 
 /* RESPONSIVE */
@@ -206,7 +533,37 @@ body {
         padding: 22px 18px;
     }
 
-    .grupo-datos-lectura {
-        gap: 20px;
+    .cabecera-perfil {
+        padding: 20px 18px;
+        gap: 16px;
+    }
+
+    .avatar-perfil {
+        width: 72px;
+        height: 72px;
+        font-size: 1.9rem;
+    }
+
+    .avatar-wrapper {
+        width: 84px;
+        height: 84px;
+    }
+
+    .nombre-perfil {
+        font-size: 1.2rem;
+    }
+
+    /* En pantallas pequeñas las tarjetas se apilan */
+    .tarjetas-horizontales {
+        grid-template-columns: 1fr;
+    }
+
+    .zona-informacion {
+        grid-template-columns: 1fr;
+    }
+
+    /* En móvil el banner se muestra completo ajustando al ancho */
+    .zona-imagen .banner-perfil {
+        max-height: 200px;
     }
 }

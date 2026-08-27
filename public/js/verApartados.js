@@ -134,9 +134,55 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (temporizadores.length > 0) {
-        actualizarTemporizadores();
-        setInterval(actualizarTemporizadores, 1000);
+    // -----------------------------------------------
+    // FILTRO POR FECHAS DEL HISTORIAL DE COMPRAS
+    // -----------------------------------------------
+    // Los inputs "desde" y "hasta" ocultan o muestran
+    // las tarjetas del historial según su fecha. Cada
+    // tarjeta tiene un data-fecha en formato yyyy-mm-dd.
+    const inputDesde = document.getElementById('filtro-desde');
+    const inputHasta = document.getElementById('filtro-hasta');
+    const btnLimpiar = document.getElementById('btn-limpiar-filtro');
+
+    function aplicarFiltroHistorial() {
+        const desde = inputDesde.value;
+        const hasta = inputHasta.value;
+
+        const tarjetas = document.querySelectorAll('.tarjeta-historial');
+        tarjetas.forEach((tarjeta) => {
+            const fecha = tarjeta.getAttribute('data-fecha') || '';
+            // Si no hay rango definido, se muestra.
+            // La variable ya trae la fecha en formato yyyy-mm-dd,
+            // por lo que la comparación de strings es cronológica.
+            let visible = true;
+            if (desde && fecha < desde) visible = false;
+            if (hasta && fecha > hasta) visible = false;
+            // Si la tarjeta no tiene fecha y hay filtro activo, se oculta
+            if (!fecha && (desde || hasta)) visible = false;
+
+            tarjeta.style.display = visible ? '' : 'none';
+        });
+
+        // Aviso visual cuando el filtro no deja resultados
+        const historialVisible = [...tarjetas].some((t) => t.style.display !== 'none');
+        const avisoVacio = document.getElementById('filtro-historial-vacio');
+        if (avisoVacio) {
+            avisoVacio.style.display = tarjetas.length > 0 && !historialVisible ? 'block' : 'none';
+        }
+    }
+
+    if (inputDesde) {
+        inputDesde.addEventListener('change', aplicarFiltroHistorial);
+    }
+    if (inputHasta) {
+        inputHasta.addEventListener('change', aplicarFiltroHistorial);
+    }
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', () => {
+            inputDesde.value = '';
+            inputHasta.value = '';
+            aplicarFiltroHistorial();
+        });
     }
 
 });

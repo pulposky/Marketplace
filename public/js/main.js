@@ -160,52 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // -----------------------------------------------
     // FORMULARIO DE LOGIN (DENTRO DEL MODAL)
+    // Configura el flujo multi-paso del cliente (documento,
+    // crear contraseña si no tiene, o verificar la existente)
     // -----------------------------------------------
     if (formularioLogin) {
-        // Muestro/oculto campos según si es login de cliente o usuario
-        const tipoCliente = document.getElementById('tipo_cliente');
-        const tipoUsuario = document.getElementById('tipo_usuario');
-        const clienteFields = document.getElementById('clienteFields');
-        const usuarioFields = document.getElementById('usuarioFields');
-
-        function actualizarCampos() {
-            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
-            if (tipo === 'cliente') {
-                if (clienteFields) clienteFields.style.display = 'block';
-                if (usuarioFields) usuarioFields.style.display = 'none';
-            } else {
-                if (clienteFields) clienteFields.style.display = 'none';
-                if (usuarioFields) usuarioFields.style.display = 'block';
-            }
-        }
-
-        if (tipoCliente) tipoCliente.addEventListener('change', actualizarCampos);
-        if (tipoUsuario) tipoUsuario.addEventListener('change', actualizarCampos);
-        actualizarCampos(); // Estado inicial
-
-        // Envío del formulario de login
-        formularioLogin.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
-
-            let payload = {};
-            if (tipo === 'cliente') {
-                payload.documento = document.getElementById('doc')?.value || '';
-            } else {
-                payload.usuario = document.getElementById('user')?.value || '';
-                payload.password = document.getElementById('pwd')?.value || '';
-            }
-
-            const resultado = await procesarLogin(payload);
-            if (resultado && resultado.ok) {
-                // Si es admin/aprendiz, redirijo al panel; si no, recargo la página
-                if (resultado.redirect) {
-                    window.location.href = resultado.redirect;
-                    return;
-                }
-                window.location.reload();
-            }
-        });
+        configurarFormLogin(formularioLogin);
     }
 
     // -----------------------------------------------

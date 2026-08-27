@@ -783,6 +783,37 @@ body {
     100% { transform: translateX(-220px); opacity: 0; }
 }
 
+/* ANIMACIÓN DE ENTRADA AL CARGAR LA VISTA (como en Mi Perfil) */
+@keyframes deslizarArriba {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contenido-principal .carrusel,
+.contenido-principal .banner-bienvenida,
+.contenido-principal .cuadricula-estadisticas,
+.contenido-principal .seccion-productos {
+    animation: deslizarArriba 0.5s ease-out both;
+}
+
+.contenido-principal .banner-bienvenida {
+    animation-delay: 0.08s;
+}
+
+.contenido-principal .cuadricula-estadisticas {
+    animation-delay: 0.16s;
+}
+
+.contenido-principal .seccion-productos {
+    animation-delay: 0.24s;
+}
+
 /* ============================
     MEDIA QUERIES (RESPONSIVE)
 ============================ */
@@ -833,6 +864,32 @@ body {
         margin-left: 0;
     }
 
+    /* Menú y botones a ancho completo en móvil */
+    .navegacion-navbar {
+        width: 100%;
+    }
+
+    .navegacion-navbar .lista-menu {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .item-menu a.btn-cerrar,
+    .item-menu a.btn-perfil-nav,
+    .btn-iniciar-sesion {
+        white-space: nowrap;
+        padding: 10px 18px;
+        font-size: 0.85rem;
+    }
+
+    .acciones-navbar {
+        width: 100%;
+        justify-content: center;
+    }
+
     .banner-bienvenida::before,
     .banner-bienvenida::after {
         display: none !important;
@@ -876,5 +933,23 @@ body {
 
     .carrusel-contenedor {
         aspect-ratio: 4 / 3; /* Formato más vertical para móviles pequeños */
+    }
+
+    /* Botones de perfil/cerrar sesión a ancho completo en celulares pequeños */
+    .navegacion-navbar .lista-menu {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .item-menu a.btn-cerrar,
+    .item-menu a.btn-perfil-nav {
+        width: 100%;
+        text-align: center;
+        padding: 12px 18px;
+        font-size: 0.9rem;
+    }
+
+    .btn-iniciar-sesion {
+        width: 100%;
     }
 }

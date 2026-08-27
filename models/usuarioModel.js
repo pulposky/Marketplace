@@ -11,13 +11,8 @@ const conexion = require('../database/conexion');
 
 const UsuarioModel = {
 
-    // Trae todos los clientes registrados (no se usa mucho, pero está por si acaso)
-    obtenerTodos: (callback) => {
-        conexion.query('SELECT * FROM clientes', callback);
-    },
-
     // Login de cliente: busca por documento en la tabla 'clientes'
-    // No pide password, solo verifica que exista
+    // Devuelve el registro completo (incluye la columna password)
     login: (documento) => {
         return new Promise((resuelta, rechazada) => {
             conexion.query(
@@ -33,18 +28,18 @@ const UsuarioModel = {
         });
     },
 
-    // Login por documento + password (de la tabla 'usuarios')
-    // Este método no se usa actualmente, pero queda por si acaso
-    loginContrasena: (documento, password) => {
+    // Crea o actualiza la contraseña de un cliente.
+    // Recibe el hash bcrypt ya generado (nunca se guarda en texto plano).
+    crearPassword: (idCliente, hashPassword) => {
         return new Promise((resuelta, rechazada) => {
             conexion.query(
-                'SELECT * FROM usuarios WHERE documento = ? AND password = ?',
-                [documento, password],
-                (error, registros) => {
+                'UPDATE clientes SET password = ? WHERE id_cliente = ?',
+                [hashPassword, idCliente],
+                (error, resultado) => {
                     if (error) {
                         return rechazada(error);
                     }
-                    resuelta(registros);
+                    resuelta(resultado);
                 }
             );
         });
@@ -84,11 +79,12 @@ const UsuarioModel = {
     },
 
     // Registra un nuevo cliente en la tabla 'clientes'
+    // 'password' ya viene como hash bcrypt (nunca texto plano)
     registrar: (datos) => {
         return new Promise((resuelta, rechazada) => {
             conexion.query(
-                'INSERT INTO clientes (nombre, documento, direccion, telefono, rol) VALUES (?, ?, ?, ?, ?)',
-                [datos.nombre, datos.documento, datos.direccion, datos.telefono, datos.rol],
+                'INSERT INTO clientes (nombre, documento, direccion, telefono, rol, password) VALUES (?, ?, ?, ?, ?, ?)',
+                [datos.nombre, datos.documento, datos.direccion, datos.telefono, datos.rol, datos.password || null],
                 (error, resultado) => {
                     if (error) {
                         return rechazada(error);
@@ -109,6 +105,23 @@ const UsuarioModel = {
         return new Promise((resuelta, rechazada) => {
             conexion.query(
                 'SELECT id_cliente AS id, nombre, documento, direccion, telefono, rol FROM clientes WHERE id_cliente = ?',
+                [id],
+                (error, registros) => {
+                    if (error) {
+                        return rechazada(error);
+                    }
+                    resuelta(registros && registros[0]);
+                }
+            );
+        });
+    },
+
+    // Busca un cliente por su ID incluyendo la contraseña (hash).
+    // Se usa para verificar la contraseña al actualizar el perfil.
+    obtenerClienteConPasswordPorId: (id) => {
+        return new Promise((resuelta, rechazada) => {
+            conexion.query(
+                'SELECT id_cliente AS id, nombre, documento, direccion, telefono, rol, password FROM clientes WHERE id_cliente = ?',
                 [id],
                 (error, registros) => {
                     if (error) {

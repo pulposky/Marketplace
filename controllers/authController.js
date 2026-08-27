@@ -1,5 +1,5 @@
 // =============================================
-// CONTROLADOR DE USUARIOS
+// CONTROLADOR DE AUTENTICACIÓN
 // =============================================
 // Maneja el login y logout de usuarios.
 // Soporta dos tipos de login:
@@ -9,11 +9,12 @@
 // se determina buscando en la BD.
 // =============================================
 
-const UsuarioModel = require('../model/usuariosModel');
+const bcrypt = require('bcryptjs');
+const UsuarioModel = require('../models/usuarioModel');
 
 const loginUsuarioController = async (req, res) => {
     // Extraigo los campos del body, puede venir usuario+password o solo documento
-    const { documento, usuario, password } = req.body;
+    const { documento, usuario, password, nuevaPassword } = req.body;
 
     // ----- LOGIN POR USUARIO (admin / aprendiz) -----
     if (usuario) {
@@ -65,6 +66,7 @@ const loginUsuarioController = async (req, res) => {
     }
 
     try {
+        // Busco el cliente por su documento (incluye la columna password)
         const resultado = await UsuarioModel.login(documento);
 
         if (resultado.length === 0) {
@@ -72,6 +74,65 @@ const loginUsuarioController = async (req, res) => {
         }
 
         const clienteBD = resultado[0];
+        const tienePassword = !!clienteBD.password && String(clienteBD.password).trim() !== '';
+
+        // ----- PASO 0: CREAR CONTRASEÑA -----
+        // El cliente no tiene contraseña y está definiendo una nueva.
+        if (nuevaPassword) {
+            if (!String(nuevaPassword).trim()) {
+                return res.json({ ok: false, tipo: 'vacio', mensaje: 'La contraseña no puede estar vacía' });
+            }
+            if (String(nuevaPassword).length < 6) {
+                return res.json({ ok: false, tipo: 'vacio', mensaje: 'La contraseña debe tener al menos 6 caracteres' });
+            }
+
+            // Genero el hash y lo guardo (nunca el texto plano)
+            const hash = await bcrypt.hash(String(nuevaPassword), 10);
+            await UsuarioModel.crearPassword(clienteBD.id_cliente ?? clienteBD.id, hash);
+
+            return res.json({
+                ok: false,
+                tipo: 'exito',
+                passwordCreada: true,
+                documento,
+                mensaje: 'Contraseña creada correctamente. Ahora inicia sesión con tu documento y contraseña.'
+            });
+        }
+
+        // ----- PASO 1: SOLO DOCUMENTO -----
+        // El cliente aún no envió contraseña: verifico si ya tiene una.
+        if (password === undefined || password === null || password === '') {
+            if (!tienePassword) {
+                // No tiene contraseña: le pido que cree una
+                return res.json({
+                    ok: false,
+                    tipo: 'naranja',
+                    necesitaPassword: true,
+                    documento,
+                    mensaje: 'Tu usuario no tiene contraseña. Crea una para continuar.'
+                });
+            }
+            // Ya tiene contraseña: le pido que la ingrese
+            return res.json({
+                ok: false,
+                tipo: 'naranja',
+                requierePassword: true,
+                documento,
+                mensaje: 'Ingresa tu contraseña para continuar.'
+            });
+        }
+
+        // ----- PASO 2: DOCUMENTO + CONTRASEÑA -----
+        // El cliente ya tiene contraseña y la está comprobando.
+        if (!tienePassword) {
+            return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Este cliente no tiene contraseña creada' });
+        }
+
+        const coincide = await bcrypt.compare(String(password), clienteBD.password);
+        if (!coincide) {
+            return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Documento o contraseña incorrectos' });
+        }
+
         // Guardo los datos del cliente en la sesión con rol de cliente
         // (en la BD la llave es id_cliente; uso ?? por si cambia el nombre)
         req.session.usuario = {
@@ -99,13 +160,31 @@ const logoutUsuarioController = (req, res) => {
     });
 };
 
+// GET /api/verificar-sesion
+// Dice si hay una sesión activa (lo usa el frontend antes de apartar)
+const verificarSesion = (req, res) => {
+    if (req.session && req.session.usuario) {
+        return res.json({ login: true });
+    }
+    res.json({ login: false });
+};
+
 // Registro de nuevo usuario/cliente
 const registroUsuarioController = async (req, res) => {
-    const { nombre, documento, direccion, telefono, rol } = req.body;
+    const { nombre, documento, direccion, telefono, rol, password, nuevaPassword } = req.body;
 
     // Validar que todos los campos vengan
     if (!nombre || !documento || !direccion || !telefono || !rol) {
         return res.json({ ok: false, mensaje: 'Todos los campos son obligatorios' });
+    }
+
+    // La contraseña puede venir como 'password' o 'nuevaPassword'
+    const contrasena = password || nuevaPassword;
+    if (!contrasena || !String(contrasena).trim()) {
+        return res.json({ ok: false, mensaje: 'La contraseña es obligatoria' });
+    }
+    if (String(contrasena).length < 6) {
+        return res.json({ ok: false, mensaje: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
     // Lista de roles válidos
@@ -121,8 +200,11 @@ const registroUsuarioController = async (req, res) => {
             return res.json({ ok: false, mensaje: 'Ya existe un usuario con ese documento' });
         }
 
+        // Encripto la contraseña antes de guardarla (nunca texto plano)
+        const hash = await bcrypt.hash(String(contrasena), 10);
+
         // Insertar el nuevo registro
-        await UsuarioModel.registrar({ nombre, documento, direccion, telefono, rol });
+        await UsuarioModel.registrar({ nombre, documento, direccion, telefono, rol, password: hash });
 
         return res.json({ ok: true, mensaje: 'Registro exitoso. Ya puedes iniciar sesión.' });
     } catch (error) {
@@ -131,86 +213,9 @@ const registroUsuarioController = async (req, res) => {
     }
 };
 
-// Actualiza el perfil del cliente que está en sesión
-// Solo permite cambiar nombre, dirección y teléfono
-// (el documento no se puede modificar)
-const actualizarPerfilController = async (req, res) => {
-    if (!req.session || !req.session.usuario) {
-        return res.status(401).json({ ok: false, mensaje: 'Debes iniciar sesión.' });
-    }
-
-    // El perfil editable es solo para clientes;
-    // admin y aprendiz no tienen esta vista
-    const rolSesion = String(req.session.usuario.role || '').trim().toLowerCase();
-    if (rolSesion === 'admin' || rolSesion === 'aprendiz') {
-        return res.status(403).json({ ok: false, mensaje: 'Los administradores no tienen perfil de cliente.' });
-    }
-
-    const { nombre, direccion, telefono } = req.body;
-
-    if (!nombre || !nombre.trim()) {
-        return res.json({ ok: false, mensaje: 'El nombre no puede estar vacío' });
-    }
-    if (!telefono || !String(telefono).trim()) {
-        return res.json({ ok: false, mensaje: 'El teléfono no puede estar vacío' });
-    }
-
-    try {
-        await UsuarioModel.actualizarCliente(req.session.usuario.id, {
-            nombre: String(nombre).trim(),
-            direccion: String(direccion || '').trim(),
-            telefono: String(telefono).trim()
-        });
-
-        // Actualizo la sesión para que el resto del sitio
-        // muestre el nuevo nombre de una vez
-        req.session.usuario.nombre = String(nombre).trim();
-
-        return res.json({ ok: true, mensaje: 'Perfil actualizado correctamente.' });
-    } catch (error) {
-        console.error('Error en actualizarPerfilController:', error);
-        return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });
-    }
-};
-
-// Actualiza un cliente desde el panel admin
-// Sirve para la vista de gestión de clientes
-const actualizarClienteAdminController = async (req, res) => {
-    // Validación de rol: solo admin o aprendiz pueden editar clientes.
-    // Lo reviso acá porque las APIs de admin solo piden sesión activa.
-    const rolSesion = String(req.session?.usuario?.role || '').trim().toLowerCase();
-    if (rolSesion !== 'admin' && rolSesion !== 'aprendiz') {
-        return res.status(403).json({ ok: false, mensaje: 'No tienes permisos para gestionar clientes.' });
-    }
-
-    const { id } = req.params;
-    const { nombre, direccion, telefono } = req.body;
-
-    if (!id) {
-        return res.status(400).json({ ok: false, mensaje: 'Falta el ID del cliente.' });
-    }
-    if (!nombre || !nombre.trim()) {
-        return res.json({ ok: false, mensaje: 'El nombre no puede estar vacío' });
-    }
-
-    try {
-        await UsuarioModel.actualizarCliente(id, {
-            nombre: String(nombre).trim(),
-            direccion: String(direccion || '').trim(),
-            telefono: String(telefono || '').trim()
-        });
-
-        return res.json({ ok: true, mensaje: 'Cliente actualizado correctamente.' });
-    } catch (error) {
-        console.error('Error en actualizarClienteAdminController:', error);
-        return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });
-    }
-};
-
 module.exports = {
     loginUsuarioController,
     logoutUsuarioController,
-    registroUsuarioController,
-    actualizarPerfilController,
-    actualizarClienteAdminController
+    verificarSesion,
+    registroUsuarioController
 };

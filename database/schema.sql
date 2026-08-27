@@ -3,12 +3,20 @@
 -- ============================================================
 -- Esta base de datos es COMPARTIDA por dos sistemas:
 --
---   1. MARKETPLACE WEB (Node.js/EJS)  -> este repositorio
---      Reserva en línea de productos (apartados).
---
---   2. SISTEMA POS DE ESCRITORIO (Python/Flet)
+--   1. SISTEMA POS DE ESCRITORIO (Python/Flet)
 --      https://github.com/pulposky/Sistema_POS
 --      Pago presencial, facturación, inventario y remisiones.
+--
+--   2. MARKETPLACE WEB (Node.js/EJS)  -> este repositorio
+--      Reserva en línea de productos (apartados).
+--
+-- ORDEN DE EJECUCIÓN:
+--   Este script asume que el POS fue instalado primero y ya
+--   creó las tablas base. Las tablas del POS se crean con
+--   CREATE TABLE IF NOT EXISTS (no borran nada si ya existen).
+--   Las columnas propias de la web se agregan con ALTER TABLE
+--   ADD COLUMN IF NOT EXISTS (MySQL 8+). Las tablas web se
+--   crean con CREATE TABLE IF NOT EXISTS al final.
 --
 -- Reparto de tablas:
 --   COMPARTIDAS : usuarios, clientes, producto
@@ -16,11 +24,6 @@
 --                 detalle_compras, entradas, detalle_entradas,
 --                 remision, detalle_remision
 --   SOLO WEB    : apartados, notificaciones, page_views
---
--- Todo usa CREATE TABLE IF NOT EXISTS, así que este script se
--- puede ejecutar antes o después del script del POS sin borrar
--- nada y en cualquier orden. Sirve tanto si vas a usar solo la
--- web como si vas a usar los dos sistemas juntos.
 --
 -- Nota sobre el inventario entre sistemas:
 --   - El POS maneja el stock físico en producto.stock.
@@ -33,8 +36,12 @@
 CREATE DATABASE IF NOT EXISTS `sena_pdv` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `sena_pdv`;
 
+-- ============================================================
+-- TABLAS COMPARTIDAS (POS + WEB)
+-- ============================================================
+
 -- ------------------------------------------------------------
--- Tabla: usuarios (COMPARTIDA)
+-- Tabla: usuarios
 -- Login de admins y aprendices en la web, y cajeros en el POS
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `usuarios` (
@@ -51,7 +58,7 @@ VALUES (1, 'Administrador del Sistema', 'admin', 'admin123', 'Administrador')
 ON DUPLICATE KEY UPDATE `id_usuario`=`id_usuario`;
 
 -- ------------------------------------------------------------
--- Tabla: clientes (COMPARTIDA)
+-- Tabla: clientes
 -- Registro de clientes de la web y consumidor final del POS
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `clientes` (
@@ -60,7 +67,8 @@ CREATE TABLE IF NOT EXISTS `clientes` (
   `documento` VARCHAR(30) DEFAULT '',
   `direccion` VARCHAR(150) DEFAULT '',
   `telefono` VARCHAR(30) DEFAULT '',
-  `rol` VARCHAR(50) DEFAULT 'Cliente'
+  `rol` VARCHAR(50) DEFAULT 'Cliente',
+  `password` VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Cliente por defecto para ventas rápidas (Consumidor Final)
@@ -69,11 +77,13 @@ VALUES (1, 'Cliente General', '222222222222', 'Ciudad', '0000000000', 'Cliente')
 ON DUPLICATE KEY UPDATE `id_cliente`=`id_cliente`;
 
 -- ------------------------------------------------------------
--- Tabla: producto (COMPARTIDA)
+-- Tabla: producto
 -- Catálogo usado por la web (catálogo público y apartados) y
 -- por el POS (facturación e inventario).
---   limite_venta: columna propia de la WEB. Unidades habilitadas
---                 para venta en línea (0 = no disponible online).
+--
+-- Columnas propias de la WEB:
+--   limite_venta: unidades habilitadas para venta en línea
+--                 (0 = no disponible online).
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `producto` (
   `id_producto` INT AUTO_INCREMENT PRIMARY KEY,
@@ -86,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `producto` (
   `stock` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
   `limite_venta` INT NOT NULL DEFAULT 0,
   `estado` VARCHAR(50) DEFAULT 'inactivo',
-  `descripcion` VARCHAR(250) DEFAULT NULL
+  `descripcion` TEXT DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
@@ -142,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `detalle_venta` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- Tablas: compras a proveedores (POS)
+-- Tablas: compras a proveedores
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `compras` (
   `id_compra` INT AUTO_INCREMENT PRIMARY KEY,
@@ -167,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `detalle_compras` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- Tablas: entradas de inventario (POS)
+-- Tablas: entradas de inventario
 -- Agregan existencias por ajustes o devoluciones.
 -- No guardan ni modifican precios o costos.
 -- ------------------------------------------------------------
@@ -190,7 +200,7 @@ CREATE TABLE IF NOT EXISTS `detalle_entradas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- Tablas: remisiones (POS)
+-- Tablas: remisiones
 -- Despachos de mercancía sin factura directa.
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `remision` (
@@ -215,17 +225,37 @@ CREATE TABLE IF NOT EXISTS `detalle_remision` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
--- TABLAS PROPIAS DE LA WEB (MARKETPLACE)
+-- INTEGRACION CON MARKETPLACE WEB
+-- ============================================================
+-- Este bloque sincroniza la base de datos compartida con el
+-- Marketplace web (https://github.com/pulposky/Marketplace).
+--
+-- Si la base fue creada primero por el Marketplace, estas
+-- instrucciones no alteran nada (todo usa IF NOT EXISTS).
+-- Si la base fue creada primero por el POS, se agregan las
+-- columnas y tablas que la web necesita para funcionar.
 -- ============================================================
 
+-- Columna que la web usa para controlar el stock en linea
+-- (el POS solo usa producto.stock para el inventario fisico)
+ALTER TABLE `producto`
+  ADD COLUMN IF NOT EXISTS `limite_venta` INT NOT NULL DEFAULT 0;
+
+-- Columna descripcion por si no existia en el POS
+ALTER TABLE `producto`
+  ADD COLUMN IF NOT EXISTS `descripcion` TEXT DEFAULT NULL;
+
+-- Columna categoria por si no existia en el POS
+ALTER TABLE `producto`
+  ADD COLUMN IF NOT EXISTS `categoria` VARCHAR(100) DEFAULT 'Otros';
+
+-- Columna password para el login de clientes de la web
+-- (el POS no la usa; guarda el hash bcrypt)
+ALTER TABLE `clientes`
+  ADD COLUMN IF NOT EXISTS `password` VARCHAR(255) DEFAULT NULL;
+
 -- ------------------------------------------------------------
--- Tabla: apartados (WEB)
--- Reservas de productos hechas por los clientes en línea.
--- Ciclo: pendiente -> confirmado -> entregado (o cancelado)
---   pendiente : el cliente apartó, esperando revisión del admin
---   confirmado: el admin confirmó el pedido
---   entregado : el cliente pagó y recibió en el punto de venta
---   cancelado : se canceló y el stock de la web se devolvió
+-- Tabla: apartados (reservas de la web)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `apartados` (
   `id_apartado` INT AUTO_INCREMENT PRIMARY KEY,
@@ -238,13 +268,12 @@ CREATE TABLE IF NOT EXISTS `apartados` (
   FOREIGN KEY (`producto`) REFERENCES `producto`(`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Índices para pedidos, reportes y estadísticas
-CREATE INDEX `idx_apartados_estado` ON `apartados`(`estado`);
-CREATE INDEX `idx_apartados_cliente` ON `apartados`(`nombre_cliente`);
+-- Indices para pedidos, reportes y estadisticas
+CREATE INDEX IF NOT EXISTS `idx_apartados_estado` ON `apartados`(`estado`);
+CREATE INDEX IF NOT EXISTS `idx_apartados_cliente` ON `apartados`(`nombre_cliente`);
 
 -- ------------------------------------------------------------
--- Tabla: notificaciones (WEB)
--- Alertas para el admin cuando alguien aparta un producto
+-- Tabla: notificaciones (alertas para el admin)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `notificaciones` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -255,8 +284,7 @@ CREATE TABLE IF NOT EXISTS `notificaciones` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- Tabla: page_views (WEB)
--- Registro de visitas para las estadísticas del dashboard
+-- Tabla: page_views (registro de visitas del marketplace)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `page_views` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -266,3 +294,7 @@ CREATE TABLE IF NOT EXISTS `page_views` (
   `user_agent` TEXT DEFAULT NULL,
   `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================================
+-- FIN INTEGRACION MARKETPLACE WEB
+-- ============================================================

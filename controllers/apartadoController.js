@@ -1,59 +1,24 @@
 // =============================================
-// CONTROLADOR DE PRODUCTOS Y APARTADOS
+// CONTROLADOR DE APARTADOS
 // =============================================
-// Contiene toda la lógica para:
-//   - Listar productos (con filtro por categoría)
-//   - Crear apartados (con validación de stock)
-//   - Actualizar límite de venta y estado
-//   - Confirmar/cancelar apartados
-//   - Cancelar apartados del cliente
+// Todo el ciclo de vida de un apartado:
+// el cliente lo crea, el admin lo confirma o
+// entrega, y cualquiera puede cancelarlo.
 //
 // Maneja la conversión de cubetas de huevos
 // (cada cubeta = 30 unidades) para productos
 // que son huevo.
 // =============================================
 
-const ProductoModel = require('../model/productoModel');
+const ProductoModel = require('../models/productoModel');
+const ApartadoModel = require('../models/apartadoModel');
+const NotificacionModel = require('../models/notificacionModel');
 
-// Convierte categorías de query string a array limpio
-const normalizarCategorias = (valor) => {
-    if (!valor) return [];
-    const valores = Array.isArray(valor) ? valor : [valor];
-    return valores.map((item) => String(item).trim()).filter(Boolean);
-};
+const ApartadoController = {
 
-const ProductoController = {
-
-    // Devuelve todos los productos como JSON
-    // Opcionalmente filtra por categoría (?categoria=xxx)
-    // o por texto de búsqueda (?busqueda=xxx)
-    obtenerTodos: (req, res) => {
-        const categorias = normalizarCategorias(req.query.categoria || req.query.categorias);
-        const busqueda = String(req.query.busqueda || '').trim().toLowerCase();
-
-        ProductoModel.obtenerTodos((error, resultados) => {
-            if (error) {
-                return res.status(500).json({ error: 'Error al consultar la BD' });
-            }
-
-            let productosFiltrados = resultados;
-
-            if (categorias.length > 0) {
-                productosFiltrados = productosFiltrados.filter((producto) => categorias.includes(producto.categoria));
-            }
-
-            if (busqueda) {
-                productosFiltrados = productosFiltrados.filter((producto) =>
-                    producto.nombre && producto.nombre.toLowerCase().includes(busqueda)
-                );
-            }
-
-            res.json(productosFiltrados);
-        });
-    },
-
-    // Crea un apartado nuevo cuando un cliente reserva un producto
-    // Valida stock, descuenta unidades, crea notificación para admin
+    // POST /api/apartar-producto
+    // Crea un apartado nuevo cuando un cliente reserva un producto.
+    // Valida stock, descuenta unidades, crea notificación para admin.
     apartarProducto: (req, res) => {
         // Primero verifico que esté logueado
         if (!req.session || !req.session.usuario) {
@@ -81,7 +46,7 @@ const ProductoController = {
 
             // Detecto si es huevo para convertir cubetas a unidades (x30)
             const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
-            
+
             // Si el cliente envió cubetas, multiplico por 30 para tener las unidades reales
             const unidadesARestar = esHuevo ? cantidadIngresada * 30 : cantidadIngresada;
 
@@ -89,10 +54,10 @@ const ProductoController = {
 
             // Verifico que haya suficiente stock y que el producto esté activo
             if (producto.estado !== 'activo' || stockDisponible < unidadesARestar) {
-                return res.status(400).json({ 
-                    error: esHuevo 
-                        ? `No hay suficientes cubetas disponibles. Stock actual: ${Math.floor(stockDisponible / 30)} cubeta(s).` 
-                        : 'El producto está inactivo o no tiene cupo disponible para la venta.' 
+                return res.status(400).json({
+                    error: esHuevo
+                        ? `No hay suficientes cubetas disponibles. Stock actual: ${Math.floor(stockDisponible / 30)} cubeta(s).`
+                        : 'El producto está inactivo o no tiene cupo disponible para la venta.'
                 });
             }
 
@@ -100,7 +65,7 @@ const ProductoController = {
             const nuevoEstado = nuevoLimite > 0 ? 'activo' : 'inactivo';
 
             const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
-            
+
             // Preparo los datos para insertar en la tabla de apartados
             const datosApartado = {
                 nombreCliente,
@@ -109,7 +74,7 @@ const ProductoController = {
             };
 
             // 2. Creo el registro del apartado en la BD
-            ProductoModel.crearApartado(datosApartado, (errorApartado, resultado) => {
+            ApartadoModel.crearApartado(datosApartado, (errorApartado, resultado) => {
                 if (errorApartado) {
                     console.error('Error al registrar apartado:', errorApartado);
                     return res.status(500).json({ error: 'Error al procesar el apartado en la BD.' });
@@ -118,7 +83,7 @@ const ProductoController = {
                 // Creo la notificación para que el admin se entere del nuevo apartado
                 const cantidadMostrar = esHuevo ? Math.floor(unidadesARestar / 30) : unidadesARestar;
                 const unidadMostrar = esHuevo ? 'cubeta(s)' : (producto.unidad || 'unidad(es)');
-                ProductoModel.crearNotificacion({
+                NotificacionModel.crearNotificacion({
                     titulo: 'Nuevo apartado',
                     mensaje: `${nombreCliente} apartó ${cantidadMostrar} ${unidadMostrar} de ${producto.nombre}`
                 }, () => {});
@@ -141,73 +106,46 @@ const ProductoController = {
         });
     },
 
-    // Actualiza la cantidad límite a vender de un producto (lo usa el admin)
-    actualizarLimiteVenta: (req, res) => {
-        const { id } = req.params;
-        const { cantidad } = req.body;
-        const limite = parseInt(cantidad, 10);
+    // GET /api/admin/apartados
+    // Trae los apartados para el panel admin.
+    // Acepta ?estado= pendiente | confirmado | entregado | cancelado | historial | activos
+    obtenerApartadosAdmin: (req, res) => {
+        const estado = String(req.query.estado || 'todos').trim();
 
-        if (isNaN(limite) || limite < 0) {
-            return res.status(400).json({ error: 'Cantidad inválida' });
-        }
-
-        const nuevoEstado = limite > 0 ? 'activo' : 'inactivo';
-
-        ProductoModel.actualizarLimiteVenta(id, limite, nuevoEstado, (error) => {
+        ApartadoModel.obtenerTodosApartados(estado, (error, apartados) => {
             if (error) {
-                console.error('Error actualizando límite:', error);
-                return res.status(500).json({ error: 'Error en el servidor al guardar cantidad.' });
+                return res.status(500).json({ error: 'Error al consultar apartados.' });
             }
-
-            return res.json({
-                ok: true,
-                limite,
-                estado: nuevoEstado
-            });
+            res.json(Array.isArray(apartados) ? apartados : []);
         });
     },
 
-    // Cambia el estado manual de un producto (activo/inactivo)
-    actualizarEstadoManual: (req, res) => {
-        const { id } = req.params;
-        const { activo } = req.body;
-        const nuevoEstado = activo ? 'activo' : 'inactivo';
-
-        ProductoModel.actualizarEstado(id, nuevoEstado, (error) => {
-            if (error) {
-                console.error('Error actualizando estado:', error);
-                return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
-            }
-
-            return res.json({
-                ok: true,
-                estado: nuevoEstado
-            });
-        });
-    },
-
-    // Obtiene los apartados del cliente que está en sesión
-    // Lo usa la vista "verApartados" del cliente
-    obtenerApartadosCliente: (req, res) => {
+    // PATCH /api/admin/apartados/confirmar/:id
+    // Confirma un apartado pendiente (cambia estado a "confirmado")
+    confirmarApartado: (req, res) => {
         if (!req.session || !req.session.usuario) {
-            return res.redirect('/login');
+            return res.status(401).json({ error: 'Sesión no válida.' });
         }
 
-        const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+        const { id } = req.params;
 
-        ProductoModel.obtenerApartadosPorCliente(nombreCliente, (error, apartados) => {
+        if (!id) {
+            return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
+        }
+
+        ApartadoModel.confirmarApartado(id, (error) => {
             if (error) {
-                console.error('Error al obtener apartados del cliente:', error);
-                return res.status(500).render('error', { mensaje: 'Error al consultar tus apartados.' });
+                console.error('Error al confirmar apartado:', error);
+                return res.status(500).json({ error: 'Error al confirmar el apartado.' });
             }
-
-            res.render('verApartados', { apartados });
+            return res.status(200).json({ mensaje: 'Pedido confirmado correctamente.' });
         });
     },
 
-    // Marca un pedido como "entregado" (fin del ciclo)
+    // PATCH /api/admin/apartados/entregado/:id
+    // Marca un pedido como "entregado" (fin del ciclo).
     // Solo aplica a pedidos pendientes o confirmados;
-    // no toca el stock porque ya se descontó al apartar
+    // no toca el stock porque ya se descontó al apartar.
     marcarEntregado: (req, res) => {
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Sesión no válida.' });
@@ -225,7 +163,7 @@ const ProductoController = {
             return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
         }
 
-        ProductoModel.marcarEntregado(id, (error, resultado) => {
+        ApartadoModel.marcarEntregado(id, (error, resultado) => {
             if (error) {
                 console.error('Error al marcar entregado:', error);
                 return res.status(500).json({ error: 'Error al marcar el pedido como entregado.' });
@@ -240,27 +178,7 @@ const ProductoController = {
         });
     },
 
-    // Confirma un apartado pendiente (cambia estado a "confirmado")
-    confirmarApartado: (req, res) => {
-        if (!req.session || !req.session.usuario) {
-            return res.status(401).json({ error: 'Sesión no válida.' });
-        }
-
-        const { id } = req.params;
-
-        if (!id) {
-            return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
-        }
-
-        ProductoModel.confirmarApartado(id, (error) => {
-            if (error) {
-                console.error('Error al confirmar apartado:', error);
-                return res.status(500).json({ error: 'Error al confirmar el apartado.' });
-            }
-            return res.status(200).json({ mensaje: 'Pedido confirmado correctamente.' });
-        });
-    },
-
+    // PATCH /api/admin/apartados/cancelar/:id
     // Cancela un apartado desde el admin (devuelve el stock al producto)
     cancelarApartadoAdmin: (req, res) => {
         if (!req.session || !req.session.usuario) {
@@ -274,7 +192,7 @@ const ProductoController = {
         }
 
         // Primero busco el apartado para saber cuánto stock devolver
-        ProductoModel.obtenerApartadoPorId(id, (err, resultados) => {
+        ApartadoModel.obtenerApartadoPorId(id, (err, resultados) => {
             if (err || !resultados || resultados.length === 0) {
                 return res.status(404).json({ error: 'Apartado no encontrado.' });
             }
@@ -282,7 +200,7 @@ const ProductoController = {
             const apartado = resultados[0];
 
             // Cambio el estado a cancelado
-            ProductoModel.cancelarApartadoAdmin(id, (errCancel) => {
+            ApartadoModel.cancelarApartadoAdmin(id, (errCancel) => {
                 if (errCancel) {
                     console.error('Error al cancelar apartado:', errCancel);
                     return res.status(500).json({ error: 'Error al cancelar el apartado.' });
@@ -300,9 +218,9 @@ const ProductoController = {
         });
     },
 
-    // Cancela un apartado desde el cliente
-    // El cliente solo puede cancelar los suyos propios
-    // Se cambia a UPDATE para que aparezca en el historial con cancelado_por = 'cliente'
+    // POST /api/apartados/cancelar/:idApartado
+    // Cancela un apartado desde el cliente (solo los suyos propios).
+    // Se usa UPDATE para que aparezca en el historial con cancelado_por = 'cliente'
     cancelarApartado: (req, res) => {
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Sesión no válida o expirada.' });
@@ -315,7 +233,7 @@ const ProductoController = {
         }
 
         // Busco el apartado para saber el producto y la cantidad que hay que devolver
-        ProductoModel.obtenerApartadoPorId(idApartado, (err, resultados) => {
+        ApartadoModel.obtenerApartadoPorId(idApartado, (err, resultados) => {
             if (err || !resultados || resultados.length === 0) {
                 return res.status(404).json({ error: 'Apartado no encontrado.' });
             }
@@ -323,7 +241,7 @@ const ProductoController = {
             const apartado = resultados[0];
 
             // Cambio el estado a cancelado con cancelado_por = 'cliente'
-            ProductoModel.cancelarApartadoCliente(idApartado, (errCancel) => {
+            ApartadoModel.cancelarApartadoCliente(idApartado, (errCancel) => {
                 if (errCancel) {
                     console.error('Error al cancelar apartado del cliente:', errCancel);
                     return res.status(500).json({ error: 'Error al cancelar el apartado en la BD.' });
@@ -333,15 +251,15 @@ const ProductoController = {
                 ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errUpdate) => {
                     if (errUpdate) {
                         console.error('Error devolviendo stock del producto:', errUpdate);
-                        return res.status(200).json({ 
+                        return res.status(200).json({
                             mensaje: 'Apartado cancelado, pero hubo un detalle al restaurar el stock.',
-                            idApartado 
+                            idApartado
                         });
                     }
 
-                    return res.status(200).json({ 
+                    return res.status(200).json({
                         mensaje: 'Apartado cancelado y stock devuelto correctamente.',
-                        idApartado 
+                        idApartado
                     });
                 });
             });
@@ -349,4 +267,4 @@ const ProductoController = {
     }
 };
 
-module.exports = ProductoController;
+module.exports = ApartadoController;

@@ -77,33 +77,8 @@ const HistoricosModel = {
         conexion.query(sql, callback);
     },
 
-    // Total de ventas (solo entregados)
-    totalVentas: (callback) => {
-        const sql = `
-            SELECT
-                COUNT(*) AS total_ventas,
-                IFNULL(SUM(cantidad), 0) AS total_unidades
-            FROM apartados
-            WHERE estado = 'entregado'
-        `;
-        conexion.query(sql, callback);
-    },
-
-    // Total de personas que visitaron la página principal (últimos 30 días)
-    // Cuenta IPs distintas en / para saber cuántas personas reales entraron
-    totalVisitas: (callback) => {
-        const sql = `
-            SELECT COUNT(DISTINCT ip) AS total_visitas
-            FROM page_views
-            WHERE ruta = '/'
-              AND fecha >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        `;
-        conexion.query(sql, callback);
-    },
-
-    // Visitas por día a la página principal (últimos 30 días)
-    // Cuenta IPs distintas por día
-    visitasPorDia: (callback) => {
+// Ventas por día (solo entregados, últimos 30 días)
+    ventasPorDia: (callback) => {
         const sql = `
             SELECT 
                 DATE(fecha) AS dia,
