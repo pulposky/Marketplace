@@ -9,8 +9,9 @@
     //   - modo 'pendientes' (/admin/pedidos):
     //       pendientes + confirmados (fila de trabajo).
     //       UN SOLO BOTÓN para todo el pedido del cliente:
-    //         Si hay pendientes  -> "Confirmar" (los confirma todos)
-    //         Si están confirmados -> "Entregar" (los entrega todos)
+    //         "Confirmar" (los confirma a todos) y "Cancelar".
+    //         Al confirmar todo, solo queda el botón "Cancelar".
+    //         No hay opción "Entregar" (esa acción la registra el POS).
     //   - modo 'historial' (/admin/historial-pedidos):
     //       entregados + cancelados; SOLO LECTURA (Ver / Ver Todo).
     // =============================================
@@ -122,17 +123,18 @@
                 );
 
                 // UNA sola acción para todo el pedido del cliente,
-                // según lo que falte por gestionar:
+                // según lo que falte por gestionar.
+                // Ya no existe la opción "Entregar": el admin solo
+                // confirma (pendiente -> confirmado) o cancela.
                 let botonGrupo = '';
                 if (modoVista === 'pendientes') {
-                    const hayPendiente = grupo.items.some((i) => (i.estado || 'pendiente') === 'pendiente');
-                    const hayConfirmado = grupo.items.some((i) => i.estado === 'confirmado');
+                    const hayGestionable = grupo.items.some((i) => {
+                        const est = i.estado || 'pendiente';
+                        return est === 'pendiente' || est === 'confirmado';
+                    });
 
-                    if (hayPendiente) {
+                    if (hayGestionable) {
                         botonGrupo = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>' +
-                            '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
-                    } else if (hayConfirmado) {
-                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>' +
                             '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
                     }
                 }
@@ -245,9 +247,9 @@
         // Aplica la misma acción a todos los productos del cliente
         // que estén en el estado de origen:
         //   Confirmar -> confirma todos los pendientes
-        //   Entregar  -> entrega todos los confirmados y el grupo
-        //                sale de la vista pendientes
-        async function accionGrupo(boton, estadoOrigen, endpoint) {
+        // Ya no existe la acción "Entregar" en la web (la entrega
+        // física la registra el POS).
+        async function accionGrupo(boton, estadoOrigen) {
             const grupo = boton.closest('.pedido-grupo');
             if (!grupo) return;
 
@@ -256,7 +258,7 @@
 
             for (const fila of filas) {
                 try {
-                    const respuesta = await fetch(`/api/admin/apartados/${endpoint}/${fila.dataset.id}`, {
+                    const respuesta = await fetch(`/api/admin/apartados/confirmar/${fila.dataset.id}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' }
                     });
@@ -265,7 +267,7 @@
 
                     if (respuesta.ok) {
                         exitos++;
-                        const nuevoEstado = (endpoint === 'confirmar') ? 'confirmado' : 'entregado';
+                        const nuevoEstado = 'confirmado';
                         fila.dataset.estado = nuevoEstado;
 
                         const badge = fila.querySelector('.pedido-badge');
@@ -287,26 +289,19 @@
                 toast('exito', `${exitos} producto(s) procesado(s) correctamente.`);
             }
 
-            // Refresco el botón según lo que quede por gestionar
+            // Refresco el botón según lo que quede por gestionar.
+            // Ya no existe "Entregar": tras confirmar todo,
+            // solo queda el botón "Cancelar".
             const zonaAcciones = grupo.querySelector('.grupo-acciones');
             if (!zonaAcciones) return;
 
-            if (endpoint === 'confirmar') {
-                if (grupo.querySelector('.pedido-fila[data-estado="pendiente"]')) {
-                    // Algunos fallaron: sigue habiendo pendientes
-                    zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>';
-                } else {
-                    zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>';
-                }
+            if (grupo.querySelector('.pedido-fila[data-estado="pendiente"]')) {
+                // Algunos fallaron: sigue habiendo pendientes por confirmar
+                zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>' +
+                    '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
             } else {
-                if (grupo.querySelector('.pedido-fila[data-estado="confirmado"]')) {
-                    // Algunos fallaron: aún hay confirmados por entregar
-                    zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-entregar">Entregar</button>';
-                } else {
-                    // Todo entregado: el pedido completo se va al historial
-                    grupo.remove();
-                    revisarListaVacia();
-                }
+                // Todo confirmado: solo queda cancelar
+                zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
             }
         }
 
@@ -438,15 +433,7 @@
             const btnConfirmarGrupo = e.target.closest('.btn-grupo-confirmar');
             if (btnConfirmarGrupo) {
                 if (confirm('Confirmar TODOS los pedidos de este cliente?')) {
-                    accionGrupo(btnConfirmarGrupo, 'pendiente', 'confirmar');
-                }
-                return;
-            }
-
-            const btnEntregarGrupo = e.target.closest('.btn-grupo-entregar');
-            if (btnEntregarGrupo) {
-                if (confirm('Marcar TODOS los pedidos como ENTREGADOS?')) {
-                    accionGrupo(btnEntregarGrupo, 'confirmado', 'entregado');
+                    accionGrupo(btnConfirmarGrupo, 'pendiente');
                 }
                 return;
             }

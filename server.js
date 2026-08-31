@@ -24,9 +24,30 @@ const app = require('./app');
 const expirarApartados = require('./services/expirarApartados');
 expirarApartados.iniciar();
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Arranco el servidor, si no hay puerto en .env uso el 3000
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
 });
+
+// Manejo de errores no capturados (evita que se caiga sin avisar)
+process.on('uncaughtException', (err) => {
+    console.error('Error no capturado:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('Promesa rechazada sin manejar:', reason);
+});
+
+// Cierre limpio al detener el servidor (Ctrl+C, SIGTERM)
+const apagar = (senal) => {
+    console.log(`\nRecibido ${senal}, cerrando servidor...`);
+    server.close(() => {
+        process.exit(0);
+    });
+    // Falla de seguridad: si no cierra en 10s, fuerza la salida
+    setTimeout(() => process.exit(1), 10000).unref();
+};
+process.on('SIGINT', () => apagar('SIGINT'));
+process.on('SIGTERM', () => apagar('SIGTERM'));

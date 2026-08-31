@@ -9,11 +9,36 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const helmet = require('helmet');
+const compression = require('compression');
+const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
 
 const app = express();
 
+// Confío en proxies (necesario para rate-limit correcto detrás de proxy/ngrok)
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
+
 // Guardo la ruta raíz del proyecto por si la necesito en otro lado
 global.__basedir = __dirname;
+
+// Headers de seguridad (CSP, X-Frame-Options, etc.)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+            fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+            imgSrc: ["'self'", 'data:', 'blob:'],
+            connectSrc: ["'self'"]
+        }
+    }
+}));
+
+// Comprime las respuestas (gzip) para cargar más rápido
+app.use(compression());
 
 // Los archivos estáticos (CSS, JS, imágenes) van directos desde /public
 app.use(express.static('public'));
@@ -23,8 +48,11 @@ app.set('views', path.join(__dirname, 'public', 'views'));
 app.set('view engine', 'ejs');
 
 // Esto me permite leer formularios HTML y también JSON que mande el frontend con fetch
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
+
+// Límite de peticiones genérico por IP (previene abuso / fuerza bruta)
+app.use(limiteGeneral);
 
 // La sesión va ANTES de las rutas, sino no funciona
 app.use(session(require('./config/session')));
@@ -34,5 +62,29 @@ app.use(require('./middleware/contadorVisitas'));
 
 // Cargo todas las rutas del proyecto
 app.use('/', require('./routes'));
+
+// Middleware para rutas no encontradas (404 en API, sino EJS)
+app.use((req, res) => {
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'Ruta no encontrada' });
+    }
+    res.status(404).send('Página no encontrada');
+});
+
+// Middleware de manejo de errores (evita que se caiga el servidor)
+app.use((err, req, res, next) => {
+    // El límite de peticiones de rate-limit tiene su propio estado
+    if (err && (err.statusCode === 429 || err.status === 429)) {
+        return res.status(429).json({ error: 'Demasiadas solicitudes, intenta más tarde' });
+    }
+    console.error('Error:', err);
+    if (res.headersSent) {
+        return next(err);
+    }
+    if (req.path.startsWith('/api/')) {
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+    res.status(500).send('Error interno del servidor');
+});
 
 module.exports = app;

@@ -88,8 +88,9 @@ const ApartadoController = {
                     mensaje: `${nombreCliente} apartó ${cantidadMostrar} ${unidadMostrar} de ${producto.nombre}`
                 }, () => {});
 
-                // 3. Actualizo el stock del producto y si llega a 0 lo deshabilito
-                ProductoModel.actualizarLimiteVenta(productoId, nuevoLimite, nuevoEstado, (errorUpdate) => {
+                // 3. Descuento de forma atómica el límite de venta del producto.
+                //    Si llega a 0 el UPDATE lo pone inactivo automáticamente.
+                ProductoModel.restarLimiteVenta(productoId, unidadesARestar, (errorUpdate) => {
                     if (errorUpdate) {
                         console.error('Error actualizando límite tras apartado:', errorUpdate);
                     }

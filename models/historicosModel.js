@@ -77,8 +77,8 @@ const HistoricosModel = {
         conexion.query(sql, callback);
     },
 
-// Ventas por día (solo entregados, últimos 30 días)
-    ventasPorDia: (callback) => {
+    // Visitas por día (IPs únicas por día, últimos 30 días)
+    visitasPorDia: (callback) => {
         const sql = `
             SELECT 
                 DATE(fecha) AS dia,

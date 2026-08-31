@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS `venta` (
   `dinero_recibido` DECIMAL(12, 2) DEFAULT 0.00,
   `cambio` DECIMAL(12, 2) DEFAULT 0.00,
   `notas` VARCHAR(150),
+  `id_apartado` INT DEFAULT NULL,
   FOREIGN KEY (`id_cliente`) REFERENCES `clientes`(`id_cliente`),
   FOREIGN KEY (`id_usuario`) REFERENCES `usuarios`(`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -269,8 +270,22 @@ CREATE TABLE IF NOT EXISTS `apartados` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Indices para pedidos, reportes y estadisticas
-CREATE INDEX IF NOT EXISTS `idx_apartados_estado` ON `apartados`(`estado`);
-CREATE INDEX IF NOT EXISTS `idx_apartados_cliente` ON `apartados`(`nombre_cliente`);
+CREATE INDEX `idx_apartados_estado` ON `apartados`(`estado`);
+CREATE INDEX `idx_apartados_cliente` ON `apartados`(`nombre_cliente`);
+
+-- Vinculación entre la venta del POS y el apartado web entregado.
+-- La columna `venta.id_apartado` ya viene declarada en CREATE TABLE venta.
+-- La FK se agrega aquí porque `apartados` se crea después que `venta`.
+-- NULL = venta directa de pasillo; no NULL = entrega de apartado (el POS
+-- desactiva el descuento de limite_venta y marca el apartado 'entregado').
+ALTER TABLE `venta`
+  ADD CONSTRAINT `fk_venta_apartado`
+  FOREIGN KEY (`id_apartado`)
+  REFERENCES `apartados`(`id_apartado`)
+  ON DELETE SET NULL
+  ON UPDATE CASCADE;
+
+CREATE INDEX `idx_venta_apartado` ON `venta`(`id_apartado`);
 
 -- ------------------------------------------------------------
 -- Tabla: notificaciones (alertas para el admin)

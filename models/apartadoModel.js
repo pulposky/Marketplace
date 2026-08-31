@@ -152,7 +152,7 @@ const ApartadoModel = {
             SELECT a.id_apartado, a.producto, a.cantidad, a.nombre_cliente
             FROM apartados a
             WHERE a.estado = 'pendiente'
-              AND DATE_ADD(a.fecha, INTERVAL 10 SECOND) < NOW()
+              AND DATE_ADD(a.fecha, INTERVAL 1 HOUR) < NOW()
         `;
         conexion.query(sql, callback);
     },

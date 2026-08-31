@@ -8,15 +8,10 @@
 // =============================================
 
 const mysql = require('mysql2');
+const dbConfig = require('../config/database');
 
-// Creo la conexión con los datos del .env
-const conexion = mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.BD_DATABASE,
-    port: process.env.DB_PORT || 3306
-});
+// Creo la conexión con los datos del .env (centralizados en config/database)
+const conexion = mysql.createConnection(dbConfig);
 
 // Probamos la conexión al arrancar, si falla avisa en consola
 conexion.connect((error) => {

@@ -87,6 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const temporizadores = document.querySelectorAll('.temporizador-apartado');
     const procesados = new Set();
 
+    function iniciarTemporizadores() {
+        if (temporizadores.length === 0) return;
+        actualizarTemporizadores();
+        setInterval(actualizarTemporizadores, 1000);
+    }
+
     function actualizarTemporizadores() {
         const ahora = new Date();
 
@@ -133,6 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // -----------------------------------------------
+    // INICIO DEL TEMPORIZADOR DE EXPIRACIÓN
+    // -----------------------------------------------
+    iniciarTemporizadores();
 
     // -----------------------------------------------
     // FILTRO POR FECHAS DEL HISTORIAL DE COMPRAS

@@ -12,6 +12,8 @@ const router = express.Router();
 const SitioController = require('../controllers/sitioController');
 const ProductoController = require('../controllers/productoController');
 const AuthController = require('../controllers/authController');
+const { limiteAuth } = require('../config/rateLimit');
+const { validarLogin, validarRegistro } = require('../middleware/validar');
 
 // Vista: página principal
 router.get('/', SitioController.mostrarMain);
@@ -20,9 +22,10 @@ router.get('/', SitioController.mostrarMain);
 router.get('/catalogo', SitioController.mostrarCatalogo);
 
 // Autenticación: login, logout y registro de nuevos clientes
-router.post('/login', AuthController.loginUsuarioController);
+// límite estricto para frenar fuerza bruta + validación de inputs
+router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);
 router.get('/logout', AuthController.logoutUsuarioController);
-router.post('/registro', AuthController.registroUsuarioController);
+router.post('/registro', limiteAuth, validarRegistro, AuthController.registroUsuarioController);
 
 // API: lista de productos en JSON (la usa el catálogo)
 router.get('/api/productos', ProductoController.obtenerTodos);
