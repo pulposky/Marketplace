@@ -5,6 +5,7 @@
     <!-- Página de catálogo con la lista completa de productos y el modal de apartado -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Catálogo | SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/registro.css">
@@ -174,19 +175,25 @@
                         const cubetasDisponibles = esHuevo ? Math.floor(limiteStock / 30) : limiteStock;
                         %>
                         <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
-                            <div class="imagen-producto">
-                                <% if (producto.imagenUpload) { %>
-                                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
-                                    <% } else { %>
-                                        <span class="imagen-placeholder">
-                                            <%= producto.nombre %>
-                                        </span>
-                                        <% } %>
-                            </div>
+                            <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
+                                title="Ver detalles de <%= producto.nombre %>">
+                                <div class="imagen-producto">
+                                    <% if (producto.imagenUpload) { %>
+                                        <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
+                                        <% } else { %>
+                                            <span class="imagen-placeholder">
+                                                <%= producto.nombre %>
+                                            </span>
+                                            <% } %>
+                                </div>
+                            </a>
                             <div class="info-producto-detalles">
-                                <h3 class="nombre-producto">
-                                    <%= producto.nombre %>
-                                </h3>
+                                <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
+                                    title="Ver detalles de <%= producto.nombre %>">
+                                    <h3 class="nombre-producto">
+                                        <%= producto.nombre %>
+                                    </h3>
+                                </a>
                                 <span class="presentacion-producto">
                                     Presentación: <%= textoUnidad %>
                                 </span>
@@ -529,6 +536,7 @@
             </div>
         </div>
 
+        <script src="/js/csrf.js"></script>
         <script src="/js/toast.js"></script>
         <script src="/js/login.js"></script>
         <script src="/js/registro.js"></script>

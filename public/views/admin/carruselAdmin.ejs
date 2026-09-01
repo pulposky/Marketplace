@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Gestión de Carrusel - Panel Admin</title>
+    <link rel="stylesheet" href="/css/admin/carruselAdmin.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+
+<body>
+
+    <!-- HEADER Y BARRA SUPERIOR -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Gestión de Carrusel</span> - Panel Admin
+            </div>
+            <div>
+                <a href='/admin' class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="encabezado-seccion">
+            <div class="titulo-catalogo">Imágenes del Carrusel de la Portada</div>
+        </div>
+
+        <p class="nota-instrucciones">
+            Estas imágenes se muestran en la <strong>portada</strong> (página principal), en el mismo orden en que
+            aparecen aquí (de arriba a abajo). También puedes ajustar el ancho al 100% desde cada tarjeta.
+        </p>
+
+        <!-- FORMULARIO PARA SUBIR NUEVA IMAGEN -->
+        <div class="tarjeta-subida">
+            <h2>Subir nueva imagen</h2>
+            <form id="formSubirImagen" class="form-subida">
+                <div class="campo-subida">
+                    <label for="archivoCarrusel">Selecciona la imagen (JPG, PNG o WebP · máx 3 MB)</label>
+                    <input type="file" id="archivoCarrusel" accept="image/jpeg,image/png,image/webp" required>
+                    <div class="vista-previa" id="vistaPrevia" hidden>
+                        <img id="imagenPrevia" alt="Vista previa">
+                    </div>
+                </div>
+                <div class="campo-subida">
+                    <label for="nombreCarrusel">Nombre corto (opcional)</label>
+                    <input type="text" id="nombreCarrusel" placeholder="Ej: Exposición artesanal" maxlength="40">
+                    <small>Se usa para identificar la imagen. Solo letras, números y guiones.</small>
+                </div>
+                <button type="submit" class="btn-subir" id="btnSubirImagen">Subir al carrusel</button>
+            </form>
+        </div>
+
+        <!-- LISTA DE IMÁGENES ACTUALES -->
+        <div class="seccion-actuales">
+            <h2>Imágenes actuales (<span id="totalImagenes"><%= imagenes.length %></span>)</h2>
+
+            <% if (imagenes.length > 0) { %>
+                <div class="rejilla-carrusel" id="rejillaCarrusel">
+                    <% imagenes.forEach((item, indice) => { %>
+                        <div class="tarjeta-imagen" data-nombre="<%= item.nombre %>">
+                            <div class="marco-imagen">
+                                <img src="<%= item.url %>" alt="<%= item.label %>">
+                                <span class="chip-orden">#<%= indice + 1 %></span>
+                            </div>
+                            <div class="info-imagen">
+                                <p class="nombre-archivo"><%= item.label %></p>
+                                <p class="nombre-exacto"><%= item.nombre %></p>
+                            </div>
+                            <button type="button" class="btn-eliminar" data-nombre="<%= item.nombre %>">
+                                Eliminar
+                            </button>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p class="sin-resultados" id="sinResultados">
+                    Todavía no hay imágenes en el carrusel. Sube la primera con el formulario de arriba.
+                </p>
+            <% } %>
+        </div>
+
+        <div class="nota-final">
+            <a href="/" target="_blank" rel="noopener" class="enlace-preview">Ver cómo se ve la portada →</a>
+        </div>
+
+    </div>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/carruselAdmin.js"></script>
+</body>
+
+</html>

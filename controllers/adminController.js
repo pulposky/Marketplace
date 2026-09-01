@@ -46,11 +46,11 @@ const AdminController = {
 
     // Panel de gestión de ofertas del admin
     // Lista todos los productos con su descuento y fechas vigentes
-    // para que el admin pueda configurarlos. Solo admin (no aprendiz).
+    // para que admin y aprendiz puedan configurarlos.
     mostrarGestionOfertas: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || rol !== 'admin') {
+        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
             return res.redirect('/admin');
         }
 

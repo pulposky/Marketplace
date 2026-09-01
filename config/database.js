@@ -17,5 +17,5 @@ module.exports = {
     database: process.env.BD_DATABASE || process.env.DB_DATABASE,
     port: Number(process.env.BD_PORT || process.env.DB_PORT) || 3306,
     // Timeout de espera de conexión (no quedarse colgado)
-    connectTimeout: 10000
+    connectTimeout: 1000
 };

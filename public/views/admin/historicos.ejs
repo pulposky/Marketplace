@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Históricos y Estadísticas - Panel Admin</title>
     <link rel="stylesheet" href="/css/admin/historicos.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -122,6 +123,7 @@
 
     </div>
 
+    <script src="/js/csrf.js"></script>
     <script src="/js/admin/historicos.js"></script>
 </body>
 </html>

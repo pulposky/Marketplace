@@ -13,6 +13,7 @@
 const ProductoModel = require('../models/productoModel');
 const ApartadoModel = require('../models/apartadoModel');
 const NotificacionModel = require('../models/notificacionModel');
+const NotificacionClienteModel = require('../models/notificacionClienteModel');
 const { calcularPrecioOferta } = require('../utils/helpers');
 
 const ApartadoController = {
@@ -96,6 +97,14 @@ const ApartadoController = {
                     titulo: 'Nuevo apartado',
                     mensaje: `${nombreCliente} apartó ${cantidadMostrar} ${unidadMostrar} de ${producto.nombre}`
                 }, () => {});
+
+                // Notifico al cliente que su apartado quedó creado
+                NotificacionClienteModel.crear(
+                    req.session.usuario.id,
+                    'Apartado creado',
+                    `Tu apartado de ${producto.nombre} (${cantidadMostrar} ${unidadMostrar}) está pendiente por 1 hora.`,
+                    () => {}
+                );
 
                 // 3. Descuento de forma atómica el límite de venta del producto.
                 //    Si llega a 0 el UPDATE lo pone inactivo automáticamente.
@@ -206,6 +215,14 @@ const ApartadoController = {
                         mensaje: `${nombreCliente} apartó ${listaValidada.length} producto(s) (${totalUnidades} unidades en total).`
                     }, () => {});
 
+                    // Notifico al cliente que sus apartados quedaron creados
+                    NotificacionClienteModel.crear(
+                        req.session.usuario.id,
+                        'Apartados creados',
+                        `Se apartaron ${listaValidada.length} producto(s). Están pendientes por 1 hora.`,
+                        () => {}
+                    );
+
                     return res.status(200).json({
                         mensaje: '¡Productos apartados con éxito!',
                         ids: idsCreados,
@@ -237,6 +254,23 @@ const ApartadoController = {
             };
 
             crearSiguiente();
+        });
+    },
+
+    // Notifica al cliente dueño de un apartado usando su nombre
+    // (la tabla apartados guarda el nombre como texto, no el id).
+    notificarClientePorApartado: (idApartado, titulo, mensaje) => {
+        ApartadoModel.obtenerApartadoPorId(idApartado, (err, resultados) => {
+            if (err || !resultados || resultados.length === 0) {
+                return;
+            }
+
+            NotificacionClienteModel.buscarClientePorNombre(resultados[0].nombre_cliente, (errCli, registros) => {
+                if (errCli || !registros || registros.length === 0) {
+                    return;
+                }
+                NotificacionClienteModel.crear(registros[0].id_cliente, titulo, mensaje, () => {});
+            });
         });
     },
 
@@ -273,6 +307,11 @@ const ApartadoController = {
                 console.error('Error al confirmar apartado:', error);
                 return res.status(500).json({ error: 'Error al confirmar el apartado.' });
             }
+            ApartadoController.notificarClientePorApartado(
+                id,
+                'Apartado confirmado',
+                `Tu apartado #${id} fue confirmado. Puedes pasar a pagarlo en el punto de venta.`
+            );
             return res.status(200).json({ mensaje: 'Pedido confirmado correctamente.' });
         });
     },
@@ -309,6 +348,11 @@ const ApartadoController = {
                 return res.status(400).json({ error: 'Solo se pueden entregar pedidos pendientes o confirmados.' });
             }
 
+            ApartadoController.notificarClientePorApartado(
+                id,
+                'Apartado entregado',
+                `Tu apartado #${id} fue entregado en el punto de venta. ¡Gracias por comprar con nosotros!`
+            );
             return res.status(200).json({ mensaje: 'Pedido marcado como entregado correctamente.' });
         });
     },
@@ -340,6 +384,12 @@ const ApartadoController = {
                     console.error('Error al cancelar apartado:', errCancel);
                     return res.status(500).json({ error: 'Error al cancelar el apartado.' });
                 }
+
+                ApartadoController.notificarClientePorApartado(
+                    id,
+                    'Apartado cancelado',
+                    `Tu apartado #${id} fue cancelado por el administrador. El stock vuelve a estar disponible.`
+                );
 
                 // Devuelvo las unidades al stock del producto
                 ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errStock) => {

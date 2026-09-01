@@ -330,6 +330,23 @@ CREATE TABLE IF NOT EXISTS `notificaciones` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
+-- Tabla: notificaciones_cliente
+-- Alertas para cada cliente: cuándo se crea, confirma,
+-- entrega o cancela uno de sus apartados.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `notificaciones_cliente` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `id_cliente` INT NOT NULL,
+  `titulo` VARCHAR(255) NOT NULL,
+  `mensaje` TEXT NOT NULL,
+  `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `leido` TINYINT(1) NOT NULL DEFAULT 0,
+  FOREIGN KEY (`id_cliente`) REFERENCES `clientes`(`id_cliente`) ON DELETE CASCADE,
+  INDEX `idx_notif_cliente_id` (`id_cliente`),
+  INDEX `idx_notif_cliente_leido` (`id_cliente`, `leido`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
 -- Tabla: page_views (registro de visitas del marketplace)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `page_views` (

@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Mis Apartados - SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/verApartados.css">
     <link rel="stylesheet" href="/css/toast.css">
@@ -23,6 +24,20 @@
 
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="contenedor-principal">
+
+        <% if (usuario) { %>
+        <!-- SECCIÓN DE NOTIFICACIONES DEL CLIENTE -->
+        <section class="seccion-notificaciones" id="seccionNotificaciones" style="display:none;">
+            <div class="notificaciones-cabecera">
+                <h2 class="titulo-notificaciones">Notificaciones</h2>
+                <button type="button" class="btn-marcar-todas-notif" id="btnMarcarTodasNotif">Marcar todo leído</button>
+            </div>
+            <div class="notificaciones-lista" id="listaNotificaciones">
+                <p class="notif-vacio">Cargando notificaciones...</p>
+            </div>
+        </section>
+        <% } %>
+
         <div class="encabezado-seccion">
             <div>
                 <h1 class="titulo-catalogo">MIS APARTADOS</h1>
@@ -268,6 +283,7 @@
         <% } %>
     </main>
 
+    <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
     <script src="/js/verApartados.js"></script>
 </body>

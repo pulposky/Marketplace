@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Mi Perfil - SENAEMPRESA</title>
     <link rel="stylesheet" href="/css/perfil.css">
     <link rel="stylesheet" href="/css/toast.css">
@@ -128,6 +129,19 @@
                         <small>Por seguridad, debes ingresar tu contraseña para guardar los cambios.</small>
                     </div>
 
+                    <div class="campo">
+                        <label for="perfilNuevaPassword">Nueva contraseña</label>
+                        <input type="password" id="perfilNuevaPassword" name="nuevaPassword"
+                            placeholder="Déjala vacía para no cambiarla" maxlength="100" autocomplete="new-password">
+                    </div>
+
+                    <div class="campo">
+                        <label for="perfilConfirmarPassword">Confirmar nueva contraseña</label>
+                        <input type="password" id="perfilConfirmarPassword"
+                            placeholder="Repite la nueva contraseña" maxlength="100" autocomplete="new-password">
+                        <small>Mínimo 6 caracteres. Si no quieres cambiarla, deja ambos campos vacíos.</small>
+                    </div>
+
                     <button type="submit" class="btn-guardar" id="btnGuardarPerfil">Guardar cambios</button>
                 </form>
             </section>
@@ -176,6 +190,7 @@
         </section>
     </main>
 
+    <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
     <script src="/js/perfil.js"></script>
 </body>

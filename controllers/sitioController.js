@@ -82,6 +82,38 @@ const SitioController = {
         });
     },
 
+    // Página de detalle de un producto (GET /producto/:id)
+    // Muestra la ficha completa: foto, descripción, presentación,
+    // stock y precio con oferta, además del botón para apartar.
+    mostrarDetalleProducto: (req, res) => {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(404).render('error', { codigo: 404, mensaje: 'El producto no fue encontrado.' });
+        }
+
+        ProductoModel.obtenerPorId(id, (error, resultados) => {
+            if (error) {
+                console.error('Error consultando producto:', error);
+                return res.status(500).render('error', { codigo: 500, mensaje: 'Error en el servidor.' });
+            }
+            if (!resultados || resultados.length === 0) {
+                return res.status(404).render('error', { codigo: 404, mensaje: 'El producto no existe o fue eliminado.' });
+            }
+
+            const producto = resultados[0];
+            if (producto.estado !== 'activo') {
+                return res.status(404).render('error', { codigo: 404, mensaje: 'El producto no está disponible en este momento.' });
+            }
+
+            asociarImagenesAProductos([producto], (productoConImagen) => {
+                res.render('productoDetalle', {
+                    producto: productoConImagen[0],
+                    usuario: req.session?.usuario || null
+                });
+            });
+        });
+    },
+
     // Catálogo de productos
     // Solo muestra los activos, filtra por categoría, por texto de búsqueda,
     // solo en oferta, y ordena por precio.

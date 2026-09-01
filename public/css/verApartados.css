@@ -728,3 +728,123 @@ body {
     font-style: italic;
     margin-top: 4px;
 }
+
+
+/* ==========================================
+   NOTIFICACIONES DEL CLIENTE
+========================================== */
+.seccion-notificaciones {
+    background: var(--blanco, #fff);
+    border: 1px solid var(--borde, #e5e7eb);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.notificaciones-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.titulo-notificaciones {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--verde-sena, #39A900);
+}
+
+.btn-marcar-todas-notif {
+    background: none;
+    border: 1px solid var(--verde-sena, #39A900);
+    color: var(--verde-sena, #39A900);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-marcar-todas-notif:hover {
+    background: var(--verde-sena, #39A900);
+    color: #fff;
+}
+
+.notificaciones-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    background: #f7faf7;
+    border: 1px solid #e2e8e2;
+    border-left: 4px solid var(--verde-sena, #39A900);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.notif-contenido {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-titulo {
+    display: block;
+    font-size: 0.9rem;
+    color: #1f2937;
+}
+
+.notif-mensaje {
+    margin: 4px 0 0;
+    font-size: 0.83rem;
+    color: var(--texto-secundario, #6b7280);
+    line-height: 1.4;
+}
+
+.notif-fecha {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.72rem;
+    color: #9ca3af;
+}
+
+.notif-marcar {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.notif-marcar:hover {
+    opacity: 1;
+}
+
+.notif-marcar::after {
+    content: "\2713";
+    font-size: 1rem;
+    color: var(--verde-sena, #39A900);
+}
+
+.notif-vacio {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--texto-secundario, #6b7280);
+    text-align: center;
+    padding: 8px 0;
+}

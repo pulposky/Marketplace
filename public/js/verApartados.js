@@ -10,6 +10,102 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // -----------------------------------------------
+    // NOTIFICACIONES DEL CLIENTE
+    // -----------------------------------------------
+    // Carga las notificaciones no leídas del cliente,
+    // las muestra en la sección superior y permite
+    // marcarlas como leídas (una a una o todas).
+    const seccionNotif = document.getElementById('seccionNotificaciones');
+    const listaNotif = document.getElementById('listaNotificaciones');
+    const btnMarcarTodas = document.getElementById('btnMarcarTodasNotif');
+
+    function cargarNotificaciones() {
+        if (!seccionNotif || !listaNotif) return;
+
+        fetch('/api/mis-notificaciones')
+            .then((respuesta) => respuesta.json())
+            .then((data) => {
+                const total = Number(data.total) || 0;
+                const notif = Array.isArray(data.notificaciones) ? data.notificaciones : [];
+
+                if (total === 0) {
+                    seccionNotif.style.display = 'none';
+                    return;
+                }
+
+                seccionNotif.style.display = 'block';
+                listaNotif.innerHTML = '';
+
+                notif.forEach((item) => {
+                    const fila = document.createElement('div');
+                    fila.className = 'notif-item';
+                    fila.dataset.id = item.id;
+
+                    const fecha = item.fecha ? new Date(item.fecha).toLocaleString('es-CO') : '';
+
+                    fila.innerHTML = `
+                        <div class="notif-contenido">
+                            <strong class="notif-titulo">${item.titulo}</strong>
+                            <p class="notif-mensaje">${item.mensaje}</p>
+                            ${fecha ? `<span class="notif-fecha">${fecha}</span>` : ''}
+                        </div>
+                        <button type="button" class="notif-marcar" title="Marcar como leída"></button>
+                    `;
+                    listaNotif.appendChild(fila);
+                });
+            })
+            .catch((error) => {
+                console.error('Error cargando notificaciones:', error);
+                seccionNotif.style.display = 'none';
+            });
+    }
+
+    // Marcado individual (delegación de eventos)
+    if (listaNotif) {
+        listaNotif.addEventListener('click', (e) => {
+            const boton = e.target.closest('.notif-marcar');
+            if (!boton) return;
+
+            const idNotif = boton.closest('.notif-item').dataset.id;
+            if (!idNotif) return;
+
+            fetch(`/api/mis-notificaciones/${idNotif}/leida`, { method: 'PATCH' })
+                .then((respuesta) => respuesta.json())
+                .then((data) => {
+                    if (data.ok) {
+                        boton.closest('.notif-item').remove();
+                        const restantes = listaNotif.querySelectorAll('.notif-item').length;
+                        if (restantes === 0) {
+                            seccionNotif.style.display = 'none';
+                        }
+                    } else {
+                        toast('error', data.error || 'No se pudo marcar la notificación.');
+                    }
+                })
+                .catch((error) => console.error('Error marcando notificación:', error));
+        });
+    }
+
+    // Marcar todas como leídas
+    if (btnMarcarTodas) {
+        btnMarcarTodas.addEventListener('click', () => {
+            fetch('/api/mis-notificaciones/todas-leidas', { method: 'PATCH' })
+                .then((respuesta) => respuesta.json())
+                .then((data) => {
+                    if (data.ok) {
+                        seccionNotif.style.display = 'none';
+                        toast('exito', 'Todas las notificaciones fueron marcadas como leídas.');
+                    } else {
+                        toast('error', data.error || 'No se pudo actualizar.');
+                    }
+                })
+                .catch((error) => console.error('Error marcando todas:', error));
+        });
+    }
+
+    cargarNotificaciones();
+
+    // -----------------------------------------------
     // CANCELAR UN APARTADO
     // -----------------------------------------------
     // Uso delegación de events: un solo listener en

@@ -21,6 +21,9 @@ router.get('/', SitioController.mostrarMain);
 // Vista: catálogo de productos
 router.get('/catalogo', SitioController.mostrarCatalogo);
 
+// Vista: ficha de detalle de un producto
+router.get('/producto/:id', SitioController.mostrarDetalleProducto);
+
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
 router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);

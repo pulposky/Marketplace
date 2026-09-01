@@ -10,6 +10,7 @@ const router = express.Router();
 
 const ClienteController = require('../controllers/clienteController');
 const ApartadoController = require('../controllers/apartadoController');
+const NotificacionesClienteController = require('../controllers/notificacionesClienteController');
 const protegerRuta = require('../middleware/verificarUsuario');
 
 // Vista "Mi perfil" y su API de edición (solo clientes logueados)
@@ -34,5 +35,15 @@ router.post('/api/apartados/cancelar/:idApartado', protegerRuta, ApartadoControl
 
 // API: apartar varios productos de una vez (carrito del cliente)
 router.post('/api/apartar-lote', protegerRuta, ApartadoController.apartarLote);
+
+// --------------------------------------------------
+// API DE NOTIFICACIONES DEL CLIENTE
+// --------------------------------------------------
+// GET: notificaciones no leídas del cliente + conteo
+// PATCH: marcar una notificación como leída
+// PATCH: marcar todas como leídas
+router.get('/api/mis-notificaciones', protegerRuta, NotificacionesClienteController.obtenerMisNotificaciones);
+router.patch('/api/mis-notificaciones/:id/leida', protegerRuta, NotificacionesClienteController.marcarLeida);
+router.patch('/api/mis-notificaciones/todas-leidas', protegerRuta, NotificacionesClienteController.marcarTodasLeidas);
 
 module.exports = router;

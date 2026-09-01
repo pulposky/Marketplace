@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title>SENAEMPRESA Marketplace</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/login.css">
@@ -168,20 +169,26 @@
                         const stockDisponible = esHuevo ? Math.floor(limiteStockRaw / 30) : limiteStockRaw;
                         %>
                         <div class="tarjeta-producto">
-                            <div class="imagen-producto">
-                                <% if (producto.imagenUpload) { %>
-                                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= nombreMostrar %>">
-                                    <% } else { %>
-                                        <span class="imagen-placeholder">
-                                            <%= nombreMostrar %>
-                                        </span>
-                                        <% } %>
-                            </div>
+                            <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
+                                title="Ver detalles de <%= nombreMostrar %>">
+                                <div class="imagen-producto">
+                                    <% if (producto.imagenUpload) { %>
+                                        <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= nombreMostrar %>">
+                                        <% } else { %>
+                                            <span class="imagen-placeholder">
+                                                <%= nombreMostrar %>
+                                            </span>
+                                            <% } %>
+                                </div>
+                            </a>
 
                             <div class="info-producto">
-                                <h4>
-                                    <%= nombreMostrar %>
-                                </h4>
+                                <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
+                                    title="Ver detalles de <%= nombreMostrar %>">
+                                    <h4>
+                                        <%= nombreMostrar %>
+                                    </h4>
+                                </a>
 
                                 <p class="unidad">
                                     Presentación: <strong>
@@ -499,6 +506,7 @@
     </footer>
 
     <!-- SCRIPTS CORTOS Y VINCULADOS -->
+    <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
     <script src="/js/login.js"></script>
     <script src="/js/registro.js"></script>

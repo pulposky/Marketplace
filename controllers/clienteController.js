@@ -116,6 +116,20 @@ const ClienteController = {
                 return res.json({ ok: false, mensaje: 'La contraseña es incorrecta.' });
             }
 
+            // Si el cliente también quiere cambiar su contraseña, la actualizo
+            const nuevaPassword = req.body.nuevaPassword;
+            let mensaje = 'Perfil actualizado correctamente.';
+            let cambioPassword = false;
+
+            if (nuevaPassword && String(nuevaPassword).trim()) {
+                if (String(nuevaPassword).length < 6 || String(nuevaPassword).length > 100) {
+                    return res.json({ ok: false, mensaje: 'La nueva contraseña debe tener entre 6 y 100 caracteres.' });
+                }
+                const hash = await bcrypt.hash(String(nuevaPassword), 10);
+                await UsuarioModel.crearPassword(req.session.usuario.id, hash);
+                cambioPassword = true;
+            }
+
             await UsuarioModel.actualizarCliente(req.session.usuario.id, {
                 nombre: String(nombre).trim(),
                 direccion: String(direccion || '').trim(),
@@ -126,7 +140,11 @@ const ClienteController = {
             // muestre el nuevo nombre de una vez
             req.session.usuario.nombre = String(nombre).trim();
 
-            return res.json({ ok: true, mensaje: 'Perfil actualizado correctamente.' });
+            if (cambioPassword) {
+                mensaje = 'Perfil y contraseña actualizados correctamente.';
+            }
+
+            return res.json({ ok: true, mensaje });
         } catch (error) {
             console.error('Error en actualizarPerfil:', error);
             return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });

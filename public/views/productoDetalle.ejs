@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title><%= producto.nombre %> | SENAEMPRESA</title>
+    <link rel="stylesheet" href="/css/productoDetalle.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+
+<body>
+
+    <% 
+    // ---- Preparación de datos para la ficha (misma lógica que el catálogo) ----
+    const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
+    const nombreMostrar = esHuevo && producto.nombre ? producto.nombre.replace(/UND/gi, 'CUBETA') : producto.nombre;
+    const unidadMostrar = esHuevo ? 'Cubeta(s)' : (producto.unidad || 'Unidad(es)');
+
+    const precioUnitarioReal = Number(producto.precio);
+    const descuentoProd = Number(producto.descuento) || 0;
+    const ahoraOferta = new Date();
+    const enOferta = descuentoProd > 0
+        && (!producto.fecha_inicio_oferta || ahoraOferta >= new Date(producto.fecha_inicio_oferta))
+        && (!producto.fecha_fin_oferta || ahoraOferta <= new Date(producto.fecha_fin_oferta));
+    const precioUnitarioOferta = enOferta ? precioUnitarioReal * (1 - descuentoProd / 100) : precioUnitarioReal;
+
+    const precioMostrar = esHuevo ? precioUnitarioOferta * 30 : precioUnitarioOferta;
+    const precioOriginalMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+
+    const limiteStockRaw = producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0;
+    const stockDisponible = esHuevo ? Math.floor(limiteStockRaw / 30) : limiteStockRaw;
+    %>
+
+    <!-- HEADER -->
+    <header class="header-catalogo">
+        <div class="contenedor-header">
+            <a href="/catalogo" class="btn-regresar">← Volver al catálogo</a>
+            <div class="marca-catalogo">
+                <span>SENAEMPRESA</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- FICHA DEL PRODUCTO -->
+    <main class="contenedor-detalle">
+
+        <div class="ficha-producto">
+
+            <!-- IMAGEN -->
+            <div class="ficha-imagen">
+                <% if (producto.imagenUpload) { %>
+                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= nombreMostrar %>">
+                <% } else { %>
+                    <span class="imagen-placeholder"><%= nombreMostrar %></span>
+                <% } %>
+            </div>
+
+            <!-- INFORMACIÓN -->
+            <div class="ficha-info">
+                <span class="categoria-tag"><%= producto.categoria || 'Otros' %></span>
+
+                <h1 class="ficha-nombre"><%= nombreMostrar %></h1>
+
+                <p class="ficha-presentacion">
+                    Presentación: <strong><%= unidadMostrar %></strong>
+                    <% if (producto.lugar) { %>
+                        <span class="ficha-lugar">· <%= producto.lugar %></span>
+                    <% } %>
+                </p>
+
+                <% if (producto.descripcion) { %>
+                    <p class="ficha-descripcion"><%= producto.descripcion %></p>
+                <% } %>
+
+                <p class="ficha-stock">
+                    <span class="chip-stock">
+                        Disponibles: <strong><%= stockDisponible %></strong> <%= unidadMostrar %>
+                    </span>
+                    <% if (esHuevo) { %>
+                        <span class="stock-detalle">(<%= limiteStockRaw %> huevos en total)</span>
+                    <% } %>
+                </p>
+
+                <div class="ficha-precio">
+                    <% if (enOferta) { %>
+                        <span class="precio-original">$<%= precioOriginalMostrar.toLocaleString("es-CO") %></span>
+                        <span class="precio-oferta">$<%= precioMostrar.toLocaleString("es-CO") %></span>
+                        <span class="badge-oferta">-<%= descuentoProd %>% OFERTA</span>
+                        <% if (esHuevo) { %>
+                            <span class="precio-unidad">($<%= precioUnitarioOferta.toLocaleString("es-CO") %> / huevo)</span>
+                        <% } %>
+                    <% } else { %>
+                        <span class="precio">$<%= precioMostrar.toLocaleString("es-CO") %></span>
+                        <% if (esHuevo) { %>
+                            <span class="precio-unidad">($<%= precioUnitarioOferta.toLocaleString("es-CO") %> / huevo)</span>
+                        <% } %>
+                    <% } %>
+                </div>
+
+                <!-- APARTAR / ACCIÓN -->
+                <% if (!usuario) { %>
+                    <a href="/catalogo?login=1" class="btn-apartar">Inicia sesión para apartar</a>
+                    <p class="ficha-nota">Al apartar, el producto queda reservado por 1 hora.</p>
+                <% } else { %>
+                    <div class="ficha-accion">
+                        <div class="campo-cantidad">
+                            <label for="cantidadDetalle">Cantidad</label>
+                            <input type="number" id="cantidadDetalle" value="1" min="1" max="<%= stockDisponible %>" required>
+                            <small id="textoDisponiblesDetalle">
+                                Disponibles: <span id="cantDisponiblesDetalle"><%= stockDisponible %></span>
+                                <%= unidadMostrar %>
+                            </small>
+                        </div>
+                        <button type="button" class="btn-apartar" id="btnApartarDetalle"
+                            data-id="<%= producto.id_producto %>"
+                            data-es-huevo="<%= esHuevo ? 'true' : 'false' %>"
+                            data-limite="<%= stockDisponible %>">
+                            Apartar
+                        </button>
+                    </div>
+                    <p class="ficha-nota">
+                        Reserva por 1 hora. El pago se realiza de forma presencial en el punto de venta
+                        del Centro Agroindustrial Hachón.
+                    </p>
+                <% } %>
+
+            </div>
+        </div>
+
+        <div class="ficha-extra">
+            <a href="/catalogo" class="enlace-volver-catalogo">← Explorar más productos en el catálogo</a>
+        </div>
+
+    </main>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/productoDetalle.js"></script>
+</body>
+
+</html>

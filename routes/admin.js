@@ -12,6 +12,7 @@ const router = express.Router();
 const AdminController = require('../controllers/adminController');
 const ProductoController = require('../controllers/productoController');
 const ApartadoController = require('../controllers/apartadoController');
+const CarruselController = require('../controllers/carruselController');
 const NotificacionesController = require('../controllers/notificacionesController');
 const HistoricosController = require('../controllers/historicosController');
 const ReportesController = require('../controllers/reportesController');
@@ -28,11 +29,12 @@ router.get('/admin/pedidos', verificarAdmin, AdminController.mostrarPedidos);
 // Historial: pedidos confirmados, entregados y cancelados (no pendientes)
 router.get('/admin/historial-pedidos', verificarAdmin, AdminController.mostrarHistorialPedidos);
 
-// Secciones exclusivas del admin (el aprendiz no gestiona ofertas,
-// clientes ni analítica)
-router.get('/admin/ofertas', verificarRol('admin'), AdminController.mostrarGestionOfertas);
+// Secciones exclusivas del admin (el aprendiz no gestiona
+// clientes, analítica ni carrusel; sí gestiona ofertas)
+router.get('/admin/ofertas', verificarAdmin, AdminController.mostrarGestionOfertas);
 router.get('/admin/historicos', verificarRol('admin'), HistoricosController.mostrarHistoricos);
 router.get('/admin/clientes', verificarRol('admin'), AdminController.mostrarGestionClientes);
+router.get('/admin/carrusel', verificarRol('admin'), CarruselController.mostrarGestionCarrusel);
 
 // -----------------------------------------------
 // API DE PRODUCTOS
@@ -51,11 +53,11 @@ router.post('/api/admin/productos/:id/imagen', verificarAdmin, ProductoControlle
 // -----------------------------------------------
 // GET: productos en oferta vigente (con precio original y descontado)
 // PATCH: guarda el descuento y las fechas de vigencia de un producto
-// Solo el admin configura ofertas.
-router.get('/api/admin/ofertas', verificarRol('admin'), ProductoController.obtenerOfertasActivas);
+// Admin y aprendiz configuran ofertas.
+router.get('/api/admin/ofertas', verificarAdmin, ProductoController.obtenerOfertasActivas);
 // Nota: la ruta de precio va ANTES de la de :id para que Express la matchee primero
-router.patch('/api/admin/ofertas/precio/:id', verificarRol('admin'), ProductoController.actualizarPrecioRapido);
-router.patch('/api/admin/ofertas/:id', verificarRol('admin'), ProductoController.actualizarOferta);
+router.patch('/api/admin/ofertas/precio/:id', verificarAdmin, ProductoController.actualizarPrecioRapido);
+router.patch('/api/admin/ofertas/:id', verificarAdmin, ProductoController.actualizarOferta);
 
 // -----------------------------------------------
 // API DE PEDIDOS / APARTADOS
@@ -78,6 +80,15 @@ router.patch('/api/admin/apartados/cancelar/:id', verificarAdmin, ApartadoContro
 // PATCH: actualiza nombre, dirección y teléfono de un cliente
 router.get('/api/admin/clientes', verificarRol('admin'), AdminController.listarClientes);
 router.patch('/api/admin/clientes/:id', verificarRol('admin'), AdminController.actualizarCliente);
+
+// -----------------------------------------------
+// API DE CARRUSEL
+// -----------------------------------------------
+// Solo el admin gestiona las imágenes de la portada.
+// POST subir: recibe un dataURL base64 y la guarda en img/carrusel
+// POST eliminar: borra una imagen de la carpeta del carrusel
+router.post('/api/admin/carrusel/subir', verificarRol('admin'), CarruselController.subirImagen);
+router.post('/api/admin/carrusel/eliminar', verificarRol('admin'), CarruselController.eliminarImagen);
 
 // -----------------------------------------------
 // API DE REPORTES CSV

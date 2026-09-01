@@ -12,10 +12,11 @@ const session = require('express-session');
 const helmet = require('helmet');
 const compression = require('compression');
 const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
+const { iniciarCsrf, verificarCsrf } = require('./middleware/csrf');
 
 const app = express();
 
-// Confío en proxies (necesario para rate-limit correcto detrás de proxy/ngrok)
+// Confío en proxies (necesario para rate-limit correcto detrás de proxy inverso)
 if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
 }
@@ -58,8 +59,14 @@ app.use(limiteGeneral);
 // La sesión va ANTES de las rutas, sino no funciona
 app.use(session(require('./config/session')));
 
+// Token CSRF: se genera y expone en cada vista
+app.use(iniciarCsrf);
+
 // Registro de visitas para las estadísticas
 app.use(require('./middleware/contadorVisitas'));
+
+// Protección CSRF: valida el token en toda petición que cambie estado
+app.use(verificarCsrf);
 
 // Cargo todas las rutas del proyecto
 app.use('/', require('./routes'));

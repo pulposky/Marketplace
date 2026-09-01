@@ -1,0 +1,306 @@
+/* ==========================================
+   FICHA DE DETALLE DE PRODUCTO
+========================================== */
+:root {
+    --verde-sena: #39A900;
+    --verde-oscuro: #2c7a00;
+    --blanco: #ffffff;
+    --texto: #1f2937;
+    --texto-secundario: #6b7280;
+    --borde: #e5e7eb;
+    --fondo: #f6f8f6;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+/* Header */
+.header-catalogo {
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+    padding: 14px 20px;
+}
+
+.contenedor-header {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-regresar {
+    color: var(--verde-sena);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-regresar:hover {
+    text-decoration: underline;
+}
+
+.marca-catalogo span {
+    font-weight: 800;
+    color: var(--verde-sena);
+    letter-spacing: 1px;
+}
+
+/* Ficha */
+.contenedor-detalle {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+}
+
+.ficha-producto {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    padding: 28px;
+    overflow: hidden;
+}
+
+.ficha-imagen {
+    background: linear-gradient(180deg, #f4f9f1, #eef6ea);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+    overflow: hidden;
+}
+
+.ficha-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.imagen-placeholder {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--verde-sena);
+    text-align: center;
+    padding: 20px;
+}
+
+.ficha-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.categoria-tag {
+    background: var(--verde-sena);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+}
+
+.ficha-nombre {
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    color: var(--texto);
+}
+
+.ficha-presentacion {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--texto-secundario);
+}
+
+.ficha-lugar {
+    color: #9ca3af;
+}
+
+.ficha-descripcion {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #374151;
+}
+
+.ficha-stock {
+    margin: 0;
+}
+
+.chip-stock {
+    display: inline-block;
+    background: #eef6ea;
+    color: var(--verde-oscuro);
+    border: 1px solid #d3e8c8;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+}
+
+.stock-detalle {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: #9ca3af;
+}
+
+.ficha-precio {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 0;
+    border-top: 1px solid var(--borde);
+    border-bottom: 1px solid var(--borde);
+    width: 100%;
+}
+
+.precio {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--verde-oscuro);
+}
+
+.precio-original {
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+}
+
+.precio-oferta {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--verde-oscuro);
+}
+
+.badge-oferta {
+    background: #d32f2f;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.precio-unidad {
+    width: 100%;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+/* Acción de apartar */
+.ficha-accion {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.campo-cantidad {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.campo-cantidad label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.campo-cantidad input {
+    width: 90px;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.campo-cantidad small {
+    font-size: 0.75rem;
+    color: var(--texto-secundario);
+}
+
+.btn-apartar {
+    display: inline-block;
+    background: var(--verde-sena);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 26px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 12px rgba(57, 169, 0, 0.3);
+}
+
+.btn-apartar:hover {
+    background: var(--verde-oscuro);
+    transform: translateY(-1px);
+}
+
+.btn-apartar:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.ficha-nota {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--texto-secundario);
+}
+
+.ficha-extra {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.enlace-volver-catalogo {
+    color: var(--verde-sena);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.enlace-volver-catalogo:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .ficha-producto {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .ficha-imagen {
+        min-height: 220px;
+    }
+
+    .ficha-accion {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .campo-cantidad input {
+        width: 100%;
+    }
+}

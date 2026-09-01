@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <link rel="stylesheet" href="/css/admin/gestionClientes.css">
     <link rel="stylesheet" href="/css/toast.css">
     <title>Gestión de Clientes - Panel Admin</title>
@@ -98,6 +99,7 @@
         </div>
     </div>
 
+    <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
     <script src="/js/admin/gestionClientes.js"></script>
 </body>

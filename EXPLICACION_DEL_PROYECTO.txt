@@ -1,0 +1,348 @@
+====================================================================
+ MARKETPLACE SENAEMPRESA - EXPLICACIÓN DEL PROYECTO
+====================================================================
+ Página web de compra/apartado para el Centro Agroindustrial Hachón:
+ el cliente ve un catálogo, aparta productos (reserva de 1 hora) y
+ paga de forma presencial en el punto de venta.
+
+ Está hecha con Node.js + Express 5, plantillas EJS, MySQL (mysql2),
+ bcrypt para contraseñas y CSS/JS vanilla (sin frameworks).
+
+ Este documento explica 2 cosas:
+   1) Cómo funciona la protección CSRF (creada recientemente).
+   2) Qué contiene cada carpeta y archivo del proyecto.
+
+--------------------------------------------------------------------
+ 1) CÓMO FUNCIONA EL CSRF EN ESTE PROYECTO
+--------------------------------------------------------------------
+
+ ¿QUÉ ES CSRF?
+ El Cross-Site Request Forgery (falsificación de peticiones de sitios
+ cruzados) es un ataque donde otro sitio web obliga al navegador de
+ una víctima a enviar peticiones a tu servidor (crear un apartado,
+ cambiar datos, etc.) aprovechando que la víctima tiene una sesión
+ abierta (cookie válida). El servidor no puede distinguir si la
+ petición vino de tu propia página o de otra.
+
+ La solución clásica es el "Token CSRF": un código secreto aleatorio
+ que el servidor genera por sesión, lo pone dentro de la página web
+ y exige que TODA petición que cambie estado (POST/PUT/PATCH/DELETE)
+ lo repita. Como otro sitio NO puede leer el token que está en tu
+ página (por la política de mismo origen), no puede falsificar la
+ petición.
+
+ FLUJO EN ESTE PROYECTO (paso a paso)
+  1. El usuario entra a cualquier página (GET). El servidor pasa por
+     el middleware `iniciarCsrf` (middleware/csrf.js), que:
+        - recupera la sesión,
+        - si no existe `req.session.csrf`, crea un token aleatorio
+          con crypto (24 bytes en hex, ~48 caracteres),
+        - lo guarda en la sesión,
+        - lo expone en TODAS las vistas como `csrfToken`
+          (res.locals.csrfToken).
+
+  2. Cada vista que necesita enviar peticiones tiene en su <head>:
+        <meta name="csrf-token" content="<%= csrfToken %>">
+     y carga el script público:
+        <script src="/js/csrf.js"></script>
+
+  3. public/js/csrf.js (función anónima que corre en el navegador):
+        - lee el token del <meta>,
+        - guarda una referencia del `window.fetch` original,
+        - reemplaza `window.fetch` con una versión que automáticamente
+          agrega la cabecera  `x-csrf-token: <token>`  a CADA
+          petición (si no la trae ya).
+     Resultado: TODOS los fetch del sitio (login, apartar, perfil,
+     admin...) envían el token sin tener que tocar cada script.
+
+  4. En el servidor, app.js monta antes de las rutas:
+        app.use(verificarCsrf);   (middleware/csrf.js)
+     Este middleware:
+        - deja pasar sin revisar los métodos seguros
+          GET, HEAD y OPTIONS (no cambian nada),
+        - para POST/PUT/PATCH/DELETE compara el token recibido
+          (cabecera `x-csrf-token` o campo `_csrf` de un formulario
+          HTML clásico) contra `req.session.csrf`.
+        - si no coincide o falta -> responde 403 con
+          { error: 'Token de seguridad inválido o ausente.' }
+        - si coincide -> llama a `next()` y la petición sigue normal.
+
+  NOTA de cookie: la cookie de sesión (`connect.sid`) usa
+  `httpOnly` y `sameSite: 'lax'` (config/session.js), que ya mitigan
+  CSRF; el token es la capa defensiva adicional obligatoria.
+
+ ¿DÓNDE VIVE EL TOKEN EN LAS VISTAS?
+   12 vistas tienen el <meta> y cargan csrf.js:
+     main.ejs, productos.ejs, perfil.ejs, verApartados.ejs,
+     productoDetalle.ejs, admin/mainAdmin.ejs, admin/pedidosAdmin.ejs,
+     admin/historicos.ejs, admin/habilitarProducto.ejs,
+     admin/gestionOfertas.ejs, admin/gestionClientes.ejs,
+     admin/carruselAdmin.ejs.
+   (error.ejs y las vistas "nuevas" que no hacen nada de escritura no
+   lo necesitan.)
+
+ ORDEN DE LOS MIDDLEWARES (app.js) - IMPORTANTE
+   express.static -> urlencoded/json (lee req.body) -> rate-limit ->
+   session -> iniciarCsrf -> contadorVisitas -> verificarCsrf -> rutas.
+   La sesión va ANTES para que iniciarCsrf pueda guardar el token, y
+   los parsers de body van ANTES para que verificarCsrf pueda leer el
+   campo `_csrf` si se usara un formulario clásico.
+
+ ERROR TÍPICO SI FALTA EL TOKEN
+   El frontend hace un POST/PATCH y el servidor responde 403
+   "Token de seguridad inválido o ausente". Suele pasar cuando se
+   abre una página a la que le falta el <meta> o el script
+   /js/csrf.js, o cuando se hacen fetch desde una página distinta.
+
+ CÓMO SE PROBARON LOS ARCHIVOS CSRF
+   test/csrf.test.js (node:test) prueba las 3 piezas del middleware:
+   que iniciarCsrf crea y expone el token, que no lo regenera si ya
+   existe, y que verificarCsrf deja pasar GET/HEAD/OPTIONS, acepta el
+   token correcto por cabecera y por _csrf, y rechaza los ausentes,
+   vacíos o incorrectos. Se corre con `npm test`.
+
+--------------------------------------------------------------------
+ 2) ESTRUCTURA DE CARPETAS Y ARCHIVOS
+--------------------------------------------------------------------
+
+ RAIZ
+   server.js
+     Punto de entrada. Carga el .env con dotenv, importa la app de
+     app.js, inicia el job de expiración de apartados y levanta el
+     servidor en el puerto del .env (o 3000). Maneja el cierre limpio.
+   app.js
+     Construye la app Express SIN arrancarla: seguridad (helmet CSP),
+     compresión gzip, estáticos, motor EJS (vistas en public/views),
+     parsers de body (4mb para imágenes en base64), rate-limit
+     general, sesión, iniciarCsrf, contador de visitas, verificarCsrf,
+     monta las rutas, y los 404 / manejo de errores.
+   package.json / package-lock.json
+     Dependencias y scripts: `npm test` (node --test), `npm start`
+     (node server.js), `npm run dev` (nodemon).
+   .env
+     Variables reales (BD_HOST, BD_USER, BD_PASSWORD, BD_DATABASE,
+     PORT, SESSION_SECRET, RATE_LIMIT_MAX...). NO se comitea.
+   .gitignore
+     Excluye node_modules, .env, etc.
+   README.md
+     Documentación / guía del proyecto.
+
+ config/
+   database.js
+     Devuelve las opciones de conexión MySQL leídas del .env
+     (convención BD_*, con respaldo DB_*). Se usa en
+     database/conexion.js.
+   session.js
+     Opciones de express-session: secret, cookie con httpOnly,
+     sameSite 'lax' y 1 hora de vida. Secure=true solo en producción.
+   rateLimit.js
+     Dos límites con express-rate-limit: `limiteGeneral` (300 peticiones
+     por IP cada 15 min, aplicado en toda la app) y `limiteAuth`
+     (5 intentos por IP cada 15 s para login/registro, con mensaje
+     compatible con el frontend).
+
+ controllers/
+   sitioController.js
+     Páginas públicas: mostrarMain (portada, redirige a /admin si es
+     admin/aprendiz), mostrarCatalogo (filtros, búsqueda, ofertas,
+     orden), mostrarDetalleProducto (ficha /producto/:id, valida 404 y
+     estado activo) y carruselImagenes (API que lee public/img/carrusel).
+   productoController.js
+     CRUD de productos: crear, actualizar datos, límite de venta,
+     estado, precios, ofertas y subir/actualizar la imagen (base64 a
+     /public/img/upload) y API de listado con filtros.
+   authController.js
+     Login doble: por usuario (admin/aprendiz con tabla usuarios) o por
+     documento (clientes con tabla clientes), creación de contraseña
+     del cliente (paso 0), verificación de sesión (verificarSesion),
+     registro de clientes, restablecer contraseña y logout.
+   clienteController.js
+     Perfil del cliente: mostrarPerfil, actualizarPerfil (valida la
+     contraseña actual con bcrypt y, si llega nuevaPassword, la cambia
+     con hash nuevo).
+   apartadoController.js
+     Toda la lógica de reservas: apartarProducto, apartarLote (carrito),
+     cancelarApartado (cliente), confirmarApartado / marcarEntregado /
+     cancelarApartadoAdmin (panel) y obtenerApartadosAdmin. Descuenta y
+     devuelve stock, y dispara las notificaciones al cliente.
+   notificacionesClienteController.js
+     API del cliente para sus notificaciones: obtenerMisNotificaciones,
+     marcarLeida, marcarTodasLeidas.
+   notificacionesController.js
+     Notificaciones del admin: obtener, marcar leídas, todas leídas.
+   adminController.js
+     Vistas y APIs del panel: mainAdmin, habilitarProducto, pedidos,
+     historial, gestión de ofertas, gestión de clientes (listar y
+     actualizar).
+   carruselController.js
+     Gestión del carrusel (solo admin): mostrarGestionCarrusel
+     (página /admin/carrusel), subirImagen (base64 validado y guardado
+     en /public/img/carrusel con prefijo numérico de orden) y
+     eliminarImagen (borra de la carpeta con nombre saneado).
+   historicosController.js
+     Estadísticas del panel: productos más vendidos, clientes que más
+     compran, pedidos por estado, ventas y visitas por día, rutas más
+     visitadas y exportación de históricos.
+   reportesController.js
+     Exportaciones CSV de pedidos y clientes.
+
+ database/
+   conexion.js
+     Crea la conexión MySQL con mysql2 usando config/database y
+     avisa por consola si falla. Se importa en casi todos los modelos.
+   schema.sql
+     Esquema/documentación de las tablas: usuarios, clientes, producto,
+     apartados, notificaciones, notificaciones_cliente, page_views.
+
+ middleware/
+   csrf.js
+     Protección CSRF (ver sección 1): obtiene/crea el token por sesión
+     (obtenerToken), lo expone en las vistas (iniciarCsrf) y valida las
+     peticiones que cambian estado (verificarCsrf).
+   contadorVisitas.js
+     Registra en page_views cada GET de página HTML (no API ni assets),
+     ignorando a admin/aprendiz, y limpia registros de más de 30 días.
+   verificarUsuario.js
+     `protegerRuta`: exige sesión. En AJAX responde 401 JSON; en URLs
+     normales redirige a "/".
+   verificarAdmin.js
+     Exige sesión Y rol admin/aprendiz (401/403 en API, redirección en
+     páginas).
+   verificarRol.js
+     Como verificarAdmin pero recibe la lista de roles permitidos
+     (p. ej. verificarRol('admin') para secciones solo de admin; si no
+     tiene el rol redirige a /admin).
+   validar.js
+     Reglas de express-validator para login y registro: trims, límites
+     de longitud, regex del documento, rol permitido y contraseña
+     mínima, con mensajes en el formato que espera el frontend.
+
+ models/  (Cada modelo recibe una conexión de database/conexion.js)
+   productoModel.js
+     Consultas de producto: listar todos, por id, crear, actualizar,
+     límite de venta, estado, precio, ofertas y devolver stock.
+   apartadoModel.js
+     Crear apartado, obtener por cliente / por id / con su producto y
+     estado, confirmar, entregar, cancelar (admin y cliente y por
+     expiración) y estadísticas por estado.
+   usuarioModel.js
+     Clientes y usuarios admin: login por documento/usuario (incluye
+     bcrypt), registrar cliente, crear/verificar contraseña, obtener
+     cliente con/sin password, actualizar datos de cliente y conteos.
+   notificacionModel.js
+     Notificaciones del admin: crear, listar no leídas, contar,
+     marcar leída / todas.
+   notificacionClienteModel.js
+     Notificaciones del cliente: buscar cliente por nombre, crear,
+     listar, contar no leídas y marcar leídas.
+   historicosModel.js
+     Consultas de estadísticas: más vendidos, mejores clientes, estados,
+     ventas/visitas por día y resumen del panel.
+
+ routes/
+   index.js
+     Router maestro: monta publico, cliente y admin bajo "/".
+   publico.js
+     Público sin sesión: / , /catalogo, /producto/:id, login (con
+     limiteAuth + validarLogin), logout, registro, /api/productos,
+     /api/carrusel-imagenes, /api/verificar-sesion,
+     /api/restablecer-password.
+   cliente.js
+     Logueado: /perfil, PATCH /api/perfil, /verApartados,
+     POST /api/apartar-producto, /api/apartar-lote,
+     /api/apartados/cancelar/:id, y el API de mis-notificaciones
+     (/api/mis-notificaciones, /:id/leida, /todas-leidas).
+   admin.js
+     Panel admin: páginas /admin, habilitar-producto, pedidos,
+     historial-pedidos, ofertas, historicos, clientes, carrusel; y las
+     APIs de productos, ofertas, apartados/pedidos, clientes, CSV,
+     notificaciones, históricos y carrusel. Protegidas con verificarAdmin
+     o verificarRol('admin').
+
+ services/
+   expirarApartados.js
+     Job en segundo plano (setInterval cada 60 s) que cancela los
+     apartados pendientes con más de 1 hora, avisa al cliente con una
+     notificación y devuelve el stock al producto. Lo inicia server.js.
+
+ utils/
+   helpers.js
+     normalizarCategorias (convierte query a array limpio) y
+     calcularPrecioOferta (aplica descuento solo si la oferta está
+     vigente por fechas). Tienen pruebas en test/helpers.test.js.
+   imagenes.js
+     asociarImagenesAProductos (empareja cada producto con su foto de
+     /public/img/upload por nombre normalizado) y normalizeText.
+
+ public/
+   css/                Hojas de estilo por página:
+     error, login, main (portada), perfil, productoDetalle (ficha
+     nueva), productos (catálogo), registro, toast (avisos), verApartados,
+     y dentro de css/admin/: mainAdmin, pedidosAdmin, habilitarProducto,
+     gestionOfertas, gestionClientes, historicos, carruselAdmin.
+   img/
+     Logos (Logo_sena.png, Logo_SENAEMPRESA.png, letras_negras.png sin
+     uso), Banner.jpg, catalogo.png, paleta.jpeg, qr-devtunnel.png,
+     y las carpetas:
+        - carrusel/        Imágenes que rotan en la portada (se
+                           gestionan desde /admin/carrusel).
+        - upload/          Fotos de los productos (se suben desde el
+                           panel; se asocian por nombre).
+   js/
+     csrf.js              (ver sección 1): parchea fetch para añadir el
+                          token automaticamente.
+     toast.js             Avisos flotantes (exito/error/advertencia).
+     login.js, registro.js, olvide.js  Lógica de los modales de
+                          autenticación (validación + fetch a /login,
+                          /registro, /api/restablecer-password).
+     main.js              Portada: carga el carrusel desde
+                          /api/carrusel-imagenes y lo anima cada 2 s,
+                          y botones "apartar" con verificación de sesión.
+     productos.js         Catálogo: filtros, búsqueda, drag para
+                          cantidad, botón apartar y segundo click a
+                          "Mis apartados".
+     perfil.js            Edición de perfil + cambio de contraseña
+                          (valida en cliente y hace PATCH /api/perfil).
+     verApartados.js      Vista del cliente: carga sus apartados y sus
+                          notificaciones (limpiar, abrir, marcar como
+                          leídas).
+     productoDetalle.js   Ficha de producto: limita la cantidad y envía
+                          POST /api/apartar-producto.
+     y en js/admin/: mainAdmin, pedidosAdmin, habilitarProducto,
+     gestionOfertas, gestionClientes, historicos, carruselAdmin
+     (lógicas de cada panel).
+   views/                Plantillas EJS (motor de vistas):
+     error.ejs           Página de error (404/500).
+     main.ejs            Portada: carrusel, productos destacados y
+                         modales de login/registro/contraseña.
+     productos.ejs       Catálogo con filtros por categoría, búsqueda,
+                         solo oferta y orden.
+     productoDetalle.ejs Ficha de un producto (/producto/:id) con
+                         imagen, precio (con cubetas de huevo ×30),
+                         stock y botón para apartar.
+     perfil.ejs          "Mi perfil": datos + cambio de contraseña.
+     verApartados.ejs    "Mis apartados" + panel de notificaciones del
+                         cliente.
+     y en views/admin/: mainAdmin, habilitarProducto, pedidosAdmin,
+     gestionOfertas, gestionClientes, historicos, carruselAdmin.
+
+ test/
+   helpers.test.js       Pruebas de utils/helpers.js
+                         (normalizarCategorias y calcularPrecioOferta).
+   csrf.test.js          Pruebas del middleware CSRF
+                         (iniciarCsrf, verificarCsrf, obtenerToken).
+   Se corren con:  npm test
+
+--------------------------------------------------------------------
+ CONVENCIONES Y NOTAS ÚTILES
+--------------------------------------------------------------------
+ - No hay framework de estilos: CSS y JS vanilla, todo en español.
+ - Las contraseñas SIEMPRE se guardan hasheadas con bcrypt (bcryptjs).
+ - Los huevos se editan en la UI como "cubetas de 30"; el precio de la
+   cubeta = precio unitario × 30 y el stock de cubetas = límite/30.
+ - El pago es presencial en el punto de venta; la web solo aparta.
+ - En Windows/Node: para scripts de consola con `node -e` usa un
+   archivo .js temporal (problemas con el escape de comillas de
+   PowerShell) cargando dotenv desde su ruta absoluta.
+ - El .env usa BD_* (config/database.js los centraliza).
+ - ¡Nada de dinero real en la web y no usar emojis en el código!

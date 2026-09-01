@@ -1208,3 +1208,18 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Enlace a la ficha de producto desde las tarjetas */
+.enlace-detalle-producto {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.enlace-detalle-producto h4 {
+    transition: color 0.2s ease;
+}
+
+.enlace-detalle-producto:hover h4 {
+    color: var(--verde-sena);
+}

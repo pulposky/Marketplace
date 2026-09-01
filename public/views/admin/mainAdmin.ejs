@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
     <title>Panel de administración</title>
     <link rel="stylesheet" href="/css/admin/mainAdmin.css" />
     <link rel="stylesheet" href="/css/toast.css" />
@@ -104,7 +105,7 @@
                 <a href="/admin/pedidos" class="stat-enlace">Revisar →</a>
             </div>
 
-            <% if (usuario.role === 'admin') { %>
+            <% if (usuario.role === 'admin' || usuario.role === 'aprendiz') { %>
             <div class="stat-card">
                 <div class="stat-icono icono-ofertas">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
@@ -142,7 +143,7 @@
                 <span class="card-flecha">→</span>
             </a>
 
-            <% if (usuario.role === 'admin') { %>
+            <% if (usuario.role === 'admin' || usuario.role === 'aprendiz') { %>
             <a href="/admin/ofertas" class="admin-card">
                 <div class="card-icono">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
@@ -150,6 +151,19 @@
                 <div class="card-cuerpo">
                     <h2>Ofertas y Descuentos</h2>
                     <p>Configura promociones, precios y fechas de vigencia.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+            <% } %>
+
+            <% if (usuario.role === 'admin') { %>
+            <a href="/admin/carrusel" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Carrusel de la Portada</h2>
+                    <p>Sube o elimina las imágenes que rotan en la página principal.</p>
                 </div>
                 <span class="card-flecha">→</span>
             </a>
@@ -211,6 +225,7 @@
         <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
     </footer>
 
+    <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
     <script src="/js/admin/mainAdmin.js"></script>
 </body>

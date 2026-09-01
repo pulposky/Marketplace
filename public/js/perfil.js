@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const telefono = document.getElementById('perfilTelefono')?.value.trim() || '';
         const direccion = document.getElementById('perfilDireccion')?.value.trim() || '';
         const password = document.getElementById('perfilPassword')?.value || '';
+        const nuevaPassword = document.getElementById('perfilNuevaPassword')?.value || '';
+        const confirmarPassword = document.getElementById('perfilConfirmarPassword')?.value || '';
 
         // Validaciones básicas antes de enviar
         if (!nombre) {
@@ -35,6 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Validación de la nueva contraseña (si quiere cambiarla)
+        const deseaCambiar = nuevaPassword !== '' || confirmarPassword !== '';
+        if (deseaCambiar) {
+            if (nuevaPassword.length < 6) {
+                toast('advertencia', 'La nueva contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+            if (nuevaPassword !== confirmarPassword) {
+                toast('advertencia', 'Las contraseñas nuevas no coinciden.');
+                return;
+            }
+        }
+
         botonGuardar.disabled = true;
         botonGuardar.textContent = 'Guardando...';
 
@@ -43,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify({ nombre, telefono, direccion, password })
+                body: JSON.stringify({ nombre, telefono, direccion, password, nuevaPassword: deseaCambiar ? nuevaPassword : null })
             });
 
             let data = {};
@@ -55,9 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (respuesta.ok && data.ok) {
                 toast('exito', data.mensaje || 'Perfil actualizado correctamente.');
-                // Limpio el campo de contraseña por seguridad
+                // Limpio los campos de seguridad
                 const pwdInput = document.getElementById('perfilPassword');
                 if (pwdInput) pwdInput.value = '';
+                const nuevaInput = document.getElementById('perfilNuevaPassword');
+                if (nuevaInput) nuevaInput.value = '';
+                const confirmInput = document.getElementById('perfilConfirmarPassword');
+                if (confirmInput) confirmInput.value = '';
             } else {
                 toast('error', data.mensaje || 'No se pudo actualizar el perfil.');
             }
