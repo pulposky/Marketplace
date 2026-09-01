@@ -122,16 +122,51 @@
                                 <button type="submit" class="boton-filtrar">Aplicar Filtros</button>
                             </form>
                     </div>
+
+                    <!-- FILTROS ADICIONALES -->
+                    <div class="seccion-categorias">
+                        <form method="get" action="/catalogo" class="filtros-categorias-form">
+                            <% categoriasSeleccionadas.forEach(c => { %>
+                                <input type="hidden" name="categoria" value="<%= c %>">
+                                <% }) %>
+                                <label class="opcion-categoria">
+                                    <input type="checkbox" name="soloOferta" value="1" <%= soloOferta ? 'checked' : ''
+                                        %>>
+                                        <span>Solo en oferta</span>
+                                </label>
+                                <div class="opcion-orden">
+                                    <label for="ordenProductos">Ordenar por:</label>
+                                    <select name="orden" id="ordenProductos">
+                                        <option value="">Predeterminado</option>
+                                        <option value="nombre" <%= orden === 'nombre' ? 'selected' : '' %>>Nombre (A-Z)</option>
+                                        <option value="precio-asc" <%= orden === 'precio-asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
+                                        <option value="precio-desc" <%= orden === 'precio-desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="boton-filtrar">Aplicar</button>
+                        </form>
+                    </div>
                 </aside>
 
                 <!-- REJILLA DE PRODUCTOS -->
                 <section class="rejilla-productos">
-                    <% productos.forEach(producto=> {
+                        <% productos.forEach(producto=> {
                         const esHuevo = producto.es_huevo || (producto.nombre &&
                         producto.nombre.toLowerCase().includes('huevo'));
                         const precioUnitarioReal = Number(producto.precio);
 
-                        const precioMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+                        // Oferta: descuento porcentual vigente por fechas
+                        const descuentoProd = Number(producto.descuento) || 0;
+                        const ahoraOferta = new Date();
+                        const enOferta = descuentoProd > 0
+                            && (!producto.fecha_inicio_oferta || ahoraOferta >= new Date(producto.fecha_inicio_oferta))
+                            && (!producto.fecha_fin_oferta || ahoraOferta <= new Date(producto.fecha_fin_oferta));
+                        const precioUnitarioOferta = enOferta
+                            ? precioUnitarioReal * (1 - descuentoProd / 100)
+                            : precioUnitarioReal;
+
+                        const precioMostrar = esHuevo ? precioUnitarioOferta * 30 : precioUnitarioOferta;
+                        const precioOriginalMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
                         const textoUnidad = esHuevo ? 'Cubeta(s)' : (producto.unidad || 'Unidad(es)');
 
                         // CORRECCIÓN AQUÍ: Usamos Math.floor para obtener cubetas enteras y sin decimales
@@ -143,7 +178,7 @@
                                 <% if (producto.imagenUpload) { %>
                                     <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
                                     <% } else { %>
-                                        <span>
+                                        <span class="imagen-placeholder">
                                             <%= producto.nombre %>
                                         </span>
                                         <% } %>
@@ -152,41 +187,62 @@
                                 <h3 class="nombre-producto">
                                     <%= producto.nombre %>
                                 </h3>
-                                <p class="presentacion-producto">
+                                <span class="presentacion-producto">
                                     Presentación: <%= textoUnidad %>
-                                </p>
+                                </span>
 
-                                <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin-top: 4px;">
-                                    Disponibles: <strong>
-                                        <%= cubetasDisponibles %>
-                                    </strong>
-                                    <%= textoUnidad %>
-                                        <% if (esHuevo) { %>
-                                            <span style="display:block; font-size: 0.75rem; color: #777;">
-                                                (<%= limiteStock %> huevos en total)
-                                            </span>
-                                            <% } %>
+                                <% if (producto.descripcion) { %>
+                                    <p class="descripcion-tarjeta">
+                                        <%= producto.descripcion %>
+                                    </p>
+                                <% } %>
+
+                                <p class="stock-producto">
+                                    <span class="chip-stock">
+                                        Disponibles: <strong>
+                                            <%= cubetasDisponibles %>
+                                        </strong>
+                                        <%= textoUnidad %>
+                                    </span>
+                                    <% if (esHuevo) { %>
+                                        <span class="stock-detalle">
+                                            (<%= limiteStock %> huevos en total)
+                                        </span>
+                                        <% } %>
                                 </p>
 
                                 <div class="precio-producto">
-                                    $<%= Number(precioMostrar).toLocaleString("es-CO") %>
-                                        <% if (esHuevo) { %>
-                                            <span
-                                                style="display:block; font-size: 0.75rem; color: #666; font-weight: normal;">
-                                                ($<%= Number(precioUnitarioReal).toLocaleString("es-CO") %> / huevo)
-                                            </span>
-                                            <% } %>
+                                    <% if (enOferta) { %>
+                                        <span class="precio-original">
+                                            $<%= Number(precioOriginalMostrar).toLocaleString("es-CO") %>
+                                        </span>
+                                        <span class="precio-oferta">
+                                            $<%= Number(precioMostrar).toLocaleString("es-CO") %>
+                                        </span>
+                                        <span class="badge-oferta">
+                                            -<%= descuentoProd %>%
+                                        </span>
+                                    <% } else { %>
+                                        $<%= Number(precioMostrar).toLocaleString("es-CO") %>
+                                    <% } %>
+                                    <% if (esHuevo) { %>
+                                        <span class="precio-unidad">
+                                            ($<%= Number(precioUnitarioOferta).toLocaleString("es-CO") %> / huevo)
+                                        </span>
+                                        <% } %>
                                 </div>
                             </div>
 
                             <button class="boton-apartar btn-accion-apartar" data-id="<%= producto.id_producto %>"
                                 data-nombre="<%= producto.nombre %>"
                                 data-precio="$<%= Number(precioMostrar).toLocaleString('es-CO') %>"
-                                data-precio-unitario="<%= precioUnitarioReal %>"
+                                data-precio-num="<%= Number(precioMostrar).toFixed(2) %>"
+                                data-precio-unitario="<%= precioUnitarioOferta %>"
                                 data-es-huevo="<%= esHuevo ? 'true' : 'false' %>" data-unidad="<%= textoUnidad %>"
                                 data-imagen="<%= producto.imagenUpload || '' %>"
+                                data-descripcion="<%= producto.descripcion || '' %>"
                                 data-limite="<%= cubetasDisponibles %>"> <!-- Pasa las cubetas enteras al JS -->
-                                <%= usuario ? 'Apartar' : 'Ver' %>
+                                Agregar
                             </button>
                         </div>
                         <% }) %>
@@ -195,19 +251,20 @@
             </div>
         </main>
 
-        <!-- MODAL APARTAR PRODUCTO -->
+        <!-- MODAL AGREGAR PRODUCTO -->
         <div class="modal-fondo" id="modalApartarProducto">
             <div class="modal-contenido">
                 <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
 
                 <main class="card-container">
-
                     <div class="card-body">
                         <div class="modal-imagen" style="margin-bottom:12px;">
                             <img id="apartarImagenProducto" src="" alt="Imagen del producto"
                                 style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;" />
                         </div>
                         <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
+
+                        <p class="descripcion-modal" id="apartarDescripcionProducto"></p>
 
                         <div class="product-info">
                             <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
@@ -229,7 +286,8 @@
                                         id="unidadDisponiblesModal"></span>
                                 </small>
                             </div>
-                            <button type="submit" class="btn-principal" style="width: 100%;">Apartar</button>
+                            <button type="submit" class="btn-principal" style="width: 100%;"
+                                id="btnAgregarCarrito">Agregar al carrito</button>
                         </form>
                     </div>
                 </main>
@@ -419,14 +477,41 @@
             </div>
         </div>
 
-        <!-- CARRITO ANIMADO (acceso a mis apartados) -->
+        <!-- CARRITO FLOTANTE (abre el carrito y muestra el contador) -->
         <div class="carrito-fijo" id="carritoAnimado" role="button" tabindex="0"
-            title="Ver mis apartados" aria-label="Ver mis apartados">
+            title="Ver tu carrito" aria-label="Ver tu carrito">
             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
+            <span class="badge-carrito-fijo" id="badgeCarritoFijo">0</span>
         </div>
+
+        <!-- DIBUJO CARRITO LATERAL (CARRITO REAL) -->
+        <div class="carrito-fondo" id="carritoFondo"></div>
+        <aside class="carrito-drawer" id="carritoDrawer" aria-hidden="true">
+            <div class="carrito-cabecera">
+                <h2>Tu carrito</h2>
+                <button type="button" class="cerrar-carrito" id="cerrarCarrito" aria-label="Cerrar carrito">&times;</button>
+            </div>
+
+            <div class="carrito-vacio" id="carritoVacio">
+                <p>Tu carrito está vacío. Agrega productos del catálogo.</p>
+            </div>
+
+            <ul class="carrito-lista" id="carritoLista"></ul>
+
+            <div class="carrito-pie">
+                <div class="carrito-totales">
+                    <span class="carrito-total-unidades" id="carritoTotalUnidades">0 unidades</span>
+                    <span class="carrito-total-precio" id="carritoTotalPrecio">$0</span>
+                </div>
+                <button type="button" class="btn-confirmar-carrito" id="btnConfirmarCarrito">Confirmar apartado</button>
+                <button type="button" class="btn-vaciar-carrito" id="btnVaciarCarrito">Vaciar carrito</button>
+                <p class="carrito-nota">El pago es presencial en el punto de venta. Tus productos quedan apartados por 1 hora.</p>
+                <a href="/verApartados" class="carrito-link">Ver mis apartados</a>
+            </div>
+        </aside>
 
         <!-- ALERTA INFORMATIVA DE APARTADO -->
         <div class="alerta-fondo" id="alertaApartado">

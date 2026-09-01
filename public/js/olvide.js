@@ -3,8 +3,7 @@
 // =============================================
 // Maneja el modal de "Olvidé mi contraseña".
 // Abre/cierra el modal igual que el de registro,
-// y muestra mensajes. (Por ahora solo la parte
-// visual / estructural, sin restablecimiento real).
+// y envía el restablecimiento al backend.
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -61,12 +60,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
-    // ENVÍO DEL FORMULARIO (por ahora solo visual)
+    // ENVÍO DEL FORMULARIO - RESTABLECER CONTRASEÑA
     // -----------------------------------------------
     if (formularioOlvide) {
-        formularioOlvide.addEventListener('submit', (evento) => {
+        formularioOlvide.addEventListener('submit', async (evento) => {
             evento.preventDefault();
-            mostrarMensajeOlvide('El restablecimiento de contraseña estará disponible pronto.', 'error');
+
+            const documento = document.getElementById('olvDocumento')?.value?.trim();
+            const nuevaPassword = document.getElementById('olvNuevaPassword')?.value;
+            const confirmarPassword = document.getElementById('olvConfirmarPassword')?.value;
+
+            if (!documento) {
+                mostrarMensajeOlvide('Ingresa tu número de documento.', 'error');
+                return;
+            }
+            if (!nuevaPassword) {
+                mostrarMensajeOlvide('Ingresa una nueva contraseña.', 'error');
+                return;
+            }
+            if (nuevaPassword.length < 6) {
+                mostrarMensajeOlvide('La contraseña debe tener al menos 6 caracteres.', 'error');
+                return;
+            }
+            if (nuevaPassword !== confirmarPassword) {
+                mostrarMensajeOlvide('Las contraseñas no coinciden.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/restablecer-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ documento, nuevaPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    mostrarMensajeOlvide(data.mensaje, 'exito');
+                    formularioOlvide.reset();
+                    // Después de 2 segundos, volver al login
+                    setTimeout(() => {
+                        if (ventanaOlvide) ventanaOlvide.style.display = 'none';
+                        if (ventanaLogin) ventanaLogin.style.display = 'flex';
+                    }, 2000);
+                } else {
+                    mostrarMensajeOlvide(data.mensaje || 'Error al restablecer la contraseña.', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarMensajeOlvide('Error de conexión con el servidor.', 'error');
+            }
         });
     }
 

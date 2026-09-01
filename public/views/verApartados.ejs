@@ -61,9 +61,16 @@
                     // 1. Detectar si el ítem es huevo
                     const esHuevo = item.es_huevo || (item.nombre && item.nombre.toLowerCase().includes('huevo'));
 
-                    // 2. Precios base
-                    const precioUnitarioReal = Number(item.precio);
+                    // 2. Precio base: usamos el precio capturado al apartar (ya con descuento).
+                    //    Si viene en 0 (apartados viejos sin precio), caemos al precio actual del producto.
+                    const precioUnitarioReal = Number(item.precio_aplicado) > 0
+                        ? Number(item.precio_aplicado)
+                        : Number(item.precio);
+                    const precioSinDescuento = Number(item.precio);
                     const precioCubeta = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+                    const precioCubetaSinDesc = esHuevo ? precioSinDescuento * 30 : precioSinDescuento;
+                    const hayDescuento = Number(item.precio_aplicado) > 0
+                        && Number(item.precio_aplicado) < Number(item.precio);
 
                     // 3. Convertir unidades guardadas en BD a cubetas si aplica
                     const cantidadHuevosUnidades = Number(item.cantidad);
@@ -109,9 +116,19 @@
                         <p class="presentacion-producto">
                             <% if (esHuevo) { %>
                                 Precio por cubeta: <strong>$<%= precioCubeta.toLocaleString("es-CO") %></strong>
+                                <% if (hayDescuento) { %>
+                                    <small style="display:block; color:#d32f2f;">
+                                        Antes $<%= precioCubetaSinDesc.toLocaleString("es-CO") %>
+                                    </small>
+                                <% } %>
                                 <small style="display: block; color: #888;">($<%= precioUnitarioReal.toLocaleString("es-CO") %> / huevo)</small>
                             <% } else { %>
                                 Precio un.: $<%= precioUnitarioReal.toLocaleString("es-CO") %>
+                                <% if (hayDescuento) { %>
+                                    <small style="display:block; color:#d32f2f;">
+                                        Antes $<%= precioSinDescuento.toLocaleString("es-CO") %>
+                                    </small>
+                                <% } %>
                             <% } %>
                         </p>
 
@@ -186,8 +203,10 @@
                         // 1. Detectar si el ítem es huevo
                         const esHuevoH = item.es_huevo || (item.nombre && item.nombre.toLowerCase().includes('huevo'));
 
-                        // 2. Precios base
-                        const precioUnitarioH = Number(item.precio);
+                        // 2. Precios base (capturado al apartar, con fallback al precio actual)
+                        const precioUnitarioH = Number(item.precio_aplicado) > 0
+                            ? Number(item.precio_aplicado)
+                            : Number(item.precio);
                         const precioCubetaH = esHuevoH ? precioUnitarioH * 30 : precioUnitarioH;
 
                         // 3. Convertir unidades a cubetas si aplica

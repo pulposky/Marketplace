@@ -11,7 +11,6 @@ const path = require('path');
 const ProductoModel = require('../models/productoModel');
 const { normalizarCategorias } = require('../utils/helpers');
 const { asociarImagenesAProductos } = require('../utils/imagenes');
-
 const SitioController = {
 
     // GET /api/carrusel-imagenes
@@ -66,10 +65,16 @@ const SitioController = {
                             }
                         }
 
-                        res.render("main", {
-                            destacados: destacadosConImagen,
-                            productos: todosConImagen,
-                            usuario: req.session?.usuario || null
+                        // Cargo los productos en oferta vigente para la tarjeta "Ofertas activas"
+                        ProductoModel.obtenerConOfertas((errorOfertas, ofertas) => {
+                            const listaOfertas = (errorOfertas || !Array.isArray(ofertas)) ? [] : ofertas;
+
+                            res.render("main", {
+                                destacados: destacadosConImagen,
+                                productos: todosConImagen,
+                                ofertas: listaOfertas,
+                                usuario: req.session?.usuario || null
+                            });
                         });
                     });
                 });
@@ -78,11 +83,14 @@ const SitioController = {
     },
 
     // Catálogo de productos
-    // Solo muestra los activos, filtra por categoría y por texto de búsqueda
+    // Solo muestra los activos, filtra por categoría, por texto de búsqueda,
+    // solo en oferta, y ordena por precio.
     mostrarCatalogo: (req, res) => {
         const categoriasSeleccionadas = normalizarCategorias(req.query.categoria || req.query.categorias);
         const busqueda = String(req.query.busqueda || '').trim();
         const busquedaLower = busqueda.toLowerCase();
+        const soloOferta = req.query.soloOferta === '1' || req.query.oferta === '1';
+        const orden = String(req.query.orden || '').trim();
 
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
@@ -98,15 +106,46 @@ const SitioController = {
             }
 
             // Si eligió categorías, filtro; si no, muestro todos los activos
-            const productosFiltrados = categoriasSeleccionadas.length > 0
+            let productosFiltrados = categoriasSeleccionadas.length > 0
                 ? productosActivos.filter((producto) => categoriasSeleccionadas.includes(producto.categoria))
                 : productosActivos;
+
+            // Calcular si está en oferta para el filtro y el orden
+            const calcularEnOferta = (producto) => {
+                const descuento = Number(producto.descuento) || 0;
+                const ahora = new Date();
+                return descuento > 0
+                    && (!producto.fecha_inicio_oferta || ahora >= new Date(producto.fecha_inicio_oferta))
+                    && (!producto.fecha_fin_oferta || ahora <= new Date(producto.fecha_fin_oferta));
+            };
+
+            // Filtro "solo en oferta"
+            if (soloOferta) {
+                productosFiltrados = productosFiltrados.filter(calcularEnOferta);
+            }
+
+            // Ordenar por precio
+            const calcularPrecioEfectivo = (producto) => {
+                const precio = Number(producto.precio) || 0;
+                const descuento = Number(producto.descuento) || 0;
+                return calcularEnOferta(producto) ? precio * (1 - descuento / 100) : precio;
+            };
+
+            if (orden === 'precio-asc') {
+                productosFiltrados.sort((a, b) => calcularPrecioEfectivo(a) - calcularPrecioEfectivo(b));
+            } else if (orden === 'precio-desc') {
+                productosFiltrados.sort((a, b) => calcularPrecioEfectivo(b) - calcularPrecioEfectivo(a));
+            } else if (orden === 'nombre') {
+                productosFiltrados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+            }
 
             asociarImagenesAProductos(productosFiltrados, (productosConImagen) => {
                 res.render("productos", {
                     productos: productosConImagen,
                     categoriasSeleccionadas,
                     busqueda,
+                    soloOferta,
+                    orden,
                     usuario: req.session?.usuario || null
                 });
             });

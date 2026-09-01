@@ -23,12 +23,18 @@ const loginUsuarioController = async (req, res) => {
         }
 
         try {
-            const registros = await UsuarioModel.loginPorUsuario(usuario, password);
+            const registros = await UsuarioModel.loginPorUsuario(usuario);
             if (!registros || registros.length === 0) {
                 return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Usuario o contraseña incorrectos' });
             }
 
             const usuarioBD = registros[0];
+
+            // Comparo con bcrypt (soporta tanto hashes como texto plano legacy)
+            const passwordValida = await bcrypt.compare(String(password), usuarioBD.password);
+            if (!passwordValida) {
+                return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Usuario o contraseña incorrectos' });
+            }
 
             // Determino el rol: primero miro la columna 'role', luego 'rol', y también 'is_admin'
             let role = 'usuario';
@@ -36,7 +42,7 @@ const loginUsuarioController = async (req, res) => {
             const rolAlternativo = usuarioBD.rol ? String(usuarioBD.rol).trim().toLowerCase() : '';
             const roleValue = roleCampo || rolAlternativo;
 
-            if (['admin', 'administrator'].includes(roleValue)) role = 'admin';
+            if (['admin', 'administrator', 'administrador'].includes(roleValue)) role = 'admin';
             if (['aprendiz', 'apprentice'].includes(roleValue)) role = 'aprendiz';
             if (usuarioBD.is_admin === 1 || usuarioBD.is_admin === '1') role = 'admin';
 
@@ -169,6 +175,39 @@ const verificarSesion = (req, res) => {
     res.json({ login: false });
 };
 
+// POST /api/restablecer-password
+// Restablece la contraseña de un cliente existente.
+// Requiere: documento, nuevaPassword
+const restablecerPassword = async (req, res) => {
+    const { documento, nuevaPassword } = req.body;
+
+    if (!documento) {
+        return res.status(400).json({ ok: false, mensaje: 'El campo documento es obligatorio.' });
+    }
+    if (!nuevaPassword || !String(nuevaPassword).trim()) {
+        return res.status(400).json({ ok: false, mensaje: 'La nueva contraseña es obligatoria.' });
+    }
+    if (String(nuevaPassword).length < 6) {
+        return res.status(400).json({ ok: false, mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    try {
+        const resultado = await UsuarioModel.login(documento);
+        if (resultado.length === 0) {
+            return res.status(404).json({ ok: false, mensaje: 'No se encontró un cliente con ese documento.' });
+        }
+
+        const cliente = resultado[0];
+        const hash = await bcrypt.hash(String(nuevaPassword), 10);
+        await UsuarioModel.crearPassword(cliente.id_cliente ?? cliente.id, hash);
+
+        return res.json({ ok: true, mensaje: 'Contraseña restablecida correctamente. Ahora puedes iniciar sesión.' });
+    } catch (error) {
+        console.error('Error en restablecerPassword:', error);
+        return res.status(500).json({ ok: false, mensaje: 'Error interno del servidor.' });
+    }
+};
+
 // Registro de nuevo usuario/cliente
 const registroUsuarioController = async (req, res) => {
     const { nombre, documento, direccion, telefono, rol, password, nuevaPassword } = req.body;
@@ -217,5 +256,6 @@ module.exports = {
     loginUsuarioController,
     logoutUsuarioController,
     verificarSesion,
-    registroUsuarioController
+    registroUsuarioController,
+    restablecerPassword
 };

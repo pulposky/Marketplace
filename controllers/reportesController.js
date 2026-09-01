@@ -48,17 +48,22 @@ const ReportesController = {
             }
 
             const lista = Array.isArray(apartados) ? apartados : [];
-            const filas = lista.map((a) => [
-                a.id_apartado,
-                a.nombre_cliente,
-                a.nombre_producto,
-                a.cantidad,
-                a.unidad || 'UND',
-                Number(a.precio || 0),
-                Number(a.precio || 0) * Number(a.cantidad || 0),
-                a.estado,
-                formatearFecha(a.fecha)
-            ]);
+            const filas = lista.map((a) => {
+                // Usamos el precio capturado al apartar (ya con descuento). Si es 0,
+                // caemos al precio actual del producto.
+                const precioUnitario = Number(a.precio_aplicado) > 0 ? Number(a.precio_aplicado) : Number(a.precio || 0);
+                return [
+                    a.id_apartado,
+                    a.nombre_cliente,
+                    a.nombre_producto,
+                    a.cantidad,
+                    a.unidad || 'UND',
+                    precioUnitario,
+                    precioUnitario * Number(a.cantidad || 0),
+                    a.estado,
+                    formatearFecha(a.fecha)
+                ];
+            });
 
             const csv = aCSV(
                 ['ID', 'Cliente', 'Producto', 'Cantidad', 'Unidad', 'Precio unitario', 'Total', 'Estado', 'Fecha'],

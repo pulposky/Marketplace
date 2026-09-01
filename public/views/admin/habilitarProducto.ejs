@@ -17,7 +17,8 @@
             <div class="marca-catalogo">
                 <span>Habilitación de Productos</span> - Panel Admin
             </div>
-            <div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button type="button" class="btn-nuevo-producto" id="btnNuevoProducto">+ Nuevo Producto</button>
                 <a href='/admin' class="btn-regresar">
                     ← Regresar al Inicio
                 </a>
@@ -82,7 +83,13 @@
                         %>
                         <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
                             data-nombre="<%= (nombreMostrar || '').toLowerCase() %>"
-                            data-estado="<%= producto.estado %>" data-cantidad="<%= cantidadMostrar %>">
+                            data-estado="<%= producto.estado %>" data-cantidad="<%= cantidadMostrar %>"
+                            data-nombre-original="<%= producto.nombre %>"
+                            data-unidad="<%= producto.unidad || '' %>"
+                            data-categoria="<%= producto.categoria || '' %>"
+                            data-lugar="<%= producto.lugar || '' %>"
+                            data-precio="<%= Number(producto.precio || 0) %>"
+                            data-descripcion="<%= producto.descripcion || '' %>">
 
                             <!-- Imagen del Producto -->
                             <div class="imagen-producto">
@@ -130,6 +137,9 @@
                                         <div class="deslizador"></div>
                                     </label>
                                 </div>
+
+                                <button type="button" class="btn-editar-producto"
+                                    data-id="<%= producto.id_producto %>">✎ Editar</button>
                             </div>
                         </div>
                         <% }) %>
@@ -138,6 +148,67 @@
                                 <% } %>
 
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL CREAR / EDITAR PRODUCTO -->
+    <div class="modal-fondo" id="modalProducto">
+        <div class="modal-contenido modal-producto">
+            <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
+            <h2 id="tituloModalProducto">Nuevo Producto</h2>
+
+            <form id="formProducto">
+                <input type="hidden" id="campoIdProducto" name="id">
+
+                <label class="campo-form">Nombre
+                    <input type="text" id="campoNombre" name="nombre" required placeholder="Nombre del producto">
+                </label>
+
+                <label class="campo-form">Categoría
+                    <input type="text" id="campoCategoria" name="categoria" list="listaCategorias" placeholder="Busca o escribe una categoría">
+                </label>
+                <datalist id="listaCategorias">
+                    <option value="Abonos y Sustratos">
+                    <option value="Frutas y Hortalizas">
+                    <option value="Cereales, Granos y Forrajes">
+                    <option value="Material Vegetal y Flores">
+                    <option value="Embutidos y Cárnicos Procesados">
+                    <option value="Bebidas y Refrescos">
+                    <option value="Salsas y Conservas">
+                    <option value="Lácteos y Derivados">
+                    <option value="Repostería, Dulces y Licores">
+                    <option value="Pecuario y Acuícola">
+                </datalist>
+
+                <div class="fila-campos">
+                    <label class="campo-form">Unidad
+                        <input type="text" id="campoUnidad" name="unidad" placeholder="UND">
+                    </label>
+                    <label class="campo-form">Lugar
+                        <input type="text" id="campoLugar" name="lugar" placeholder="Bodega Principal">
+                    </label>
+                </div>
+
+                <div class="fila-campos">
+                    <label class="campo-form">Precio unitario ($)
+                        <input type="number" id="campoPrecio" name="precio" min="0.01" step="0.01" required placeholder="0.00">
+                    </label>
+                    <label class="campo-form">Cantidad a vender
+                        <input type="number" id="campoLimiteVenta" name="limiteVenta" min="0" step="1" placeholder="0">
+                    </label>
+                </div>
+
+                <label class="campo-form">Descripción
+                    <textarea id="campoDescripcion" name="descripcion" rows="3" placeholder="Breve descripción del producto"></textarea>
+                </label>
+
+                <label class="campo-form">Imagen
+                    <input type="file" id="campoImagen" accept="image/jpeg,image/png,image/webp">
+                </label>
+                <div class="preview-imagen" id="previewImagen"></div>
+
+                <button type="submit" class="btn-guardar-producto" id="btnGuardarProducto">Guardar producto</button>
+            </form>
         </div>
     </div>
 

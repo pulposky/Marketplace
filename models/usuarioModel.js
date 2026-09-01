@@ -46,12 +46,13 @@ const UsuarioModel = {
     },
 
     // Login por usuario + password (lo usan admin y aprendiz)
-    // Busca en la tabla 'usuarios' con las credenciales exactas
-    loginPorUsuario: (usuario, password) => {
+    // Busca solo por usuario; la comparación de password se hace
+    // con bcrypt para soportar hashes (nunca texto plano en SQL).
+    loginPorUsuario: (usuario) => {
         return new Promise((resuelta, rechazada) => {
             conexion.query(
-                'SELECT * FROM usuarios WHERE usuario = ? AND password = ?',
-                [usuario, password],
+                'SELECT * FROM usuarios WHERE usuario = ?',
+                [usuario],
                 (error, registros) => {
                     if (error) {
                         return rechazada(error);

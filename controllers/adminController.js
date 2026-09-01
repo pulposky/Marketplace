@@ -44,6 +44,28 @@ const AdminController = {
         });
     },
 
+    // Panel de gestión de ofertas del admin
+    // Lista todos los productos con su descuento y fechas vigentes
+    // para que el admin pueda configurarlos. Solo admin (no aprendiz).
+    mostrarGestionOfertas: (req, res) => {
+        const usuarioSesion = req.session?.usuario;
+        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
+        if (!usuarioSesion || rol !== 'admin') {
+            return res.redirect('/admin');
+        }
+
+        ProductoModel.obtenerTodos((error, productos) => {
+            const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
+
+            asociarImagenesAProductos(listaProductosRaw, (productosConImagen) => {
+                res.render('admin/gestionOfertas', {
+                    usuario: usuarioSesion,
+                    productos: productosConImagen
+                });
+            });
+        });
+    },
+
     // Panel de pedidos del admin
     // Muestra SOLO los pedidos pendientes; el historial completo
     // (confirmados, entregados y cancelados) vive en su propia vista.
@@ -82,11 +104,12 @@ const AdminController = {
 
     // Vista de gestión de clientes del admin.
     // La lista la carga el JS con la API para poder buscar en vivo.
+    // Solo admin (no aprendiz).
     mostrarGestionClientes: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
-            return res.redirect('/');
+        if (!usuarioSesion || rol !== 'admin') {
+            return res.redirect('/admin');
         }
 
         res.render('admin/gestionClientes', { usuario: usuarioSesion });
@@ -109,10 +132,9 @@ const AdminController = {
     // PATCH /api/admin/clientes/:id
     // Actualiza nombre, dirección y teléfono de un cliente
     actualizarCliente: async (req, res) => {
-        // Validación de rol: solo admin o aprendiz pueden editar clientes.
-        // Lo reviso acá porque las APIs de admin solo piden sesión activa.
+        // Validación de rol: solo el admin edita clientes.
         const rolSesion = String(req.session?.usuario?.role || '').trim().toLowerCase();
-        if (rolSesion !== 'admin' && rolSesion !== 'aprendiz') {
+        if (rolSesion !== 'admin') {
             return res.status(403).json({ ok: false, mensaje: 'No tienes permisos para gestionar clientes.' });
         }
 

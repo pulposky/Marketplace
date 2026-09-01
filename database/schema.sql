@@ -53,8 +53,9 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Usuario inicial por defecto (admin / admin123)
+-- Password hasheada con bcrypt para mayor seguridad
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `usuario`, `password`, `rol`)
-VALUES (1, 'Administrador del Sistema', 'admin', 'admin123', 'Administrador')
+VALUES (1, 'Administrador del Sistema', 'admin', '$2b$10$2iIPkF5/e/3fmsNXncsrFOLIgWrVxH9u37xKbZVWYacXSM6h3Od1O', 'Administrador')
 ON DUPLICATE KEY UPDATE `id_usuario`=`id_usuario`;
 
 -- ------------------------------------------------------------
@@ -250,6 +251,25 @@ ALTER TABLE `producto`
 ALTER TABLE `producto`
   ADD COLUMN IF NOT EXISTS `categoria` VARCHAR(100) DEFAULT 'Otros';
 
+-- ------------------------------------------------------------
+-- OFERTAS / DESCUENTOS EN EL PRECIO
+-- ------------------------------------------------------------
+-- Estructura compartida (web + POS) para aplicar descuentos a
+-- un producto. La web la usa para calcular el precio de oferta
+-- en el catálogo, los apartados y el panel admin. El POS la lee
+-- para facturar con el mismo descuento.
+--
+--   descuento            : porcentaje de descuento (0.00 = sin oferta).
+--   fecha_inicio_oferta  : inicio de vigencia (NULL = sin límite).
+--   fecha_fin_oferta     : fin de vigencia (NULL = sin límite).
+--   Si ambas fechas son NULL, la oferta está siempre activa.
+ALTER TABLE `producto`
+  ADD COLUMN IF NOT EXISTS `descuento` DECIMAL(5, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE `producto`
+  ADD COLUMN IF NOT EXISTS `fecha_inicio_oferta` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `producto`
+  ADD COLUMN IF NOT EXISTS `fecha_fin_oferta` DATETIME NULL DEFAULT NULL;
+
 -- Columna password para el login de clientes de la web
 -- (el POS no la usa; guarda el hash bcrypt)
 ALTER TABLE `clientes`
@@ -263,6 +283,7 @@ CREATE TABLE IF NOT EXISTS `apartados` (
   `nombre_cliente` VARCHAR(255) NOT NULL,
   `producto` INT NOT NULL,
   `cantidad` INT NOT NULL DEFAULT 1,
+  `precio_aplicado` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
   `estado` ENUM('pendiente', 'confirmado', 'cancelado', 'entregado') NOT NULL DEFAULT 'pendiente',
   `cancelado_por` ENUM('admin', 'cliente') DEFAULT NULL,
   `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -272,6 +293,16 @@ CREATE TABLE IF NOT EXISTS `apartados` (
 -- Indices para pedidos, reportes y estadisticas
 CREATE INDEX `idx_apartados_estado` ON `apartados`(`estado`);
 CREATE INDEX `idx_apartados_cliente` ON `apartados`(`nombre_cliente`);
+
+-- Columna para rastrear qué admin confirmó cada apartado
+ALTER TABLE `apartados`
+  ADD COLUMN IF NOT EXISTS `confirmado_por` VARCHAR(100) DEFAULT NULL;
+
+-- Precio (con descuento) capturado al momento de apartar.
+-- Se agrega por si la tabla apatados ya existía (creada por el POS
+-- o por una versión previa del marketplace que no lo tenía).
+ALTER TABLE `apartados`
+  ADD COLUMN IF NOT EXISTS `precio_aplicado` DECIMAL(12, 2) NOT NULL DEFAULT 0.00;
 
 -- Vinculación entre la venta del POS y el apartado web entregado.
 -- La columna `venta.id_apartado` ya viene declarada en CREATE TABLE venta.

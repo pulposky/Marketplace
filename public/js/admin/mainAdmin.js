@@ -203,8 +203,65 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // -----------------------------------------------
+    // MÉTRICAS EN VIVO DEL DASHBOARD
+    // -----------------------------------------------
+    // Consulta los endpoints y actualiza las tarjetas
+    // de estadísticas de la vista principal.
+    async function cargarMetricas() {
+        // Productos activos (catálogo público /api/productos).
+        // Solo cuento los que están activos (estado === 'activo'),
+        // para no inflar el número con productos desactivados.
+        try {
+            const resp = await fetch('/api/productos');
+            if (resp.ok) {
+                const datos = await resp.json();
+                const activos = Array.isArray(datos)
+                    ? datos.filter((p) => String(p.estado).toLowerCase() === 'activo').length
+                    : 0;
+                const el = document.getElementById('statProductos');
+                if (el) el.textContent = activos;
+            }
+        } catch (e) { /* silencioso */ }
+
+        // Pedidos pendientes
+        try {
+            const resp = await fetch('/api/admin/apartados?estado=pendiente');
+            if (resp.ok) {
+                const datos = await resp.json();
+                const el = document.getElementById('statPedidos');
+                if (el) el.textContent = Array.isArray(datos) ? datos.length : 0;
+            }
+        } catch (e) { /* silencioso */ }
+
+        // Ofertas activas (solo productos activos con oferta vigente)
+        try {
+            const resp = await fetch('/api/admin/ofertas');
+            if (resp.ok) {
+                const datos = await resp.json();
+                const activas = Array.isArray(datos)
+                    ? datos.filter((p) => String(p.estado).toLowerCase() === 'activo').length
+                    : 0;
+                const el = document.getElementById('statOfertas');
+                if (el) el.textContent = activas;
+            }
+        } catch (e) { /* silencioso */ }
+
+        // Notificaciones sin leer
+        try {
+            const resp = await fetch('/api/admin/notificaciones');
+            if (resp.ok) {
+                const datos = await resp.json();
+                const el = document.getElementById('statNotificaciones');
+                if (el) el.textContent = datos.total != null ? datos.total : 0;
+            }
+        } catch (e) { /* silencioso */ }
+    }
+
+    // -----------------------------------------------
     // INICIO: Primera carga + polling cada 10 segundos
     // -----------------------------------------------
+    cargarMetricas();
     consultarNotificaciones();
     setInterval(consultarNotificaciones, 10000);
+    setInterval(cargarMetricas, 30000);
 });

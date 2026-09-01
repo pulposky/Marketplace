@@ -2,8 +2,8 @@
 // CONTROLADOR DE APARTADOS
 // =============================================
 // Todo el ciclo de vida de un apartado:
-// el cliente lo crea, el admin lo confirma o
-// entrega, y cualquiera puede cancelarlo.
+// el cliente lo crea (uno solo o en lote desde el carrito),
+// el admin lo confirma o entrega, y cualquiera puede cancelarlo.
 //
 // Maneja la conversión de cubetas de huevos
 // (cada cubeta = 30 unidades) para productos
@@ -13,6 +13,7 @@
 const ProductoModel = require('../models/productoModel');
 const ApartadoModel = require('../models/apartadoModel');
 const NotificacionModel = require('../models/notificacionModel');
+const { calcularPrecioOferta } = require('../utils/helpers');
 
 const ApartadoController = {
 
@@ -66,11 +67,19 @@ const ApartadoController = {
 
             const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
 
+            // Calculo el precio (unitario real, sin la conversión de cubetas)
+            // aplicando el descuento si la oferta está vigente. Se guarda el
+            // precio con descuento al momento de apartar para que el total no
+            // cambie retroactivamente si la oferta se modifica después.
+            const precioOferta = calcularPrecioOferta(producto);
+            const precioAplicado = precioOferta.precioFinal;
+
             // Preparo los datos para insertar en la tabla de apartados
             const datosApartado = {
                 nombreCliente,
                 producto: productoId,
-                cantidad: unidadesARestar
+                cantidad: unidadesARestar,
+                precioAplicado
             };
 
             // 2. Creo el registro del apartado en la BD
@@ -107,6 +116,130 @@ const ApartadoController = {
         });
     },
 
+    // POST /api/apartar-lote
+    // Aparta varios productos a la vez (lo usa el carrito).
+    // Valida que todos los productos existan, estén activos y tengan
+    // stock suficiente ANTES de escribir nada; luego crea un apartado
+    // por ítem y descuenta el stock de cada uno.
+    apartarLote: (req, res) => {
+        if (!req.session || !req.session.usuario) {
+            return res.status(401).json({ error: 'Debe iniciar sesión para apartar productos.' });
+        }
+
+        const { items } = req.body;
+
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'El carrito está vacío.' });
+        }
+        if (items.length > 50) {
+            return res.status(400).json({ error: 'Demasiados productos en el carrito.' });
+        }
+
+        const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+
+        // 1. Valido TODOS los ítems antes de escribir nada en la BD
+        const detalles = [];
+        let indice = 0;
+
+        const validarSiguiente = (cbFinal) => {
+            if (indice >= items.length) {
+                return cbFinal(null, detalles);
+            }
+
+            const item = items[indice];
+            const idProducto = Number(item.productoId);
+            const cantidad = parseInt(item.cantidad, 10);
+
+            if (!Number.isInteger(idProducto) || !Number.isInteger(cantidad) || cantidad <= 0) {
+                return cbFinal({ mensaje: 'Cantidad inválida en el carrito.', estado: 400 });
+            }
+
+            ProductoModel.obtenerPorId(idProducto, (err, resultados) => {
+                if (err) {
+                    return cbFinal({ mensaje: 'Error al consultar los productos.', estado: 500 });
+                }
+                if (!resultados || resultados.length === 0) {
+                    return cbFinal({ mensaje: 'Uno de los productos ya no existe.', estado: 400 });
+                }
+
+                const producto = resultados[0];
+                const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
+                const unidadesARestar = esHuevo ? cantidad * 30 : cantidad;
+                const stockDisponible = Number(producto.limite_venta) || 0;
+
+                if (producto.estado !== 'activo' || stockDisponible < unidadesARestar) {
+                    return cbFinal({
+                        mensaje: `Sin stock suficiente para "${producto.nombre}".`,
+                        estado: 400
+                    });
+                }
+
+                const precioAplicado = calcularPrecioOferta(producto).precioFinal;
+
+                detalles.push({
+                    nombreCliente,
+                    producto: idProducto,
+                    cantidad: unidadesARestar,
+                    precioAplicado
+                });
+
+                indice += 1;
+                validarSiguiente(cbFinal);
+            });
+        };
+
+        validarSiguiente((errorValidacion, listaValidada) => {
+            if (errorValidacion) {
+                return res.status(errorValidacion.estado || 400).json({ error: errorValidacion.mensaje });
+            }
+
+            // 2. Creo un apartado por ítem y descuento stock (mismo patrón que apartado simple)
+            const idsCreados = [];
+            let pos = 0;
+
+            const crearSiguiente = () => {
+                if (pos >= listaValidada.length) {
+                    // 3. Notifico al admin del lote nuevo
+                    const totalUnidades = listaValidada.reduce((suma, d) => suma + d.cantidad, 0);
+                    NotificacionModel.crearNotificacion({
+                        titulo: 'Nuevos apartados',
+                        mensaje: `${nombreCliente} apartó ${listaValidada.length} producto(s) (${totalUnidades} unidades en total).`
+                    }, () => {});
+
+                    return res.status(200).json({
+                        mensaje: '¡Productos apartados con éxito!',
+                        ids: idsCreados,
+                        total: listaValidada.length
+                    });
+                }
+
+                const detalle = listaValidada[pos];
+
+                ApartadoModel.crearApartado(detalle, (errorApartado, resultado) => {
+                    if (errorApartado) {
+                        console.error('Error al registrar apartado del lote:', errorApartado);
+                        return res.status(500).json({
+                            error: 'Error al procesar el carrito en la BD.',
+                            creados: idsCreados.length
+                        });
+                    }
+
+                    idsCreados.push(resultado.insertId);
+
+                    ProductoModel.restarLimiteVenta(detalle.producto, detalle.cantidad, (errorUpdate) => {
+                        if (errorUpdate) {
+                            console.error('Error actualizando límite tras lote:', errorUpdate);
+                        }
+                        pos += 1;
+                        crearSiguiente();
+                    });
+                });
+            };
+
+            crearSiguiente();
+        });
+    },
+
     // GET /api/admin/apartados
     // Trae los apartados para el panel admin.
     // Acepta ?estado= pendiente | confirmado | entregado | cancelado | historial | activos
@@ -129,12 +262,13 @@ const ApartadoController = {
         }
 
         const { id } = req.params;
+        const nombreAdmin = req.session.usuario.nombre || req.session.usuario.usuario || 'Admin';
 
         if (!id) {
             return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
         }
 
-        ApartadoModel.confirmarApartado(id, (error) => {
+        ApartadoModel.confirmarApartado(id, nombreAdmin, (error) => {
             if (error) {
                 console.error('Error al confirmar apartado:', error);
                 return res.status(500).json({ error: 'Error al confirmar el apartado.' });
@@ -240,6 +374,17 @@ const ApartadoController = {
             }
 
             const apartado = resultados[0];
+
+            // Verifico que el apartado pertenezca al cliente logueado
+            // (o que sea admin/aprendiz). Evita cancelar apartados ajenos.
+            const usuarioSesion = req.session.usuario;
+            const rolSesion = String(usuarioSesion.role || '').trim().toLowerCase();
+            const esPropietario = apartado.nombre_cliente === (usuarioSesion.nombre || usuarioSesion.documento);
+            const esStaff = rolSesion === 'admin' || rolSesion === 'aprendiz';
+
+            if (!esPropietario && !esStaff) {
+                return res.status(403).json({ error: 'No puedes cancelar un apartado que no es tuyo.' });
+            }
 
             // Cambio el estado a cancelado con cancelado_por = 'cliente'
             ApartadoModel.cancelarApartadoCliente(idApartado, (errCancel) => {

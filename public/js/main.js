@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formularioApartado = document.getElementById('formConfirmarApartado');
     const formularioLogin = document.getElementById('formLogin');
     const imagenApartar = document.getElementById('apartarImagenProducto');
+    const descripcionApartar = document.getElementById('apartarDescripcionProducto');
 
     // -----------------------------------------------
     // ABRIR MODAL DE APARTADO
@@ -119,6 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        if (descripcionApartar) {
+            if (datosProducto.descripcion) {
+                descripcionApartar.textContent = datosProducto.descripcion;
+                descripcionApartar.style.display = 'block';
+            } else {
+                descripcionApartar.textContent = '';
+                descripcionApartar.style.display = 'none';
+            }
+        }
+
         if (ventanaApartar) ventanaApartar.style.display = 'flex';
     }
 
@@ -147,13 +158,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const precioObtenido = botonApartar.dataset.precio || botonApartar.getAttribute('data-precio');
             const imgObtenida = botonApartar.dataset.imagen || botonApartar.getAttribute('data-imagen');
             const limiteObtenido = botonApartar.dataset.limite || botonApartar.getAttribute('data-limite');
+            const descripcionObtenida = botonApartar.dataset.descripcion || botonApartar.getAttribute('data-descripcion');
 
             mostrarVentanaApartado({
                 id: idObtenido,
                 nombre: nombreObtenido,
                 precio: precioObtenido,
                 imagen: imgObtenida,
-                limite: limiteObtenido
+                limite: limiteObtenido,
+                descripcion: descripcionObtenida
             });
         });
     });
@@ -251,4 +264,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (evento.target === ventanaApartar) ventanaApartar.style.display = 'none';
         if (evento.target === ventanaLogin) ventanaLogin.style.display = 'none';
     });
+
+    // -----------------------------------------------
+    // TARJETA DE OFERTAS ACTIVAS
+    // -----------------------------------------------
+    // Cuando no hay ofertas, la tarjeta se desactiva
+    // (no navega). Si hay ofertas, navega al catálogo.
+    const tarjetaOfertas = document.querySelector('.enlace-estadistica.desactivado');
+    if (tarjetaOfertas) {
+        tarjetaOfertas.addEventListener('click', (evento) => {
+            evento.preventDefault();
+        });
+    }
 });

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Ofertas - Panel Admin</title>
+    <link rel="stylesheet" href="/css/admin/gestionOfertas.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+
+<body>
+
+    <!-- HEADER Y BARRA SUPERIOR -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Gestión de Ofertas</span> - Panel Admin
+            </div>
+            <div>
+                <a href='/admin' class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="encabezado-seccion">
+            <div class="titulo-catalogo">Configurar Descuentos y Ofertas</div>
+
+            <div class="barra-superior">
+                <div class="campo-busqueda">
+                    <input type="text" id="busqueda-oferta" placeholder="Buscar producto por nombre...">
+                </div>
+                <label class="filtro-oferta">
+                    <input type="checkbox" id="filtro-solo-oferta">
+                    <span>Solo en oferta</span>
+                </label>
+            </div>
+        </div>
+
+        <p class="nota-instrucciones">
+            Aquí puedes <strong>cambiar el precio</strong> de un producto o <strong>ponerle un descuento</strong>
+            (% de rebaja). Si pones descuento, deja las fechas vacías para que dure siempre.
+        </p>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="contenido-principal">
+
+            <!-- REJILLA DE PRODUCTOS -->
+            <div class="rejilla-productos" id="contenedorProductos">
+
+                <% if (productos && productos.length> 0) { %>
+                    <% productos.forEach(producto=> {
+                        // Evaluamos si es huevo por unidad
+                        const esHuevoUnidad = producto.nombre === "HUEVOS DE GALLINA AA UND" || producto.nombre ===
+                        "HUEVOS DE GALLINA A UND";
+
+                        // Nombre y presentación dinámicos
+                        const nombreMostrar = esHuevoUnidad ? producto.nombre.replace("UND", "CUBETA") :
+                        producto.nombre;
+                        const presentacionMostrar = esHuevoUnidad ? "CUBETA" : (producto.unidad || 'N/A');
+
+                        // Precio por cubeta o por unidad
+                        const precioUnitario = Number(producto.precio || 0);
+                        const precioCalculado = esHuevoUnidad ? precioUnitario * 30 : precioUnitario;
+
+                        // Oferta existente
+                        const descuentoActual = Number(producto.descuento) || 0;
+                        const hayOferta = descuentoActual > 0;
+
+                        // Fechas en formato para input datetime-local (YYYY-MM-DDTHH:mm)
+                        const fmtFecha = (fecha) => {
+                            if (!fecha) return '';
+                            const d = new Date(fecha);
+                            if (isNaN(d.getTime())) return '';
+                            const pad = (n) => String(n).padStart(2, '0');
+                            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                        };
+                        const inicioActual = fmtFecha(producto.fecha_inicio_oferta);
+                        const finActual = fmtFecha(producto.fecha_fin_oferta);
+
+                        // Precio final con descuento (para mostrar la vista previa)
+                        const desc = Math.min(Math.max(descuentoActual, 0), 99.99);
+                        const precioConDescuento = hayOferta ? precioCalculado * (1 - desc / 100) : precioCalculado;
+                        %>
+                        <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
+                            data-nombre="<%= (nombreMostrar || '').toLowerCase() %>"
+                            data-es-huevo="<%= esHuevoUnidad %>"
+                            data-en-oferta="<%= hayOferta %>">
+
+                            <!-- Imagen del Producto -->
+                            <div class="imagen-producto">
+                                <% if (producto.imagenUpload) { %>
+                                    <img src="<%= producto.imagenUpload %>" alt="<%= nombreMostrar %>">
+                                <% } else { %>
+                                    <span><%= nombreMostrar %></span>
+                                <% } %>
+                                <% if (hayOferta) { %>
+                                    <span class="badge-oferta">OFERTA -<%= desc %>%</span>
+                                <% } %>
+                            </div>
+
+                            <div class="presentacion-producto">
+                                Presentación: <%= presentacionMostrar %>
+                            </div>
+
+                            <div class="nombre-producto">
+                                <%= nombreMostrar %>
+                            </div>
+
+                            <!-- Precios -->
+                            <div class="precio-producto">
+                                <% if (hayOferta) { %>
+                                    <span class="precio-original">$<%= precioCalculado.toLocaleString("es-CO") %></span>
+                                    <br>
+                                    <span class="precio-descuento">$<%= precioConDescuento.toLocaleString("es-CO") %></span>
+                                <% } else { %>
+                                    $<%= precioCalculado.toLocaleString("es-CO") %>
+                                <% } %>
+                            </div>
+
+                            <!-- Editar precio rápido -->
+                            <div class="grupo-precio">
+                                <div class="fila-campo">
+                                    <label class="texto-control" for="precio-<%= producto.id_producto %>">
+                                        Precio<%= esHuevoUnidad ? ' (por cubeta)' : '' %> :
+                                    </label>
+                                    <input type="number" id="precio-<%= producto.id_producto %>"
+                                        class="campo-precio" min="0" step="0.01"
+                                        value="<%= precioCalculado %>" data-id="<%= producto.id_producto %>">
+                                </div>
+                            </div>
+
+                            <!-- Formulario de oferta -->
+                            <div class="panel-oferta">
+                                <div class="campo-oferta">
+                                    <label class="texto-control" for="desc-<%= producto.id_producto %>">
+                                        Descuento (%) :
+                                    </label>
+                                    <input type="number" id="desc-<%= producto.id_producto %>"
+                                        class="campo-descuento" min="0" max="99.99" step="0.01"
+                                        value="<%= desc %>" data-id="<%= producto.id_producto %>">
+                                </div>
+
+                                <div class="fechas-oferta">
+                                    <div class="campo-oferta">
+                                        <label class="texto-control">Inicio</label>
+                                        <input type="datetime-local" class="campo-fecha"
+                                            value="<%= inicioActual %>" data-id="<%= producto.id_producto %>"
+                                            data-tipo="inicio">
+                                    </div>
+                                    <div class="campo-oferta">
+                                        <label class="texto-control">Fin</label>
+                                        <input type="datetime-local" class="campo-fecha"
+                                            value="<%= finActual %>" data-id="<%= producto.id_producto %>"
+                                            data-tipo="fin">
+                                    </div>
+                                </div>
+
+                                <div class="acciones-tarjeta">
+                                    <button type="button" class="btn-guardar-oferta" data-id="<%= producto.id_producto %>">
+                                        Guardar
+                                    </button>
+                                    <button type="button" class="btn-cancelar-oferta" data-id="<%= producto.id_producto %>">
+                                        Cancelar oferta
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                <% } else { %>
+                    <p class="sin-resultados">No se encontraron productos en la base de datos.</p>
+                <% } %>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/gestionOfertas.js"></script>
+</body>
+
+</html>

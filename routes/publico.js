@@ -36,4 +36,7 @@ router.get('/api/carrusel-imagenes', SitioController.carruselImagenes);
 // API: verificar si hay sesión activa (lo usa el frontend antes de apartar)
 router.get('/api/verificar-sesion', AuthController.verificarSesion);
 
+// API: restablecer contraseña de un cliente existente
+router.post('/api/restablecer-password', limiteAuth, AuthController.restablecerPassword);
+
 module.exports = router;

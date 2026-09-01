@@ -109,12 +109,13 @@
                         </div>
                     </a>
                     <% } %>
-                        <a class="enlace-estadistica navegacion" href="#">
+                        <a class="enlace-estadistica navegacion <%= (Array.isArray(ofertas) && ofertas.length> 0) ? 'con-ofertas' : 'desactivado' %>"
+                            href="<%= (Array.isArray(ofertas) && ofertas.length> 0) ? '/catalogo' : '#' %>">
                             <div class="tarjeta-estadistica">
                                 <div class="detalles-estadistica requiere-login">
                                     <span class="titulo-estadistica">Ofertas activas</span>
                                     <h3 class="valor-estadistica"></h3>
-                                    Ver ofertas
+                                    <%= (Array.isArray(ofertas) && ofertas.length> 0) ? 'Ver ofertas' : 'No hay ofertas' %>
                                     <svg class="icono-estadistica" viewBox="0 0 48 48" fill="none"
                                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <rect x="2" y="2" width="44" height="44" rx="12" fill="#8E44AD" />
@@ -144,9 +145,22 @@
                         const nombreMostrar = esHuevo ? producto.nombre.replace(/UND/gi, "CUBETA") : producto.nombre;
                         const unidadMostrar = esHuevo ? "Cubeta(s)" : (producto.unidad || "Unidad(es)");
 
-                        // Precios
+                        // Precios (con oferta si aplica)
                         const precioUnitarioReal = Number(producto.precio);
-                        const precioCalculado = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+
+                        // Oferta: descuento porcentual vigente por fechas
+                        const descuentoProd = Number(producto.descuento) || 0;
+                        const ahoraOferta = new Date();
+                        const enOferta = descuentoProd > 0
+                            && (!producto.fecha_inicio_oferta || ahoraOferta >= new Date(producto.fecha_inicio_oferta))
+                            && (!producto.fecha_fin_oferta || ahoraOferta <= new Date(producto.fecha_fin_oferta));
+                        const precioUnitarioOferta = enOferta
+                            ? precioUnitarioReal * (1 - descuentoProd / 100)
+                            : precioUnitarioReal;
+
+                        // Precio que se muestra (por cubeta si es huevo, sino por unidad)
+                        const precioCalculado = esHuevo ? precioUnitarioOferta * 30 : precioUnitarioOferta;
+                        const precioOriginalCalculado = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
 
                         // Límite de stock
                         const limiteStockRaw = producto.limite_venta !== undefined && producto.limite_venta !== null ?
@@ -158,7 +172,7 @@
                                 <% if (producto.imagenUpload) { %>
                                     <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= nombreMostrar %>">
                                     <% } else { %>
-                                        <span>
+                                        <span class="imagen-placeholder">
                                             <%= nombreMostrar %>
                                         </span>
                                         <% } %>
@@ -169,32 +183,52 @@
                                     <%= nombreMostrar %>
                                 </h4>
 
-                                <p class="unidad" style="margin: 2px 0; color: #666;">
+                                <p class="unidad">
                                     Presentación: <strong>
                                         <%= unidadMostrar %>
                                     </strong>
                                 </p>
 
+                                <% if (producto.descripcion) { %>
+                                    <p class="descripcion-tarjeta">
+                                        <%= producto.descripcion %>
+                                    </p>
+                                    <% } %>
+
                                 <!-- Muestra del stock/disponibilidad -->
-                                <p class="stock-producto" style="font-size: 0.85rem; color: #555; margin: 4px 0;">
-                                    Disponibles: <strong>
-                                        <%= stockDisponible %>
-                                    </strong>
-                                    <%= unidadMostrar %>
+                                <p class="stock-producto">
+                                    <span class="chip-stock">
+                                        Disponibles: <strong>
+                                            <%= stockDisponible %>
+                                        </strong>
+                                        <%= unidadMostrar %>
+                                    </span>
                                 </p>
 
                                 <!-- Muestra del precio con desglose -->
-                                <p class="precio-seccion" style="margin: 6px 0;">
-                                    <span class="precio"
-                                        style="font-weight: bold; font-size: 1.1rem; color: #0d5c3a; display: block;">
-                                        $<%= precioCalculado.toLocaleString("es-CO") %>
-                                    </span>
+                                <p class="precio-seccion">
+                                    <% if (enOferta) { %>
+                                        <span class="precio-original">
+                                            $<%= precioOriginalCalculado.toLocaleString("es-CO") %>
+                                        </span>
+                                        <span class="precio-oferta">
+                                            $<%= precioCalculado.toLocaleString("es-CO") %>
+                                        </span>
+                                        <span class="badge-oferta">
+                                            -<%= descuentoProd %>% OFERTA
+                                        </span>
+                                    <% } else { %>
+                                        <span class="precio">
+                                            $<%= precioCalculado.toLocaleString("es-CO") %>
+                                        </span>
+                                    <% } %>
                                 </p>
 
                                 <button class="boton-apartar btn-accion-apartar" data-id="<%= producto.id_producto %>"
                                     data-nombre="<%= nombreMostrar %>"
                                     data-precio="$<%= precioCalculado.toLocaleString('es-CO') %>"
                                     data-imagen="<%= producto.imagenUpload || '' %>"
+                                    data-descripcion="<%= (producto.descripcion || '').replace(/"/g, '&quot;') %>"
                                     data-es-huevo="<%= esHuevo ? 'true' : 'false' %>"
                                     data-limite="<%= stockDisponible %>">
                                     <%= usuario ? 'Apartar' : 'Ver' %>
@@ -205,6 +239,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- SECCIÓN CÓMO FUNCIONA / PROCESO DE COMPRA -->
+        <section class="seccion-proceso">
+            <div class="encabezado-seccion">
+                <h3>¿Cómo funciona?</h3>
+            </div>
+            <div class="cuadricula-proceso">
+                <div class="tarjeta-proceso">
+                    <div class="numero-proceso">1</div>
+                    <h4>Elige tus productos</h4>
+                    <p>Explora el catálogo, busca por categoría y selecciona lo que necesites.</p>
+                </div>
+                <div class="tarjeta-proceso">
+                    <div class="numero-proceso">2</div>
+                    <h4>Aparta en línea</h4>
+                    <p>Reserva tus productos online con tu cuenta. Se guardan para ti durante 1 hora.</p>
+                </div>
+                <div class="tarjeta-proceso">
+                    <div class="numero-proceso">3</div>
+                    <h4>Paga en el punto de venta</h4>
+                    <p>Dirígete al Centro Agroindustrial Hachón y paga en el punto de venta físico.</p>
+                </div>
+                <div class="tarjeta-proceso">
+                    <div class="numero-proceso">4</div>
+                    <h4>Recoge tus productos</h4>
+                    <p>Presenta tu apartado y retira lo que reservaste en el horario indicado.</p>
+                </div>
+            </div>
+        </section>
 
         <!-- MODAL APARTAR PRODUCTO -->
         <div class="modal-fondo" id="modalApartarProducto">
@@ -218,6 +281,9 @@
                                 style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;" />
                         </div>
                         <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
+
+                        <p class="descripcion-modal" id="apartarDescripcionProducto"
+                            style="font-size: 0.9rem; color: #555; line-height: 1.45; margin: 8px 0 4px; display: none;"></p>
 
                         <div class="product-info">
                             <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>

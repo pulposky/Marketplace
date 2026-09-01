@@ -30,6 +30,9 @@ router.get('/verApartados', (req, res, next) => {
 router.post('/api/apartar-producto', protegerRuta, ApartadoController.apartarProducto);
 
 // API: cancelar un apartado propio (el cliente cancela desde su vista)
-router.post('/api/apartados/cancelar/:idApartado', ApartadoController.cancelarApartado);
+router.post('/api/apartados/cancelar/:idApartado', protegerRuta, ApartadoController.cancelarApartado);
+
+// API: apartar varios productos de una vez (carrito del cliente)
+router.post('/api/apartar-lote', protegerRuta, ApartadoController.apartarLote);
 
 module.exports = router;

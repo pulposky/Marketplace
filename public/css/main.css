@@ -457,6 +457,33 @@ body {
     filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.25));
 }
 
+/* Tarjeta de ofertas activas */
+.enlace-estadistica.desactivado {
+    cursor: default;
+    pointer-events: none;
+}
+
+.enlace-estadistica.desactivado .tarjeta-estadistica {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+}
+
+.enlace-estadistica.con-ofertas .tarjeta-estadistica {
+    border-top-color: #8E44AD;
+    border: 2px solid #8E44AD;
+    animation: brilloOferta 1.8s ease-in-out infinite;
+}
+
+@keyframes brilloOferta {
+    0%, 100% {
+        box-shadow: 0 0 6px rgba(142, 68, 173, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 26px 6px rgba(142, 68, 173, 0.85),
+                    0 0 48px 12px rgba(142, 68, 173, 0.35);
+    }
+}
+
 /* ============================
     CATÁLOGO DE PRODUCTOS
 ============================ */
@@ -480,49 +507,185 @@ body {
     gap: 20px;
 }
 
-.tarjeta-producto {
+/* ============================
+    SECCIÓN CÓMO FUNCIONA
+============================ */
+.seccion-proceso {
+    margin-top: 30px;
+    padding: 25px 0;
+    border-top: 1px solid #E0E0E0;
+}
+
+.cuadricula-proceso {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.tarjeta-proceso {
     background: var(--blanco);
     border: 1px solid #E0E0E0;
     border-radius: 12px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
+    padding: 22px 18px;
+    text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tarjeta-producto:hover {
+.tarjeta-proceso:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
 }
 
-.imagen-producto {
-    width: 100%;
-    height: 150px;
-    background-color: var(--gris-claro);
-    border-radius: 8px;
-    overflow: hidden;
+.numero-proceso {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 12px;
+    background: var(--verde-sena);
+    color: var(--blanco);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.tarjeta-proceso h4 {
+    font-size: 1rem;
+    color: var(--verde-oscuro);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.tarjeta-proceso p {
+    font-size: 0.85rem;
+    color: var(--texto-secundario);
+    line-height: 1.5;
+}
+
+.tarjeta-producto {
+    background: var(--blanco);
+    border: 1px solid #E0E0E0;
+    border-radius: 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.tarjeta-producto:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(0, 104, 55, 0.16);
+    border-color: var(--verde-sena);
+}
+
+.imagen-producto {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, #EFF8EC 0%, var(--gris-claro) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid #E0E0E0;
 }
 
 .imagen-producto img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.tarjeta-producto:hover .imagen-producto img {
+    transform: scale(1.05);
+}
+
+.imagen-placeholder {
+    color: var(--texto-secundario);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0 12px;
+    line-height: 1.3;
+}
+
+.info-producto {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .info-producto h4 {
     font-size: 1rem;
     color: var(--texto-primario);
     font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
 }
 
 .info-producto .unidad {
-    font-size: 0.8rem;
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 600;
     color: var(--texto-secundario);
-    margin-bottom: 4px;
+    background-color: var(--gris-claro);
+    border-radius: 12px;
+    padding: 3px 10px;
+    margin-bottom: 10px;
+}
+
+.descripcion-tarjeta {
+    font-size: 0.78rem;
+    color: var(--texto-secundario);
+    line-height: 1.35;
+    margin-bottom: 12px;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.stock-producto {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+}
+
+.chip-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #EBF7EE;
+    color: var(--verde-oscuro);
+    border: 1px solid #BFE3C9;
+    border-radius: 14px;
+    padding: 3px 10px;
+    font-weight: 600;
+}
+
+.precio-seccion {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #E0E0E0;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .info-producto .precio {
@@ -530,24 +693,53 @@ body {
     font-size: 1.15rem;
     font-weight: 800;
     color: var(--verde-oscuro) !important;
-    margin: 8px 0 12px 0;
+}
+
+.precio-original {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.precio-oferta {
+    font-weight: bold;
+    font-size: 1.15rem;
+    color: #d32f2f;
+}
+
+.badge-oferta {
+    display: inline-block;
+    background: #8E44AD;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
 }
 
 .boton-apartar {
     background-color: var(--verde-sena);
     color: var(--blanco);
     border: none;
-    padding: 10px 0;
-    border-radius: 8px;
+    padding: 11px 0;
+    border-radius: 12px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     cursor: pointer;
     width: 100%;
-    transition: background-color 0.2s ease;
+    margin-top: 12px;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .boton-apartar:hover {
     background-color: var(--verde-oscuro);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 104, 55, 0.25);
+}
+
+.boton-apartar:active {
+    transform: translateY(0);
 }
 
 /* ============================
@@ -951,5 +1143,68 @@ body {
 
     .btn-iniciar-sesion {
         width: 100%;
+    }
+}
+
+/* ==========================================
+    RESPONSIVE: TARJETAS Y CÓMO FUNCIONA
+========================================== */
+@media (max-width: 850px) {
+    .cuadricula-productos {
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .cuadricula-productos {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+    }
+
+    .info-producto {
+        padding: 12px;
+    }
+
+    .descripcion-tarjeta {
+        -webkit-line-clamp: 1;
+        margin-bottom: 8px;
+    }
+
+    .boton-apartar {
+        margin-top: 10px;
+        padding: 9px 0;
+        font-size: 0.8rem;
+    }
+
+    .seccion-proceso {
+        margin-top: 20px;
+        padding: 20px 0;
+    }
+
+    .cuadricula-proceso {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .tarjeta-proceso {
+        padding: 16px 12px;
+    }
+
+    .numero-proceso {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    .tarjeta-proceso p {
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .cuadricula-proceso {
+        grid-template-columns: 1fr;
     }
 }

@@ -2,15 +2,14 @@
 // CATÁLOGO DE PRODUCTOS - JAVASCRIPT
 // =============================================
 // Script de la página del catálogo (/catalogo).
-// Similar a main.js pero con extras:
-//   - Animación del carrito cuando se aparta
-//   - Filtro de categorías desde la URL
-//   - Indicador de cantidad disponible en el modal
-//   - Conversión de cubetas de huevos (x30)
-//
-// La animación del carrito es un efecto visual:
-// una bola sale del botón de apartar, llega al
-// carrito, explota, y el carrito recorre la pantalla.
+// Maneja:
+//   - Carrito real (localStorage): agregar, quitar,
+//     modificar cantidades y confirmar en bloque vía
+//     /api/apartar-lote.
+//   - Animación del carrito cuando se agrega un producto.
+//   - Filtro de categorías desde la URL.
+//   - Indicador de cantidad disponible en el modal.
+//   - Conversión de cubetas de huevos (x30).
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,14 +26,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const campoIdProducto = document.getElementById('apartarProductoId');
     const formularioApartado = document.getElementById('formConfirmarApartado');
     const formularioLogin = document.getElementById('formLogin');
-    const formularioCategorias = document.querySelector('.filtros-categorias-form');
     const imagenApartar = document.getElementById('apartarImagenProducto');
-    const seccionProductos = document.querySelector('.rejilla-productos');
-    const carritoAnimado = document.getElementById('carritoAnimado');
 
     // Inputs para cantidad
     const inputCantidadApartar = document.getElementById('cantidadApartar');
     const textoCantDisponiblesModal = document.getElementById('cantDisponiblesModal');
+
+    // Carrito (drawer lateral)
+    const carritoAnimado = document.getElementById('carritoAnimado');
+    const badgeCarritoFijo = document.getElementById('badgeCarritoFijo');
+    const carritoDrawer = document.getElementById('carritoDrawer');
+    const carritoFondo = document.getElementById('carritoFondo');
+    const carritoLista = document.getElementById('carritoLista');
+    const carritoVacio = document.getElementById('carritoVacio');
+    const botonCerrarCarrito = document.getElementById('cerrarCarrito');
+    const botonConfirmarCarrito = document.getElementById('btnConfirmarCarrito');
+    const botonVaciarCarrito = document.getElementById('btnVaciarCarrito');
 
     // Guardo el botón que abrió el modal para la animación del carrito
     let botonOrigenActual = null;
@@ -43,6 +50,138 @@ document.addEventListener('DOMContentLoaded', () => {
     // tras loguearse lo llevo directo a /verApartados
     let irApartadosTrasLogin = false;
 
+    // Bandera: pendiente confirmar el carrito tras iniciar sesión
+    let confirmarCarritoPendiente = false;
+
+    const CLAVE_CARRITO = 'carritoMarketplace_v1';
+
+    // -----------------------------------------------
+    // UTILIDADES DEL CARRITO (localStorage)
+    // -----------------------------------------------
+    function leerCarrito() {
+        try {
+            const crudo = localStorage.getItem(CLAVE_CARRITO);
+            const datos = crudo ? JSON.parse(crudo) : [];
+            return Array.isArray(datos) ? datos : [];
+        } catch (error) {
+            console.error('Error leyendo carrito:', error);
+            return [];
+        }
+    }
+
+    function guardarCarrito(carrito) {
+        try {
+            localStorage.setItem(CLAVE_CARRITO, JSON.stringify(carrito));
+        } catch (error) {
+            console.error('Error guardando carrito:', error);
+        }
+    }
+
+    function formatearCOP(valor) {
+        return '$' + Number(valor || 0).toLocaleString('es-CO');
+    }
+
+    function totalCantidadCarrito(carrito) {
+        return (carrito || []).reduce((suma, item) => suma + (Number(item.cantidad) || 0), 0);
+    }
+
+    function totalPrecioCarrito(carrito) {
+        return (carrito || []).reduce((suma, item) => suma + (Number(item.cantidad) || 0) * (Number(item.precioNum) || 0), 0);
+    }
+
+    // -----------------------------------------------
+    // RENDERIZAR CARRITO
+    // -----------------------------------------------
+    function renderizarCarrito() {
+        const carrito = leerCarrito();
+
+        if (badgeCarritoFijo) {
+            badgeCarritoFijo.textContent = String(totalCantidadCarrito(carrito));
+            badgeCarritoFijo.classList.toggle('visible-badge', carrito.length > 0);
+        }
+
+        if (!carritoLista) return;
+
+        carritoLista.innerHTML = '';
+
+        if (carrito.length === 0) {
+            if (carritoVacio) carritoVacio.style.display = 'block';
+            if (carritoPieElemento) carritoPieElemento.style.display = 'none';
+            return;
+        }
+
+        if (carritoVacio) carritoVacio.style.display = 'none';
+        if (carritoPieElemento) carritoPieElemento.style.display = '';
+
+        carrito.forEach((item) => {
+            const li = document.createElement('li');
+            li.className = 'carrito-item';
+            li.dataset.id = item.id;
+
+            const imagenHtml = item.imagen
+                ? `<img src="${item.imagen}" alt="${item.nombre}">`
+                : `<span class="carrito-item-sin-imagen">${item.nombre.charAt(0)}</span>`;
+
+            li.innerHTML = `
+                <div class="carrito-item-imagen">${imagenHtml}</div>
+                <div class="carrito-item-info">
+                    <div class="carrito-item-nombre">${item.nombre}</div>
+                    <div class="carrito-item-precio">${formatearCOP(item.precioNum)} / ${item.unidad || 'unidad'}</div>
+                </div>
+                <div class="carrito-item-controles">
+                    <div class="carrito-cantidad">
+                        <button type="button" class="carrito-stepper" data-accion="menos" aria-label="Quitar uno">&minus;</button>
+                        <span class="carrito-valor">${item.cantidad}</span>
+                        <button type="button" class="carrito-stepper" data-accion="mas" aria-label="Agregar uno">&plus;</button>
+                    </div>
+                    <button type="button" class="carrito-quitar" data-accion="quitar" aria-label="Quitar producto">&times;</button>
+                </div>
+            `;
+            carritoLista.appendChild(li);
+        });
+
+        const totalUnidadesTexto = document.getElementById('carritoTotalUnidades');
+        const totalPrecioTexto = document.getElementById('carritoTotalPrecio');
+        if (totalUnidadesTexto) totalUnidadesTexto.textContent = `${totalCantidadCarrito(carrito)} unidades`;
+        if (totalPrecioTexto) totalPrecioTexto.textContent = formatearCOP(totalPrecioCarrito(carrito));
+    }
+
+    // Elemento contenedor del pie del carrito (se oculta cuando está vacío)
+    const carritoPieElemento = document.querySelector('.carrito-pie');
+
+    // -----------------------------------------------
+    // ABRIR / CERRAR CARRITO
+    // -----------------------------------------------
+    function abrirCarrito() {
+        if (!carritoDrawer) return;
+        renderizarCarrito();
+        carritoDrawer.classList.add('abierto');
+        carritoDrawer.setAttribute('aria-hidden', 'false');
+        if (carritoFondo) carritoFondo.style.display = 'block';
+    }
+
+    function cerrarCarrito() {
+        if (carritoDrawer) {
+            carritoDrawer.classList.remove('abierto');
+            carritoDrawer.setAttribute('aria-hidden', 'true');
+        }
+        if (carritoFondo) carritoFondo.style.display = 'none';
+    }
+
+    if (carritoAnimado) {
+        carritoAnimado.classList.add('visible');
+        carritoAnimado.addEventListener('click', abrirCarrito);
+        carritoAnimado.addEventListener('keydown', (evento) => {
+            if (evento.key === 'Enter' || evento.key === ' ') {
+                evento.preventDefault();
+                abrirCarrito();
+            }
+        });
+    }
+
+    if (botonCerrarCarrito) botonCerrarCarrito.addEventListener('click', cerrarCarrito);
+    if (carritoFondo) carritoFondo.addEventListener('click', cerrarCarrito);
+
     // -----------------------------------------------
     // ALERTA DE TIEMPO DE APARTADO (una vez por pestaña)
     // -----------------------------------------------
@@ -50,40 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const alertaApartado = document.getElementById('alertaApartado');
         const cerrarAlertaApartado = document.getElementById('cerrarAlertaApartado');
 
-        alertaApartado.style.display = 'flex';
+        if (alertaApartado) alertaApartado.style.display = 'flex';
         sessionStorage.setItem('alertaApartadoMostrada', '1');
 
-        cerrarAlertaApartado.addEventListener('click', () => {
-            alertaApartado.style.display = 'none';
-        });
-    }
-
-    // -----------------------------------------------
-    // CARRITO FIJO (ESQUINA INFERIOR DERECHA)
-    // -----------------------------------------------
-    // Visible desde que se entra al catálogo. Al hacer
-    // clic lleva a mis apartados; si no hay sesión, abre
-    // el login y después de loguearse redirige solo.
-    async function irAMisApartados() {
-        const estadoSesion = await verificarSesion();
-        if (estadoSesion.login) {
-            window.location.href = '/verApartados';
-            return;
+        if (cerrarAlertaApartado) {
+            cerrarAlertaApartado.addEventListener('click', () => {
+                alertaApartado.style.display = 'none';
+            });
         }
-        irApartadosTrasLogin = true;
-        if (ventanaLogin) ventanaLogin.style.display = 'flex';
-        toast('info', 'Inicia sesión para ver tus apartados.');
-    }
-
-    if (carritoAnimado) {
-        carritoAnimado.classList.add('visible');
-        carritoAnimado.addEventListener('click', irAMisApartados);
-        carritoAnimado.addEventListener('keydown', (evento) => {
-            if (evento.key === 'Enter' || evento.key === ' ') {
-                evento.preventDefault();
-                irAMisApartados();
-            }
-        });
     }
 
     // Si llegaron redirigidos desde /verApartados sin sesión (?login=1),
@@ -99,8 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
     // BÚSQUEDA EN VIVO DE PRODUCTOS
     // -----------------------------------------------
-    // El input del catálogo filtra las tarjetas por nombre
-    // mientras se escribe, sin recargar ni tocar el diseño.
     const inputBuscarProducto = document.getElementById('inputBuscar');
 
     if (inputBuscarProducto) {
@@ -115,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (coincide) visibles++;
             });
 
-            // Si hay un aviso de "sin resultados" lo muestro u oculto
             const avisoVacio = document.getElementById('avisoSinResultados');
             if (avisoVacio) {
                 avisoVacio.style.display = (visibles === 0) ? 'block' : 'none';
@@ -126,11 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
     // ANIMACIÓN DEL CARRITO DE COMPRAS
     // -----------------------------------------------
-    // Paleta del proyecto para el confeti
     const COLORES_CONFETI = ['#39A900', '#00A1DE', '#F5A623', '#8E44AD', '#FFD700', '#FFFFFF'];
 
-    // Hace volar la imagen del producto en un arco suave hasta el carrito.
-    // Devuelve una promesa que se resuelve cuando el producto "llega".
     function volarProductoHaciaCarrito(origenX, origenY, imagenSrc) {
         return new Promise((resolver) => {
             const rectCarrito = carritoAnimado.getBoundingClientRect();
@@ -152,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             document.body.appendChild(volador);
 
-            // Punto de control del arco: elevado sobre la línea recta origen→destino
             const controlX = (origenX + destinoX) / 2;
             const controlY = Math.min(origenY, destinoY) - Math.max(160, Math.abs(destinoX - origenX) * 0.25);
 
@@ -161,9 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function paso(now) {
                 const t = Math.min((now - inicio) / duracion, 1);
-                const facilidad = t * t; // ease-in: acelera como si cayera al carrito
+                const facilidad = t * t;
 
-                // Curva bezier cuadrática
                 const x = (1 - facilidad) * (1 - facilidad) * origenX +
                     2 * (1 - facilidad) * facilidad * controlX +
                     facilidad * facilidad * destinoX;
@@ -186,15 +291,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Rebote squash & stretch del carrito al recibir el producto
     function rebotarCarrito() {
         carritoAnimado.classList.remove('recibiendo');
-        void carritoAnimado.offsetWidth; // reinicia la animación si estaba corriendo
+        void carritoAnimado.offsetWidth;
         carritoAnimado.classList.add('recibiendo');
         setTimeout(() => carritoAnimado.classList.remove('recibiendo'), 650);
     }
 
-    // Anillo que se expande desde el carrito
     function crearOnda(x, y) {
         const onda = document.createElement('div');
         onda.className = 'onda-carrito';
@@ -204,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => onda.remove(), 750);
     }
 
-    // Badge "+N" que flota hacia arriba desde el carrito
     function crearBadgeCantidad(x, y, cantidad) {
         const badge = document.createElement('div');
         badge.className = 'badge-apartado';
@@ -215,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => badge.remove(), 950);
     }
 
-    // Confeti sutil que salta y cae alrededor del carrito
     function crearConfeti(x, y) {
         for (let i = 0; i < 10; i++) {
             const pieza = document.createElement('div');
@@ -232,9 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Secuencia completa al confirmar un apartado:
-    // vuelo → rebote del carrito → onda + badge + confeti
-    async function animarApartado(botonOrigen, cantidadApartada) {
+    async function animarApartado(botonOrigen, cantidadAgregada) {
         if (!carritoAnimado) return;
 
         carritoAnimado.classList.add('visible');
@@ -258,40 +357,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rebotarCarrito();
         crearOnda(centroX, centroY);
-        crearBadgeCantidad(centroX, centroY, cantidadApartada || 1);
+        crearBadgeCantidad(centroX, centroY, cantidadAgregada || 1);
         crearConfeti(centroX, centroY);
     }
 
-    // Actualiza el stock de la tarjeta al momento, sin recargar la página
-    function actualizarStockTarjeta(botonOrigen, cantidadRestada) {
-        if (!botonOrigen) return;
-
-        const nuevoLimite = Math.max(0, (Number(botonOrigen.dataset.limite) || 0) - cantidadRestada);
-        botonOrigen.dataset.limite = String(nuevoLimite);
-
-        const tarjeta = botonOrigen.closest('.tarjeta-producto');
-        if (tarjeta) {
-            const strongStock = tarjeta.querySelector('.stock-producto strong');
-            if (strongStock) strongStock.textContent = nuevoLimite;
-        }
-
-        if (nuevoLimite === 0) {
-            botonOrigen.disabled = true;
-            botonOrigen.textContent = 'Agotado';
-        }
-    }
-
     // -----------------------------------------------
-    // ABRIR MODAL DE APARTADO
+    // ABRIR MODAL PARA ELEGIR CANTIDAD
     // -----------------------------------------------
     function mostrarVentanaApartado(datosProducto) {
         if (textoNombreProducto) textoNombreProducto.textContent = datosProducto.nombre;
         if (textoPrecioProducto) textoPrecioProducto.textContent = datosProducto.precio;
         if (campoIdProducto) campoIdProducto.value = datosProducto.id;
 
-        // Configuro la cantidad máxima y el indicador de disponibles
+        const textoDescripcionModal = document.getElementById('apartarDescripcionProducto');
+        if (textoDescripcionModal) {
+            if (datosProducto.descripcion) {
+                textoDescripcionModal.textContent = datosProducto.descripcion;
+                textoDescripcionModal.style.display = 'block';
+            } else {
+                textoDescripcionModal.textContent = '';
+                textoDescripcionModal.style.display = 'none';
+            }
+        }
+
         const limiteMax = Number(datosProducto.limite) || 0;
-        
+
         if (inputCantidadApartar) {
             inputCantidadApartar.max = limiteMax;
             inputCantidadApartar.value = limiteMax > 0 ? 1 : 0;
@@ -317,24 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
-    // FORMULARIO DE LOGIN (DENTRO DEL MODAL)
-    // Configura el flujo multi-paso del cliente (documento,
-    // crear contraseña si no tiene, o verificar la existente)
-    // -----------------------------------------------
-    if (formularioLogin) {
-        configurarFormLogin(formularioLogin, {
-            alLoginExitoso: () => {
-                // Si el login salió por querer ver apartados, lo llevo directo
-                if (irApartadosTrasLogin) {
-                    window.location.href = '/verApartados';
-                    return;
-                }
-                window.location.reload();
-            }
-        });
-    }
-
-    // -----------------------------------------------
     // VERIFICAR SESIÓN
     // -----------------------------------------------
     async function verificarSesion() {
@@ -348,7 +420,165 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
-    // BOTONES DE APARTAR
+    // AGREGAR PRODUCTO AL CARRITO
+    // -----------------------------------------------
+    function agregarAlCarrito(infoProducto, cantidad) {
+        const carrito = leerCarrito();
+        const existente = carrito.find((item) => String(item.id) === String(infoProducto.id));
+
+        const limite = Number(infoProducto.limite) || 0;
+
+        if (existente) {
+            existente.cantidad = Math.min(limite, existente.cantidad + cantidad);
+            if (existente.cantidad > limite) {
+                toast('advertencia', `No puedes apartar más de la cantidad disponible (${limite} ${infoProducto.unidad.toLowerCase()}).`);
+            }
+        } else {
+            carrito.push({
+                id: String(infoProducto.id),
+                nombre: infoProducto.nombre,
+                precioNum: Number(infoProducto.precioNum) || 0,
+                esHuevo: infoProducto.esHuevo,
+                unidad: infoProducto.unidad,
+                imagen: infoProducto.imagen || '',
+                limite,
+                cantidad: Math.min(limite, cantidad)
+            });
+        }
+
+        guardarCarrito(carrito);
+        renderizarCarrito();
+    }
+
+    // -----------------------------------------------
+    // FORMULARIO DE LOGIN (DENTRO DEL MODAL)
+    // -----------------------------------------------
+    if (formularioLogin) {
+        configurarFormLogin(formularioLogin, {
+            alLoginExitoso: () => {
+                if (irApartadosTrasLogin) {
+                    window.location.href = '/verApartados';
+                    return;
+                }
+                if (confirmarCarritoPendiente) {
+                    confirmarCarritoPendiente = false;
+                    confirmarCarrito();
+                    return;
+                }
+                window.location.reload();
+            }
+        });
+    }
+
+    // -----------------------------------------------
+    // CONFIRMAR CARRITO (apartar en bloque)
+    // -----------------------------------------------
+    async function confirmarCarrito() {
+        const carrito = leerCarrito();
+        if (carrito.length === 0) {
+            toast('advertencia', 'Tu carrito está vacío.');
+            return;
+        }
+
+        const estadoSesion = await verificarSesion();
+        if (!estadoSesion.login) {
+            confirmarCarritoPendiente = true;
+            if (ventanaLogin) ventanaLogin.style.display = 'flex';
+            toast('info', 'Inicia sesión para confirmar tu apartado.');
+            return;
+        }
+
+        const items = carrito.map((item) => ({
+            productoId: Number(item.id),
+            cantidad: Number(item.cantidad)
+        }));
+
+        try {
+            const respuesta = await fetch('/api/apartar-lote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ items })
+            });
+
+            let datos = {};
+            try {
+                datos = await respuesta.json();
+            } catch (e) {
+                console.error('Respuesta no JSON:', e);
+            }
+
+            if (respuesta.ok) {
+                guardarCarrito([]);
+                renderizarCarrito();
+                cerrarCarrito();
+                toast('exito', datos.mensaje || '¡Productos apartados con éxito!');
+                setTimeout(() => window.location.reload(), 1400);
+            } else if (respuesta.status === 401) {
+                confirmarCarritoPendiente = true;
+                if (ventanaLogin) ventanaLogin.style.display = 'flex';
+                toast('advertencia', datos.error || 'Debes iniciar sesión para apartar estos productos.');
+            } else {
+                toast('error', datos.error || 'Error al procesar el carrito. Revisa el stock disponible.');
+                setTimeout(() => window.location.reload(), 1800);
+            }
+        } catch (error) {
+            console.error('Error al confirmar el carrito:', error);
+            toast('error', 'Error de conexión con el servidor.');
+        }
+    }
+
+    if (botonConfirmarCarrito) {
+        botonConfirmarCarrito.addEventListener('click', confirmarCarrito);
+    }
+
+    if (botonVaciarCarrito) {
+        botonVaciarCarrito.addEventListener('click', () => {
+            guardarCarrito([]);
+            renderizarCarrito();
+            toast('info', 'Carrito vaciado.');
+        });
+    }
+
+    // Delegación de eventos dentro de la lista del carrito
+    if (carritoLista) {
+        carritoLista.addEventListener('click', (evento) => {
+            const botonPulsado = evento.target.closest('[data-accion]');
+            if (!botonPulsado) return;
+
+            const itemLi = botonPulsado.closest('.carrito-item');
+            if (!itemLi) return;
+
+            const idItem = itemLi.dataset.id;
+            const accion = botonPulsado.dataset.accion;
+            const carrito = leerCarrito();
+            const item = carrito.find((i) => String(i.id) === idItem);
+            if (!item) return;
+
+            if (accion === 'quitar') {
+                const nuevoCarrito = carrito.filter((i) => String(i.id) !== idItem);
+                guardarCarrito(nuevoCarrito);
+                renderizarCarrito();
+                return;
+            }
+
+            if (accion === 'mas') {
+                if (item.cantidad < (Number(item.limite) || 0)) {
+                    item.cantidad += 1;
+                } else {
+                    toast('advertencia', `Máximo disponible: ${item.limite} ${(item.unidad || 'unidad').toLowerCase()}.`);
+                }
+            } else if (accion === 'menos') {
+                item.cantidad = Math.max(1, item.cantidad - 1);
+            }
+
+            guardarCarrito(carrito);
+            renderizarCarrito();
+        });
+    }
+
+    // -----------------------------------------------
+    // BOTONES DE AGREGAR (TARJETAS)
     // -----------------------------------------------
     document.querySelectorAll('.btn-accion-apartar').forEach(botonApartar => {
         botonApartar.addEventListener('click', () => {
@@ -358,12 +588,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: botonApartar.dataset.id,
                 nombre: botonApartar.dataset.nombre,
                 precio: botonApartar.dataset.precio,
+                precioNum: Number(botonApartar.dataset.precioNum) || 0,
                 imagen: botonApartar.dataset.imagen || '',
+                descripcion: botonApartar.dataset.descripcion || '',
                 limite: Number(botonApartar.dataset.limite) || 0,
-                esHuevo: botonApartar.dataset.esHuevo === 'true'
+                esHuevo: botonApartar.dataset.esHuevo === 'true',
+                unidad: botonApartar.dataset.unidad || 'Unidad(es)'
             };
 
-            // Guardo si es huevo en el dataset del formulario para usarlo al enviar
             if (formularioApartado) {
                 formularioApartado.dataset.esHuevo = infoProducto.esHuevo;
             }
@@ -373,17 +605,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // -----------------------------------------------
-    // ENVIAR APARTADO
+    // ENVIAR AL CARRITO (modal de cantidad)
     // -----------------------------------------------
-    // Valida, verifica sesión, envía, y si sale bien lanza la animación
     if (formularioApartado) {
-        formularioApartado.addEventListener('submit', async (evento) => {
+        formularioApartado.addEventListener('submit', (evento) => {
             evento.preventDefault();
 
             const idVal = campoIdProducto ? campoIdProducto.value : '';
             const cantidadVal = Number(inputCantidadApartar?.value || 0);
             const limiteMax = Number(inputCantidadApartar?.max || 0);
-            const esHuevo = formularioApartado.dataset.esHuevo === 'true';
 
             if (!idVal) {
                 toast('error', 'Error: No se ha detectado la ID del producto.');
@@ -395,53 +625,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (cantidadVal <= 0) {
+            if (cantidadVal <= 0 || !Number.isFinite(cantidadVal)) {
                 toast('advertencia', 'La cantidad a apartar debe ser mayor a 0.');
                 return;
             }
 
-            const estadoSesion = await verificarSesion();
-            if (!estadoSesion.login) {
-                if (ventanaLogin) ventanaLogin.style.display = 'flex';
+            if (!botonOrigenActual) {
+                toast('error', 'Error: no se encontró el producto seleccionado.');
                 return;
             }
 
-            const datosApartado = {
-                productoId: idVal,
-                cantidad: cantidadVal
+            const infoProducto = {
+                id: botonOrigenActual.dataset.id,
+                nombre: botonOrigenActual.dataset.nombre,
+                precioNum: Number(botonOrigenActual.dataset.precioNum) || 0,
+                esHuevo: botonOrigenActual.dataset.esHuevo === 'true',
+                unidad: botonOrigenActual.dataset.unidad || 'Unidad(es)',
+                imagen: botonOrigenActual.dataset.imagen || '',
+                limite: Number(botonOrigenActual.dataset.limite) || 0
             };
 
-            try {
-                const respuestaApartar = await fetch('/api/apartar-producto', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify(datosApartado)
-                });
+            agregarAlCarrito(infoProducto, cantidadVal);
 
-                let datosRespuesta = {};
-                try {
-                    datosRespuesta = await respuestaApartar.json();
-                } catch (error) {
-                    console.error('Respuesta no JSON:', error);
-                }
-
-                if (respuestaApartar.ok) {
-                    // Cierro el modal, actualizo el stock en vivo y lanzo la animación
-                    const cantidadRestada = cantidadVal;
-                    if (ventanaApartar) ventanaApartar.style.display = 'none';
-                    actualizarStockTarjeta(botonOrigenActual, cantidadRestada);
-                    toast('exito', 'Producto apartado correctamente.');
-                    animarApartado(botonOrigenActual, cantidadRestada);
-                } else if (respuestaApartar.status === 401) {
-                    if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                    toast('advertencia', datosRespuesta.error || 'Debes iniciar sesión para apartar este producto.');
-                } else {
-                    toast('error', datosRespuesta.error || datosRespuesta.mensaje || 'Error al procesar el apartado.');
-                }
-            } catch (error) {
-                console.error('Error al apartar producto:', error);
-            }
+            if (ventanaApartar) ventanaApartar.style.display = 'none';
+            toast('exito', 'Producto agregado al carrito.');
+            animarApartado(botonOrigenActual, cantidadVal);
         });
     }
 
@@ -457,9 +665,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (botonCerrarApartar) botonCerrarApartar.addEventListener('click', () => ventanaApartar.style.display = 'none');
     if (botonCerrarLogin) botonCerrarLogin.addEventListener('click', () => ventanaLogin.style.display = 'none');
 
-    // Click afuera del modal lo cierra
     window.addEventListener('click', (evento) => {
         if (evento.target === ventanaApartar) ventanaApartar.style.display = 'none';
         if (evento.target === ventanaLogin) ventanaLogin.style.display = 'none';
     });
+
+    renderizarCarrito();
 });

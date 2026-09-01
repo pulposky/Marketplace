@@ -14,8 +14,8 @@ const HistoricosController = {
     mostrarHistoricos: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
-            return res.redirect('/');
+        if (!usuarioSesion || rol !== 'admin') {
+            return res.redirect('/admin');
         }
 
         HistoricosModel.resumen((err, resumen) => {

@@ -22,18 +22,19 @@ Plataforma web para la reserva de productos agrícolas y procesados. Los cliente
 
 ## ✨ Características
 
-| Función                          | Descripción                                                       |
-| --------------------------------- | ------------------------------------------------------------------ |
-| 🛍️**Catálogo dinámico** | Búsqueda en tiempo real y filtro por categorías                  |
-| 📦**Sistema de apartados**  | Reserva de productos con descuento automático de stock            |
-| 🥚**Manejo de huevos**      | Conversión automática entre cubetas y unidades (1 cubeta = 30)   |
-| 🎠**Carousel automático**  | Carga imágenes desde una carpeta sin tocar código                |
-| 🔔**Notificaciones**        | Alertas en tiempo real para nuevos apartados                       |
-| 📊**Dashboard admin**       | Estadísticas: ventas, productos top, clientes frecuentes, visitas |
-| 🔐**Autenticación**        | Sesiones con roles (admin, empleado, cliente)                      |
-| 📱**Diseño responsivo**    | Optimizado para escritorio y móvil                                |
-| 🔢**Registro de visitas**   | Métricas de tráfico del marketplace                              |
-| ⚡**Gestión de stock**     | Devolución automática al cancelar apartados                      |
+| Función                           | Descripción                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| 🛍️**Catálogo dinámico**  | Búsqueda en tiempo real y filtro por categorías                                    |
+| 📦**Sistema de apartados**   | Reserva de productos con descuento automático de stock                              |
+| 🥚**Manejo de huevos**       | Conversión automática entre cubetas y unidades (1 cubeta = 30)                     |
+| 🎠**Carousel automático**   | Carga imágenes desde una carpeta sin tocar código                                  |
+| 🔔**Notificaciones**         | Alertas en tiempo real para nuevos apartados                                         |
+| 📊**Dashboard admin**        | Estadísticas: ventas, productos top, clientes frecuentes, visitas                   |
+| 🔐**Autenticación**         | Sesiones con roles (admin, empleado, cliente)                                        |
+| 📱**Diseño responsivo**     | Optimizado para escritorio y móvil                                                  |
+| 🔢**Registro de visitas**    | Métricas de tráfico del marketplace                                                |
+| ⚡**Gestión de stock**      | Devolución automática al cancelar apartados                                        |
+| 🏷️**Ofertas y descuentos** | Descuentos por producto, gestión desde el panel admin y precio capturado al apartar |
 
 ---
 
@@ -103,18 +104,18 @@ mysql -u root -p < database/schema.sql
 
 ### 📋 Tablas creadas
 
-| Tabla                        | Sistema      | Descripción                                                        |
-| ---------------------------- | ------------ | ------------------------------------------------------------------- |
-| `producto`                 | Compartida   | Catálogo: precio, unidad, categoría, stock y `limite_venta`       |
-| `usuarios`                 | Compartida   | Credenciales de admin/aprendiz (web) y cajeros (POS)               |
-| `clientes`                 | Compartida   | Registro de clientes de ambos canales                              |
-| `apartados`                | Solo web     | Reservas: pendiente → confirmado → entregado / cancelado           |
-| `notificaciones`           | Solo web     | Alertas para el admin                                               |
-| `page_views`               | Solo web     | Registro de visitas                                                 |
-| `venta`, `detalle_venta`   | Solo POS     | Facturación en punto de venta                                       |
-| `compras`, `detalle_compras`, `proveedores` | Solo POS | Compras a proveedores                                    |
-| `entradas`, `detalle_entradas` | Solo POS | Ajustes de inventario                                                |
-| `remision`, `detalle_remision` | Solo POS | Despachos                                                            |
+| Tabla                                             | Sistema    | Descripción                                                                                   |
+| ------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------- |
+| `producto`                                      | Compartida | Catálogo: precio, unidad, categoría, stock,`limite_venta` y oferta (`descuento`, fechas) |
+| `usuarios`                                      | Compartida | Credenciales de admin/aprendiz (web) y cajeros (POS)                                           |
+| `clientes`                                      | Compartida | Registro de clientes de ambos canales                                                          |
+| `apartados`                                     | Solo web   | Reservas: pendiente → confirmado → entregado / cancelado (guarda`precio_aplicado`)         |
+| `notificaciones`                                | Solo web   | Alertas para el admin                                                                          |
+| `page_views`                                    | Solo web   | Registro de visitas                                                                            |
+| `venta`, `detalle_venta`                      | Solo POS   | Facturación en punto de venta                                                                 |
+| `compras`, `detalle_compras`, `proveedores` | Solo POS   | Compras a proveedores                                                                          |
+| `entradas`, `detalle_entradas`                | Solo POS   | Ajustes de inventario                                                                          |
+| `remision`, `detalle_remision`                | Solo POS   | Despachos                                                                                      |
 
 El script es **integrado**: crea las tablas de la web y también las del POS, todo con `CREATE TABLE IF NOT EXISTS`. Puedes usarlo si montas solo la web (las tablas del POS quedan ahí sin estorbar) o si vas a correr los dos sistemas sobre la misma base de datos.
 
@@ -216,35 +217,38 @@ Marketplace/
 
 ### 📦 Apartados (Cliente)
 
-| Método | Ruta                            | Descripción      |
-| :------: | ------------------------------- | ----------------- |
+|  Método  | Ruta                            | Descripción      |
+| :-------: | ------------------------------- | ----------------- |
 | `POST` | `/api/apartar-producto`       | Crear apartado    |
-| `GET` | `/verApartados`               | Ver mis apartados |
+|  `GET`  | `/verApartados`               | Ver mis apartados |
 | `POST` | `/api/apartados/cancelar/:id` | Cancelar apartado |
-| `GET` | `/perfil`                     | Mi perfil         |
+|  `GET`  | `/perfil`                     | Mi perfil         |
 | `PATCH` | `/api/perfil`                 | Editar mis datos  |
 
 ### 🛡️ Administración
 
-|  Método  | Ruta                                       | Descripción              |
-| :-------: | ------------------------------------------ | ------------------------- |
-|  `GET`  | `/admin`                                 | Panel admin               |
-|  `GET`  | `/admin/habilitar-producto`              | Gestionar productos       |
-|  `GET`  | `/admin/pedidos`                         | Historial de pedidos      |
-|  `GET`  | `/admin/clientes`                        | Gestión de clientes       |
-|  `GET`  | `/admin/historicos`                      | Dashboard estadísticas   |
-| `PATCH` | `/api/admin/productos/limite-venta/:id`  | Actualizar stock          |
-| `PATCH` | `/api/admin/productos/estado/:id`        | Cambiar estado            |
-| `PATCH` | `/api/admin/apartados/confirmar/:id`     | Confirmar apartado        |
-| `PATCH` | `/api/admin/apartados/entregado/:id`     | Marcar como entregado     |
-| `PATCH` | `/api/admin/apartados/cancelar/:id`      | Cancelar (devuelve stock) |
+|  Método  | Ruta                                       | Descripción                |
+| :-------: | ------------------------------------------ | --------------------------- |
+|  `GET`  | `/admin`                                 | Panel admin                 |
+|  `GET`  | `/admin/habilitar-producto`              | Gestionar productos         |
+|  `GET`  | `/admin/ofertas`                         | Ofertas y descuentos        |
+|  `GET`  | `/admin/pedidos`                         | Historial de pedidos        |
+|  `GET`  | `/admin/clientes`                        | Gestión de clientes        |
+|  `GET`  | `/admin/historicos`                      | Dashboard estadísticas     |
+| `PATCH` | `/api/admin/productos/limite-venta/:id`  | Actualizar stock            |
+| `PATCH` | `/api/admin/productos/estado/:id`        | Cambiar estado              |
+|  `GET`  | `/api/admin/ofertas`                     | Listar ofertas activas      |
+| `PATCH` | `/api/admin/ofertas/:id`                 | Guardar oferta de producto  |
+| `PATCH` | `/api/admin/apartados/confirmar/:id`     | Confirmar apartado          |
+| `PATCH` | `/api/admin/apartados/entregado/:id`     | Marcar como entregado       |
+| `PATCH` | `/api/admin/apartados/cancelar/:id`      | Cancelar (devuelve stock)   |
 |  `GET`  | `/api/admin/apartados`                   | Apartados (filtro ?estado=) |
-| `PATCH` | `/api/admin/clientes/:id`                | Editar cliente           |
-|  `GET`  | `/api/admin/reportes/pedidos.csv`        | Exportar pedidos CSV     |
-|  `GET`  | `/api/admin/reportes/clientes.csv`       | Exportar clientes CSV    |
-|  `GET`  | `/api/admin/notificaciones`              | Notificaciones            |
-| `PATCH` | `/api/admin/notificaciones/:id/leida`    | Marcar leída             |
-| `PATCH` | `/api/admin/notificaciones/todas-leidas` | Marcar todas              |
+| `PATCH` | `/api/admin/clientes/:id`                | Editar cliente              |
+|  `GET`  | `/api/admin/reportes/pedidos.csv`        | Exportar pedidos CSV        |
+|  `GET`  | `/api/admin/reportes/clientes.csv`       | Exportar clientes CSV       |
+|  `GET`  | `/api/admin/notificaciones`              | Notificaciones              |
+| `PATCH` | `/api/admin/notificaciones/:id/leida`    | Marcar leída               |
+| `PATCH` | `/api/admin/notificaciones/todas-leidas` | Marcar todas                |
 
 ### 📈 Estadísticas
 
@@ -265,12 +269,12 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 
 > 🔗 **Repositorio del POS:** https://github.com/pulposky/Sistema_POS
 
-| Marketplace 🌐 (Node.js) | POS 🖥️ (Python/Flet) |
-|:-------------------------:|:---------------------:|
-| Reserva en línea | Pago presencial |
-| Apartados | Facturación y remisiones |
-| Catálogo público | Gestión de inventario |
-| Notificaciones | Códigos de barras/QR |
+| Marketplace 🌐 (Node.js) |  POS 🖥️ (Python/Flet)  |
+| :----------------------: | :-----------------------: |
+|    Reserva en línea    |      Pago presencial      |
+|        Apartados        | Facturación y remisiones |
+|    Catálogo público    |  Gestión de inventario  |
+|      Notificaciones      |   Códigos de barras/QR   |
 
 > Ambos sistemas comparten la misma base de datos MySQL, lo que permite sincronizar inventario y clientes entre el canal en línea y las transacciones presenciales.
 
@@ -310,6 +314,13 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 - Confirmar apartado → el stock se reduce permanentemente.
 - Cancelar apartado → las unidades regresan al stock.
 - Si el stock llega a 0, el producto se deshabilita solo.
+
+### 🏷️ Ofertas y descuentos
+
+- El admin configura un **porcentaje de descuento** por producto desde `/admin/ofertas`, con fechas opcionales de vigencia (vacías = oferta indefinida).
+- El catálogo y la página principal muestran el **precio original tachado + precio con descuento** y una etiqueta de oferta.
+- Al apartar, se guarda el **precio descontado de ese momento** en `apartados.precio_aplicado`, para que el total no cambie retroactivamente si la oferta se modifica.
+- El POS (Python/Flet) puede aplicar el mismo descuento leyendo las columnas compartidas `producto.descuento`, `producto.fecha_inicio_oferta` y `producto.fecha_fin_oferta`, y el precio ya descontado de `apartados.precio_aplicado`.
 
 ### 🎠 Carousel dinámico
 

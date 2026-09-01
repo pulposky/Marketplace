@@ -17,13 +17,14 @@ const ApartadoModel = {
     // Crea un apartado nuevo cuando un cliente reserva
     crearApartado: (datosApartado, callback) => {
         const sql = `
-            INSERT INTO apartados (nombre_cliente, producto, cantidad)
-            VALUES (?, ?, ?)
+            INSERT INTO apartados (nombre_cliente, producto, cantidad, precio_aplicado)
+            VALUES (?, ?, ?, ?)
         `;
         const valores = [
             datosApartado.nombreCliente,
             datosApartado.producto,
-            datosApartado.cantidad
+            datosApartado.cantidad,
+            Number(datosApartado.precioAplicado) || 0
         ];
 
         conexion.query(sql, valores, callback);
@@ -40,12 +41,16 @@ const ApartadoModel = {
                 a.id_apartado,
                 a.nombre_cliente,
                 a.cantidad,
+                a.precio_aplicado,
                 a.estado AS estado_apartado,
                 a.cancelado_por,
                 a.fecha,
                 p.id_producto,
                 p.nombre,
                 p.precio,
+                p.descuento,
+                p.fecha_inicio_oferta,
+                p.fecha_fin_oferta,
                 p.unidad,
                 p.estado AS estado
             FROM apartados a
@@ -94,12 +99,17 @@ const ApartadoModel = {
                 c.telefono AS cliente_telefono,
                 c.direccion AS cliente_direccion,
                 a.cantidad,
+                a.precio_aplicado,
                 a.fecha,
                 a.estado,
                 a.cancelado_por,
+                a.confirmado_por,
                 p.id_producto,
                 p.nombre AS nombre_producto,
                 p.precio,
+                p.descuento,
+                p.fecha_inicio_oferta,
+                p.fecha_fin_oferta,
                 p.unidad
             FROM apartados a
             JOIN producto p ON a.producto = p.id_producto
@@ -114,10 +124,10 @@ const ApartadoModel = {
     // CAMBIOS DE ESTADO
     // ------------------------------------------------
 
-    // Cambia el estado de un apartado a "confirmado"
-    confirmarApartado: (idApartado, callback) => {
-        const sql = 'UPDATE apartados SET estado = ? WHERE id_apartado = ?';
-        conexion.query(sql, ['confirmado', idApartado], callback);
+    // Cambia el estado de un apartado a "confirmado" y registra quién confirmó
+    confirmarApartado: (idApartado, nombreAdmin, callback) => {
+        const sql = 'UPDATE apartados SET estado = ?, confirmado_por = ? WHERE id_apartado = ?';
+        conexion.query(sql, ['confirmado', nombreAdmin || null, idApartado], callback);
     },
 
     // Cambia el estado de un apartado a "entregado"

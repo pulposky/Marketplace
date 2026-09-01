@@ -9,8 +9,12 @@
 // =============================================
 
 const verificarAdmin = (req, res, next) => {
+    // Es API si el cliente lo pide (XHR/JSON) o si la ruta empieza por /api/
+    const esAPI = req.xhr || String(req.path || '').startsWith('/api/')
+        || req.headers.accept?.includes("application/json");
+
     if (!req.session || !req.session.usuario) {
-        if (req.xhr || req.headers.accept?.includes("application/json")) {
+        if (esAPI) {
             return res.status(401).json({
                 ok: false,
                 login: false,

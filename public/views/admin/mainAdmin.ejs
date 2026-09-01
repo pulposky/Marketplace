@@ -9,11 +9,7 @@
 </head>
 <body>
 
-    <!-- TOAST DE NOTIFICACIÓN
-        Aparece fijo en la esquina superior derecha cuando llega
-        una notificación nueva. Se desliza desde fuera de la pantalla
-        y se oculta solo después de 5 segundos. Tiene un botón X
-        para cerrarlo manualmente. -->
+    <!-- TOAST DE NOTIFICACIÓN -->
     <div class="toast-notificacion" id="toastNotificacion">
         <div class="toast-icono">🔔</div>
         <div class="toast-contenido">
@@ -23,77 +19,197 @@
         <button class="toast-cerrar">&times;</button>
     </div>
 
-    <main class="admin-panel">
-        <header class="admin-header">
-            <div class="header-izquierda">
-                <h1>Panel de Administración</h1>
-                <p>Bienvenido, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong></p>
-                <p>Estado de sesión: <span class="rol-badge"><%= usuario.role %></span></p>
-            </div>
-
-            <!-- CAMPANA DE NOTIFICACIONES
-                 Botón con ícono de campana y badge rojo que muestra
-                 cuántas notificaciones hay sin leer. Al hacer click
-                 se abre un dropdown con la lista de notificaciones.
-                 El JavaScript (mainAdmin.js) hace polling cada 10
-                 segundos al endpoint /api/admin/notificaciones. -->
-            <div class="campana-contenedor" id="campanaContenedor">
-                <button class="campana-boton" id="campanaBoton" title="Notificaciones">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    <span class="campana-badge" id="campanaBadge">0</span>
-                </button>
-                <div class="campana-dropdown" id="campanaDropdown">
-                    <div class="dropdown-header">
-                        <span>Notificaciones</span>
-                        <button class="btn-marcar-todas" id="btnMarcarTodas">Marcar todo leído</button>
-                    </div>
-                    <div class="dropdown-lista" id="dropdownLista">
-                        <p class="dropdown-vacio">Sin notificaciones nuevas</p>
-                    </div>
+    <!-- ============ NAVBAR SUPERIOR GRANDE ============ -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-marca">
+                <div class="topbar-logo">
+                    <img src="/img/Logo_sena.png" alt="Logotipo SENA">
+                </div>
+                <div class="topbar-texto">
+                    <span class="topbar-nombre">SENAEMPRESA</span>
+                    <span class="topbar-sub">Centro Agroindustrial Hachón</span>
                 </div>
             </div>
-        </header>
 
-        <!-- SECCIÓN DE CARDS -->
-        <!-- Cada card describe una funcionalidad del panel admin.
-            Son informativas, no tienen botón propio. -->
-        <section class="admin-content">
-            <article class="admin-card">
-                <h2>Gestión de Productos</h2>
-                <p>
-                    Activa, deshabilita o gestiona el catálogo disponible para tus clientes de forma rápida y centralizada.
-                </p>
-            </article>
+            <!-- INFO CENTRAL: ROL + FECHA/HORA -->
+            <div class="topbar-info">
+                <span class="topbar-badge"><%= usuario.role %></span>
+                <span class="topbar-fecha"><%= new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %></span>
+            </div>
 
-            <article class="admin-card">
-                <h2>Control de Pedidos</h2>
-                <p>
-                    Revisa el historial, el estado de las entregas y el detalle de cada compra realizada en la plataforma.
-                </p>
-            </article>
+            <div class="topbar-derecha">
+                <!-- CAMPANA DE NOTIFICACIONES -->
+                <div class="campana-contenedor" id="campanaContenedor">
+                    <button class="campana-boton" id="campanaBoton" title="Notificaciones">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="campana-badge" id="campanaBadge">0</span>
+                    </button>
+                    <div class="campana-dropdown" id="campanaDropdown">
+                        <div class="dropdown-header">
+                            <span>Notificaciones</span>
+                            <button class="btn-marcar-todas" id="btnMarcarTodas">Marcar todo leído</button>
+                        </div>
+                        <div class="dropdown-lista" id="dropdownLista">
+                            <p class="dropdown-vacio">Sin notificaciones nuevas</p>
+                        </div>
+                    </div>
+                </div>
 
-            <article class="admin-card">
-                <h2>Estadísticas</h2>
-                <p>
-                    Visualiza gráficos de productos más vendidos, clientes que más compran, visitas a la página y más.
-                </p>
-            </article>
+                <a href="/logout" class="topbar-logout" title="Cerrar sesión">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Cerrar sesión</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ CONTENIDO CENTRADO ============ -->
+    <main class="contenedor">
+
+        <!-- HERO / BIENVENIDA -->
+        <section class="hero">
+            <div class="hero-logo">
+                <img src="/img/Logo_sena.png" alt="SENA">
+            </div>
+            <span class="hero-eyebrow"><%= usuario.role %></span>
+            <h1>¡Hola, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong>!</h1>
+            <p>Gestiona tu catálogo, pedidos y estadísticas desde un solo lugar.</p>
         </section>
 
-        <!-- BOTONES DE ACCIÓN -->
-        <!-- Links a las diferentes secciones del admin y logout -->
-        <nav class="admin-actions">
-            <a href="/admin/habilitar-producto" class="btn-principal">Habilitar Producto</a>
-            <a href="/admin/pedidos" class="btn-secundario">Ver Pedidos</a>
-            <a href="/admin/historial-pedidos" class="btn-secundario">Historial de Pedidos</a>
-            <a href="/admin/clientes" class="btn-secundario">Clientes</a>
-            <a href="/admin/historicos" class="btn-secundario">Analítica</a>
-            <a href="/logout" class="btn-danger">Cerrar Sesión</a>
-        </nav>
+        <!-- MÉTRICAS EN VIVO -->
+        <section class="metrics-grid">
+            <div class="stat-card">
+                <div class="stat-icono icono-productos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-valor" id="statProductos">–</span>
+                    <span class="stat-etiqueta">Productos activos</span>
+                </div>
+                <a href="/admin/habilitar-producto" class="stat-enlace">Gestionar →</a>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icono icono-pedidos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-valor" id="statPedidos">–</span>
+                    <span class="stat-etiqueta">Pedidos pendientes</span>
+                </div>
+                <a href="/admin/pedidos" class="stat-enlace">Revisar →</a>
+            </div>
+
+            <% if (usuario.role === 'admin') { %>
+            <div class="stat-card">
+                <div class="stat-icono icono-ofertas">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-valor" id="statOfertas">–</span>
+                    <span class="stat-etiqueta">Ofertas activas</span>
+                </div>
+                <a href="/admin/ofertas" class="stat-enlace">Ver →</a>
+            </div>
+            <% } %>
+
+            <div class="stat-card">
+                <div class="stat-icono icono-notif">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-valor" id="statNotificaciones">–</span>
+                    <span class="stat-etiqueta">Notificaciones</span>
+                </div>
+                <span class="stat-vacio">En tiempo real</span>
+            </div>
+        </section>
+
+        <!-- TARJETAS DE NAVEGACIÓN -->
+        <section class="admin-content">
+            <a href="/admin/habilitar-producto" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Gestión de Productos</h2>
+                    <p>Activa, deshabilita o gestiona el catálogo disponible para tus clientes.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+
+            <% if (usuario.role === 'admin') { %>
+            <a href="/admin/ofertas" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Ofertas y Descuentos</h2>
+                    <p>Configura promociones, precios y fechas de vigencia.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+            <% } %>
+
+            <a href="/admin/pedidos" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Control de Pedidos</h2>
+                    <p>Revisa pendientes, entregas y el estado de cada compra.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+
+            <a href="/admin/historial-pedidos" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Historial de Pedidos</h2>
+                    <p>Consulta confirmados, entregados y cancelados.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+
+            <% if (usuario.role === 'admin') { %>
+            <a href="/admin/clientes" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Gestión de Clientes</h2>
+                    <p>Busca, visualiza y actualiza los datos de tus clientes.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+            <% } %>
+
+            <% if (usuario.role === 'admin') { %>
+            <a href="/admin/historicos" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Analítica</h2>
+                    <p>Gráficos de productos, clientes y tráfico de la página.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+            <% } %>
+        </section>
+
     </main>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+    </footer>
 
     <script src="/js/toast.js"></script>
     <script src="/js/admin/mainAdmin.js"></script>

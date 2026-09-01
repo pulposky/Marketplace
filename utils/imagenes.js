@@ -54,4 +54,4 @@ const asociarImagenesAProductos = (productos, callback) => {
     });
 };
 
-module.exports = { asociarImagenesAProductos };
+module.exports = { asociarImagenesAProductos, normalizeText };
