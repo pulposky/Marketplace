@@ -147,6 +147,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
+    // TARJETAS DE "MÁS VENDIDOS": clic abre el modal de apartar
+    // -----------------------------------------------
+    // Al hacer clic en cualquier parte de la tarjeta del producto
+    // se abre el modal de apartado (en vez de navegar a la vista
+    // de detalle). Reutiliza el mismo botón "Apartar" de la tarjeta.
+    document.querySelectorAll('.seccion-productos .tarjeta-producto').forEach(tarjeta => {
+        tarjeta.addEventListener('click', (evento) => {
+            const botonApartarTarjeta = tarjeta.querySelector('.btn-accion-apartar');
+            if (!botonApartarTarjeta) return;
+            // Evito abrir el modal dos veces si el clic fue justo en el botón
+            if (evento.target.closest('.btn-accion-apartar')) return;
+            // Evito la navegación de los enlaces dentro de la tarjeta
+            evento.preventDefault();
+            botonApartarTarjeta.click();
+        });
+    });
+
+    // -----------------------------------------------
     // BOTONES DE "APARTAR" EN CADA PRODUCTO
     // -----------------------------------------------
     // Cuando hago click en un botón de apartar, abro el modal
