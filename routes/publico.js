@@ -15,6 +15,7 @@ const ProductoController = require('../controllers/productoController');
 const AuthController = require('../controllers/authController');
 const { limiteAuth } = require('../config/rateLimit');
 const { validarLogin, validarRegistro } = require('../middleware/validar');
+const noCache = require('../middleware/noCache');
 
 // Vista: página principal
 router.get('/', SitioVistasController.mostrarMain);
@@ -28,7 +29,7 @@ router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
 router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);
-router.get('/logout', AuthController.logoutUsuarioController);
+router.get('/logout', noCache, AuthController.logoutUsuarioController);
 router.post('/registro', limiteAuth, validarRegistro, AuthController.registroUsuarioController);
 
 // API: lista de productos en JSON (la usa el catálogo)

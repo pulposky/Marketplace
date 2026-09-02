@@ -13,6 +13,9 @@ const ClienteApiController = require('../controllers/cliente/clienteApiControlle
 const ApartadoController = require('../controllers/apartadoController');
 const NotificacionesClienteController = require('../controllers/notificacionesClienteController');
 const protegerRuta = require('../middleware/verificarUsuario');
+const noCache = require('../middleware/noCache');
+
+router.use(noCache);
 
 // Vista "Mi perfil" y su API de edición (solo clientes logueados)
 router.get('/perfil', protegerRuta, ClienteVistasController.mostrarPerfil);

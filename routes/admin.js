@@ -21,6 +21,9 @@ const HistoricosApiController = require('../controllers/historicos/historicosApi
 const ReportesController = require('../controllers/reportesController');
 const verificarAdmin = require('../middleware/verificarAdmin');
 const verificarRol = require('../middleware/verificarRol');
+const noCache = require('../middleware/noCache');
+
+router.use(noCache);
 
 // -----------------------------------------------
 // PÁGINAS DEL PANEL
