@@ -45,12 +45,7 @@ const HistoricosModel = {
         conexion.query(sql, callback);
     },
 
-    // Pedidos agrupados por admin (quién confirma más)
-    // El apartado no guarda quién lo confirmó, así que usamos
-    // la tabla notificaciones como proxy: cuando se confirma,
-    // se crea una notificación. Pero en realidad el admin solo
-    // cambia el estado. Necesitamos una columna 'confirmado_por'.
-    // Por ahora mostramos todos los confirmados.
+    // Pedidos agrupados por estado (pendiente, confirmado, entregado, cancelado)
     pedidosPorEstado: (callback) => {
         const sql = `
             SELECT 

@@ -21,9 +21,6 @@ if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
 }
 
-// Guardo la ruta raíz del proyecto por si la necesito en otro lado
-global.__basedir = __dirname;
-
 // Headers de seguridad (CSP, X-Frame-Options, etc.)
 app.use(helmet({
     contentSecurityPolicy: {

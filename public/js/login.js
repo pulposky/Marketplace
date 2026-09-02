@@ -60,6 +60,21 @@ async function procesarLogin(payload) {
         const datos = await respuesta.json();
         window.resultadoLoginUltimo = datos;
 
+        // Si el servidor respondió un error de sesión/seguridad (p. ej.
+        // el token CSRF caducó), muestro un mensaje claro en vez de un
+        // cuadro rojo vacío. El wrapper de csrf.js ya recarga la página
+        // automáticamente en el caso 403.
+        if (!datos || typeof datos !== 'object' || (datos.error && !datos.ok)) {
+            if (etiquetaMensaje) {
+                etiquetaMensaje.style.display = 'block';
+                etiquetaMensaje.textContent = datos && datos.error
+                    ? datos.error
+                    : 'Tu sesión expiró. Recarga la página e intenta de nuevo.';
+                etiquetaMensaje.className = 'mensaje-error mensaje-rojo';
+            }
+            return false;
+        }
+
         if (datos.ok) {
             // Login exitoso: limpio el mensaje de error si existía
             if (etiquetaMensaje) {

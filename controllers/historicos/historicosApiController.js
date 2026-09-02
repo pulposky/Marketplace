@@ -1,30 +1,17 @@
 // =============================================
-// CONTROLADOR DE HISTÓRICOS / ESTADÍSTICAS
+// API DE HISTÓRICOS / ESTADÍSTICAS
 // =============================================
-// Renderiza la vista de analytics del admin
-// y provee endpoints API para los datos de
-// los gráficos.
+// Endpoints que devuelven JSON para los gráficos
+// de analytics: productos más vendidos, clientes
+// que más compran, pedidos por estado, ventas y
+// visitas por día, rutas visitadas, y exportación
+// a Excel con gráficos OOXML.
 // =============================================
 
-const HistoricosModel = require('../models/historicosModel');
+const HistoricosModel = require('../../models/historicosModel');
 const ExcelJS = require('exceljs');
 
-const HistoricosController = {
-
-    mostrarHistoricos: (req, res) => {
-        const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || rol !== 'admin') {
-            return res.redirect('/admin');
-        }
-
-        HistoricosModel.resumen((err, resumen) => {
-            res.render('admin/historicos', {
-                usuario: usuarioSesion,
-                resumen: resumen || { ventasEntregadas: 0, totalVisitas: 0, clientesCompradores: 0 }
-            });
-        });
-    },
+const HistoricosApiController = {
 
     apiProductosMasVendidos: (req, res) => {
         HistoricosModel.productosMasVendidos((err, resultados) => {
@@ -274,4 +261,4 @@ const HistoricosController = {
     }
 };
 
-module.exports = HistoricosController;
+module.exports = HistoricosApiController;

@@ -9,20 +9,21 @@
 const express = require('express');
 const router = express.Router();
 
-const SitioController = require('../controllers/sitioController');
+const SitioVistasController = require('../controllers/sitio/sitioVistasController');
+const SitioApiController = require('../controllers/sitio/sitioApiController');
 const ProductoController = require('../controllers/productoController');
 const AuthController = require('../controllers/authController');
 const { limiteAuth } = require('../config/rateLimit');
 const { validarLogin, validarRegistro } = require('../middleware/validar');
 
 // Vista: página principal
-router.get('/', SitioController.mostrarMain);
+router.get('/', SitioVistasController.mostrarMain);
 
 // Vista: catálogo de productos
-router.get('/catalogo', SitioController.mostrarCatalogo);
+router.get('/catalogo', SitioVistasController.mostrarCatalogo);
 
 // Vista: ficha de detalle de un producto
-router.get('/producto/:id', SitioController.mostrarDetalleProducto);
+router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
 
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
@@ -34,7 +35,7 @@ router.post('/registro', limiteAuth, validarRegistro, AuthController.registroUsu
 router.get('/api/productos', ProductoController.obtenerTodos);
 
 // API: imágenes del carrusel (lee la carpeta img/carrusel dinámicamente)
-router.get('/api/carrusel-imagenes', SitioController.carruselImagenes);
+router.get('/api/carrusel-imagenes', SitioApiController.carruselImagenes);
 
 // API: verificar si hay sesión activa (lo usa el frontend antes de apartar)
 router.get('/api/verificar-sesion', AuthController.verificarSesion);

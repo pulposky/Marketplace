@@ -1,35 +1,17 @@
 // =============================================
-// CONTROLADOR DEL SITIO (PÁGINAS PÚBLICAS)
+// VISTAS DEL SITIO (PÁGINAS PÚBLICAS)
 // =============================================
-// Renderiza la página principal y el catálogo, y
-// provee el API de imágenes del carrusel. Cualquier
-// visitante puede entrar acá, no hace falta sesión.
+// Renderiza las páginas públicas del marketplace:
+// página principal con destacados y ofertas, detalle
+// de producto, y catálogo con filtros y búsqueda.
+// Cualquier visitante puede entrar, no hace falta sesión.
 // =============================================
 
-const fs = require('fs');
-const path = require('path');
-const ProductoModel = require('../models/productoModel');
-const { normalizarCategorias } = require('../utils/helpers');
-const { asociarImagenesAProductos } = require('../utils/imagenes');
-const SitioController = {
+const ProductoModel = require('../../models/productoModel');
+const { normalizarCategorias } = require('../../utils/helpers');
+const { asociarImagenesAProductos } = require('../../utils/imagenes');
 
-    // GET /api/carrusel-imagenes
-    // Lista las imágenes de la carpeta img/carrusel para el carousel
-    // de la página principal (las lee dinámicamente, sin tocar código)
-    carruselImagenes: (req, res) => {
-        const carpetaCarrusel = path.join(__dirname, '..', 'public', 'img', 'carrusel');
-        const extensionesValidas = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-
-        fs.readdir(carpetaCarrusel, (error, archivos) => {
-            if (error) {
-                return res.json([]);
-            }
-            const imagenes = archivos
-                .filter(archivo => extensionesValidas.includes(path.extname(archivo).toLowerCase()))
-                .sort();
-            res.json(imagenes);
-        });
-    },
+const SitioVistasController = {
 
     // Página principal del marketplace
     // Si el usuario es admin o aprendiz, lo mando directo al panel admin
@@ -185,4 +167,4 @@ const SitioController = {
     }
 };
 
-module.exports = SitioController;
+module.exports = SitioVistasController;

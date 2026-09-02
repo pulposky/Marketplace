@@ -140,14 +140,26 @@ Marketplace/
 ├── config/
 │   └── session.js                 # Configuración de la sesión
 ├── controllers/
-│   ├── sitioController.js         # Páginas públicas (inicio y catálogo)
+│   ├── sitio/
+│   │   ├── sitioVistasController.js   # Páginas públicas (inicio, catálogo, detalle)
+│   │   └── sitioApiController.js      # API del carrusel (imágenes JSON)
+│   ├── cliente/
+│   │   ├── clienteVistasController.js # Perfil y "mis apartados"
+│   │   └── clienteApiController.js    # API de edición de perfil
+│   ├── admin/
+│   │   ├── adminVistasController.js   # Pantallas del panel
+│   │   └── adminApiController.js      # APIs de gestión de clientes
+│   ├── carrusel/
+│   │   ├── carruselVistasController.js# Página de gestión del carrusel
+│   │   └── carruselApiController.js   # APIs subir/eliminar imágenes
+│   ├── historicos/
+│   │   ├── historicosVistasController.js # Página de estadísticas
+│   │   └── historicosApiController.js    # APIs de analytics + exportar Excel
 │   ├── authController.js          # Login, logout, registro y verificar sesión
 │   ├── productoController.js      # APIs de productos (catálogo y admin)
 │   ├── apartadoController.js      # Ciclo completo del apartado/pedido
-│   ├── clienteController.js       # Perfil y "mis apartados"
-│   ├── adminController.js         # Pantallas del panel y gestión de clientes
 │   ├── notificacionesController.js# Campana de alertas del admin
-│   ├── historicosController.js    # Estadísticas
+│   ├── notificacionesClienteController.js # Notificaciones del cliente
 │   └── reportesController.js      # Exportación CSV
 ├── models/
 │   ├── productoModel.js           # SQL de productos

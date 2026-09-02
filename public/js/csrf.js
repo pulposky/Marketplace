@@ -28,6 +28,24 @@
         }
         opciones.headers = headers;
 
-        return fetchOriginal(url, opciones);
+        return fetchOriginal(url, opciones).then(function (respuesta) {
+            // Si el token CSRF caducó (por ejemplo, la sesión expiró
+            // mientras la página estaba abierta), el servidor responde
+            // 403 con { error }. Recargo la página para obtener una
+            // sesión y un token frescos; así el usuario solo debe
+            // reintentar la acción.
+            if (respuesta.status === 403 && respuesta.headers.get('content-type') &&
+                respuesta.headers.get('content-type').indexOf('application/json') !== -1) {
+                return respuesta.clone().json().then(function (cuerpo) {
+                    if (cuerpo && cuerpo.error) {
+                        window.location.reload();
+                        // Devuelvo la respuesta original para no romper el flujo
+                        return respuesta;
+                    }
+                    return respuesta;
+                });
+            }
+            return respuesta;
+        });
     };
 })();

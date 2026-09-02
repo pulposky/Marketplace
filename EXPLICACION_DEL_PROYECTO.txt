@@ -142,11 +142,41 @@
      compatible con el frontend).
 
  controllers/
-   sitioController.js
-     Páginas públicas: mostrarMain (portada, redirige a /admin si es
-     admin/aprendiz), mostrarCatalogo (filtros, búsqueda, ofertas,
-     orden), mostrarDetalleProducto (ficha /producto/:id, valida 404 y
-     estado activo) y carruselImagenes (API que lee public/img/carrusel).
+   sitio/
+     sitioVistasController.js
+       Páginas públicas: mostrarMain (portada, redirige a /admin si es
+       admin/aprendiz), mostrarCatalogo (filtros, búsqueda, ofertas,
+       orden), mostrarDetalleProducto (ficha /producto/:id, valida 404 y
+       estado activo).
+     sitioApiController.js
+       API del sitio: carruselImagenes (lee public/img/carrusel en JSON).
+   cliente/
+     clienteVistasController.js
+       Perfil del cliente: mostrarPerfil (carga datos frescos de la BD).
+     clienteApiController.js
+       API del cliente: actualizarPerfil (valida la contraseña actual
+       con bcrypt y, si llega nuevaPassword, la cambia con hash nuevo).
+   admin/
+     adminVistasController.js
+       Vistas del panel: mainAdmin, habilitarProducto, pedidos,
+       historial, gestión de ofertas y gestión de clientes.
+     adminApiController.js
+       APIs del panel: listarClientes (con búsqueda) y actualizarCliente.
+   carrusel/
+     carruselVistasController.js
+       Página /admin/carrusel (muestra las imágenes existentes).
+     carruselApiController.js
+       API del carrusel (solo admin): subirImagen (base64 validado y
+       guardado en /public/img/carrusel con prefijo numérico de orden)
+       y eliminarImagen (borra de la carpeta con nombre saneado).
+   historicos/
+     historicosVistasController.js
+       Página de estadísticas del panel (resumen de ventas, visitas,
+       clientes).
+     historicosApiController.js
+       API de estadísticas: productos más vendidos, clientes que más
+       compran, pedidos por estado, ventas y visitas por día, rutas más
+       visitadas y exportación de históricos.
    productoController.js
      CRUD de productos: crear, actualizar datos, límite de venta,
      estado, precios, ofertas y subir/actualizar la imagen (base64 a
@@ -156,10 +186,6 @@
      documento (clientes con tabla clientes), creación de contraseña
      del cliente (paso 0), verificación de sesión (verificarSesion),
      registro de clientes, restablecer contraseña y logout.
-   clienteController.js
-     Perfil del cliente: mostrarPerfil, actualizarPerfil (valida la
-     contraseña actual con bcrypt y, si llega nuevaPassword, la cambia
-     con hash nuevo).
    apartadoController.js
      Toda la lógica de reservas: apartarProducto, apartarLote (carrito),
      cancelarApartado (cliente), confirmarApartado / marcarEntregado /
@@ -170,19 +196,6 @@
      marcarLeida, marcarTodasLeidas.
    notificacionesController.js
      Notificaciones del admin: obtener, marcar leídas, todas leídas.
-   adminController.js
-     Vistas y APIs del panel: mainAdmin, habilitarProducto, pedidos,
-     historial, gestión de ofertas, gestión de clientes (listar y
-     actualizar).
-   carruselController.js
-     Gestión del carrusel (solo admin): mostrarGestionCarrusel
-     (página /admin/carrusel), subirImagen (base64 validado y guardado
-     en /public/img/carrusel con prefijo numérico de orden) y
-     eliminarImagen (borra de la carpeta con nombre saneado).
-   historicosController.js
-     Estadísticas del panel: productos más vendidos, clientes que más
-     compran, pedidos por estado, ventas y visitas por día, rutas más
-     visitadas y exportación de históricos.
    reportesController.js
      Exportaciones CSV de pedidos y clientes.
 

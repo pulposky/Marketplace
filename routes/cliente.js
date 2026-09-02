@@ -8,14 +8,15 @@
 const express = require('express');
 const router = express.Router();
 
-const ClienteController = require('../controllers/clienteController');
+const ClienteVistasController = require('../controllers/cliente/clienteVistasController');
+const ClienteApiController = require('../controllers/cliente/clienteApiController');
 const ApartadoController = require('../controllers/apartadoController');
 const NotificacionesClienteController = require('../controllers/notificacionesClienteController');
 const protegerRuta = require('../middleware/verificarUsuario');
 
 // Vista "Mi perfil" y su API de edición (solo clientes logueados)
-router.get('/perfil', protegerRuta, ClienteController.mostrarPerfil);
-router.patch('/api/perfil', protegerRuta, ClienteController.actualizarPerfil);
+router.get('/perfil', protegerRuta, ClienteVistasController.mostrarPerfil);
+router.patch('/api/perfil', protegerRuta, ClienteApiController.actualizarPerfil);
 
 // Vista "Mis apartados".
 // Solo la ve un usuario logueado; si no, vuelve al
@@ -25,7 +26,7 @@ router.get('/verApartados', (req, res, next) => {
         return res.redirect('/catalogo?login=1');
     }
     next();
-}, ClienteController.mostrarVerApartados);
+}, ClienteVistasController.mostrarVerApartados);
 
 // API: crear un apartado nuevo (descuenta stock y avisa al admin)
 router.post('/api/apartar-producto', protegerRuta, ApartadoController.apartarProducto);
