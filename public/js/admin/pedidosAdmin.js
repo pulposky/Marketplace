@@ -8,10 +8,10 @@
     //
     //   - modo 'pendientes' (/admin/pedidos):
     //       pendientes + confirmados (fila de trabajo).
-    //       UN SOLO BOTÓN para todo el pedido del cliente:
-    //         "Confirmar" (los confirma a todos) y "Cancelar".
-    //         Al confirmar todo, solo queda el botón "Cancelar".
-    //         No hay opción "Entregar" (esa acción la registra el POS).
+    //       Flujo: pendiente -> confirmado -> entregado (o cancelar en cualquier paso).
+    //         "Confirmar" -> confirma todos los pendientes
+    //         "Entregado" -> marca todos como entregados (solo si hay confirmados)
+    //         "Cancelar" -> cancela todos y devuelve stock
     //   - modo 'historial' (/admin/historial-pedidos):
     //       entregados + cancelados; SOLO LECTURA (Ver / Ver Todo).
     // =============================================
@@ -128,13 +128,18 @@
                 // confirma (pendiente -> confirmado) o cancela.
                 let botonGrupo = '';
                 if (modoVista === 'pendientes') {
-                    const hayGestionable = grupo.items.some((i) => {
+                    const hayPendientes = grupo.items.some((i) => (i.estado || 'pendiente') === 'pendiente');
+                    const hayConfirmados = grupo.items.some((i) => (i.estado || 'pendiente') === 'confirmado');
+                    const hayNoEntregados = grupo.items.some((i) => {
                         const est = i.estado || 'pendiente';
                         return est === 'pendiente' || est === 'confirmado';
                     });
 
-                    if (hayGestionable) {
+                    if (hayPendientes) {
                         botonGrupo = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>' +
+                            '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
+                    } else if (hayConfirmados && hayNoEntregados) {
+                        botonGrupo = '<button class="btn-grupo-accion btn-grupo-entregar">Entregado</button>' +
                             '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
                     }
                 }
@@ -290,18 +295,74 @@
             }
 
             // Refresco el botón según lo que quede por gestionar.
-            // Ya no existe "Entregar": tras confirmar todo,
-            // solo queda el botón "Cancelar".
             const zonaAcciones = grupo.querySelector('.grupo-acciones');
             if (!zonaAcciones) return;
 
-            if (grupo.querySelector('.pedido-fila[data-estado="pendiente"]')) {
-                // Algunos fallaron: sigue habiendo pendientes por confirmar
+            const hayPendientes = grupo.querySelector('.pedido-fila[data-estado="pendiente"]');
+            const hayConfirmados = grupo.querySelector('.pedido-fila[data-estado="confirmado"]');
+
+            if (hayPendientes) {
                 zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-confirmar">Confirmar</button>' +
                     '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
+            } else if (hayConfirmados) {
+                zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-entregar">Entregado</button>' +
+                    '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
             } else {
-                // Todo confirmado: solo queda cancelar
-                zonaAcciones.innerHTML = '<button class="btn-grupo-accion btn-grupo-cancelar">Cancelar</button>';
+                zonaAcciones.innerHTML = '';
+            }
+        }
+
+        // -----------------------------------------------
+        // ACCIÓN ENTREGAR GRUPAL (el admin marca todo como entregado)
+        // -----------------------------------------------
+        async function accionEntregarGrupo(boton) {
+            const grupo = boton.closest('.pedido-grupo');
+            if (!grupo) return;
+
+            const filas = Array.from(grupo.querySelectorAll('.pedido-fila'));
+            let exitos = 0;
+
+            for (const fila of filas) {
+                const estado = fila.dataset.estado;
+                if (estado === 'cancelado' || estado === 'entregado') continue;
+
+                try {
+                    const respuesta = await fetch(`/api/admin/apartados/entregado/${fila.dataset.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        exitos++;
+                        fila.dataset.estado = 'entregado';
+
+                        const badge = fila.querySelector('.pedido-badge');
+                        if (badge) {
+                            badge.classList.remove('pendiente', 'confirmado', 'entregado', 'cancelado');
+                            badge.classList.add('entregado');
+                            badge.textContent = 'Entregado';
+                        }
+
+                        const btnFila = fila.querySelector('.btn-fila-cancelar');
+                        if (btnFila) btnFila.remove();
+                    } else {
+                        toast('error', data.error || 'No se pudo marcar como entregado.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    toast('error', 'Error de conexion con el servidor.');
+                }
+            }
+
+            if (exitos > 0) {
+                toast('exito', `${exitos} producto(s) marcado(s) como entregado(s).`);
+            }
+
+            const zonaAcciones = grupo.querySelector('.grupo-acciones');
+            if (zonaAcciones) {
+                zonaAcciones.innerHTML = '';
             }
         }
 
@@ -434,6 +495,14 @@
             if (btnConfirmarGrupo) {
                 if (confirm('Confirmar TODOS los pedidos de este cliente?')) {
                     accionGrupo(btnConfirmarGrupo, 'pendiente');
+                }
+                return;
+            }
+
+            const btnEntregarGrupo = e.target.closest('.btn-grupo-entregar');
+            if (btnEntregarGrupo) {
+                if (confirm('Marcar TODOS los pedidos de este cliente como entregados?')) {
+                    accionEntregarGrupo(btnEntregarGrupo);
                 }
                 return;
             }

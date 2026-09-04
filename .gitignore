@@ -1,2 +1,26 @@
+# =============================================
+# MARKETPLACE SENA - .gitignore
+# =============================================
+
+# Dependencias
 node_modules/
+
+# Variables de entorno
 .env
+
+# Build / compilación
+dist/
+build/
+
+# Cobertura de tests
+coverage/
+.nyc_output/
+
+# Archivos de usuario (subidas)
+public/img/upload/*
+!public/img/upload/.gitkeep
+
+# Backups de base de datos
+*.sql
+*.sql.gz
+database/backups/

@@ -578,6 +578,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
+    // TARJETAS: clic en la tarjeta abre el modal de apartado
+    // -----------------------------------------------
+    document.querySelectorAll('.rejilla-productos .tarjeta-producto').forEach(tarjeta => {
+        tarjeta.addEventListener('click', (evento) => {
+            const botonApartarTarjeta = tarjeta.querySelector('.btn-accion-apartar');
+            if (!botonApartarTarjeta) return;
+            if (evento.target.closest('.btn-accion-apartar')) return;
+            evento.preventDefault();
+            botonApartarTarjeta.click();
+        });
+    });
+
+    // -----------------------------------------------
     // BOTONES DE AGREGAR (TARJETAS)
     // -----------------------------------------------
     document.querySelectorAll('.btn-accion-apartar').forEach(botonApartar => {

@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Históricos y Estadísticas - Panel Admin</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
     <link rel="stylesheet" href="/css/admin/historicos.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>

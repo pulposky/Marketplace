@@ -4,8 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Gestión de Carrusel - Panel Admin</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
     <link rel="stylesheet" href="/css/admin/carruselAdmin.css">
     <link rel="stylesheet" href="/css/toast.css">
 </head>
@@ -87,11 +93,6 @@
                 </p>
             <% } %>
         </div>
-
-        <div class="nota-final">
-            <a href="/" target="_blank" rel="noopener" class="enlace-preview">Ver cómo se ve la portada →</a>
-        </div>
-
     </div>
 
     <script src="/js/csrf.js"></script>

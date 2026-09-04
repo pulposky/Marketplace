@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
     <title>Panel de administración</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
     <link rel="stylesheet" href="/css/admin/mainAdmin.css" />
     <link rel="stylesheet" href="/css/toast.css" />
 </head>
@@ -156,6 +162,17 @@
             </a>
             <% } %>
 
+            <a href="/admin/pedidos" class="admin-card">
+                <div class="card-icono">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                </div>
+                <div class="card-cuerpo">
+                    <h2>Control de Pedidos</h2>
+                    <p>Revisa pendientes, entregas y el estado de cada compra.</p>
+                </div>
+                <span class="card-flecha">→</span>
+            </a>
+
             <% if (usuario.role === 'admin') { %>
             <a href="/admin/carrusel" class="admin-card">
                 <div class="card-icono">
@@ -168,17 +185,6 @@
                 <span class="card-flecha">→</span>
             </a>
             <% } %>
-
-            <a href="/admin/pedidos" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Control de Pedidos</h2>
-                    <p>Revisa pendientes, entregas y el estado de cada compra.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
 
             <a href="/admin/historial-pedidos" class="admin-card">
                 <div class="card-icono">

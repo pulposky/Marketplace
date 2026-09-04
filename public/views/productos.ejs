@@ -5,8 +5,14 @@
     <!-- Página de catálogo con la lista completa de productos y el modal de apartado -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Catálogo | SENAEMPRESA</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/registro.css">
     <link rel="stylesheet" href="/css/productos.css">
