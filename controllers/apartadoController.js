@@ -106,19 +106,30 @@ const ApartadoController = {
                     () => {}
                 );
 
-                // 3. Descuento de forma atómica el límite de venta del producto.
-                //    Si llega a 0 el UPDATE lo pone inactivo automáticamente.
-                ProductoModel.restarLimiteVenta(productoId, unidadesARestar, (errorUpdate) => {
+                // 3. Descuento el límite de venta con WHERE para evitar carrera.
+                //    Si affectedRows = 0, otro usuario tomó el stock primero.
+                ProductoModel.restarLimiteVenta(productoId, unidadesARestar, (errorUpdate, resultadoUpdate) => {
                     if (errorUpdate) {
                         console.error('Error actualizando límite tras apartado:', errorUpdate);
+                        return res.status(500).json({ error: 'Error al actualizar el stock del producto.' });
+                    }
+
+                    if (!resultadoUpdate || resultadoUpdate.affectedRows === 0) {
+                        // No había stock: cancelo el apartado que acabé de crear
+                        ApartadoModel.cancelarApartadoCliente(resultado.insertId, () => {});
+                        return res.status(400).json({
+                            error: esHuevo
+                                ? `No hay suficientes cubetas disponibles. Stock actual: ${Math.floor(stockDisponible / 30)} cubeta(s).`
+                                : 'El producto ya no tiene stock disponible. Otro usuario lo tomó primero.'
+                        });
                     }
 
                     return res.status(200).json({
                         mensaje: '¡Producto apartado con éxito!',
                         idInsertado: resultado.insertId,
-                        unidadesRestantes: nuevoLimite,
-                        cubetasRestantes: esHuevo ? Math.floor(nuevoLimite / 30) : undefined,
-                        estado: nuevoEstado
+                        unidadesRestantes: stockDisponible - unidadesARestar,
+                        cubetasRestantes: esHuevo ? Math.floor((stockDisponible - unidadesARestar) / 30) : undefined,
+                        estado: (stockDisponible - unidadesARestar) > 0 ? 'activo' : 'inactivo'
                     });
                 });
             });
@@ -204,6 +215,7 @@ const ApartadoController = {
 
             // 2. Creo un apartado por ítem y descuento stock (mismo patrón que apartado simple)
             const idsCreados = [];
+            const detallesCreados = [];
             let pos = 0;
 
             const crearSiguiente = () => {
@@ -235,6 +247,11 @@ const ApartadoController = {
                 ApartadoModel.crearApartado(detalle, (errorApartado, resultado) => {
                     if (errorApartado) {
                         console.error('Error al registrar apartado del lote:', errorApartado);
+                        // Revierto los apartados que ya se crearon antes del error
+                        idsCreados.forEach((idCreado, i) => {
+                            ApartadoModel.cancelarApartadoCliente(idCreado, () => {});
+                            ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
+                        });
                         return res.status(500).json({
                             error: 'Error al procesar el carrito en la BD.',
                             creados: idsCreados.length
@@ -242,11 +259,35 @@ const ApartadoController = {
                     }
 
                     idsCreados.push(resultado.insertId);
+                    detallesCreados.push(detalle);
 
-                    ProductoModel.restarLimiteVenta(detalle.producto, detalle.cantidad, (errorUpdate) => {
+                    ProductoModel.restarLimiteVenta(detalle.producto, detalle.cantidad, (errorUpdate, resultadoUpdate) => {
                         if (errorUpdate) {
                             console.error('Error actualizando límite tras lote:', errorUpdate);
+                            // Revierto todo lo que se creó hasta ahora
+                            idsCreados.forEach((idCreado, i) => {
+                                ApartadoModel.cancelarApartadoCliente(idCreado, () => {});
+                                ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
+                            });
+                            return res.status(500).json({
+                                error: 'Error al actualizar el stock. Intenta de nuevo.',
+                                creados: idsCreados.length
+                            });
                         }
+
+                        if (!resultadoUpdate || resultadoUpdate.affectedRows === 0) {
+                            // Sin stock: revierto todo lo creado en este lote
+                            idsCreados.forEach((idCreado, i) => {
+                                ApartadoModel.cancelarApartadoCliente(idCreado, () => {});
+                                if (i < idsCreados.length - 1) {
+                                    ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
+                                }
+                            });
+                            return res.status(400).json({
+                                error: `Sin stock suficiente para "${detalle.producto}". Otro usuario tomó el stock primero.`
+                            });
+                        }
+
                         pos += 1;
                         crearSiguiente();
                     });

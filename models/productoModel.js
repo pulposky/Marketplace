@@ -134,20 +134,16 @@ const ProductoModel = {
     },
 
     // Descuenta unidades de limite_venta al apartar un producto.
-    // Es atómico (evita condiciones de carrera entre la lectura y el update)
-    // y pone el producto inactivo solo si se agota; si queda stock, activo.
-    // NOTA: la asignación de `estado` va ANTES que la de `limite_venta` en el
-    // SET porque MySQL evalúa las asignaciones de izquierda a derecha y usa el
-    // valor ya actualizado; si `limite_venta` se resta primero, el CASE vería el
-    // valor reducido y marcaría inactivo aunque todavía quede stock.
+    // Solo descuenta si hay stock suficiente (WHERE limite_venta >= ?).
+    // Si affectedRows = 0, significa que no había stock y NO se descontó.
     restarLimiteVenta: (id, cantidad, callback) => {
         const sql = `
             UPDATE producto 
             SET estado = CASE WHEN (limite_venta - ?) > 0 THEN 'activo' ELSE 'inactivo' END,
-                limite_venta = GREATEST(0, limite_venta - ?)
-            WHERE id_producto = ?
+                limite_venta = limite_venta - ?
+            WHERE id_producto = ? AND limite_venta >= ?
         `;
-        conexion.query(sql, [cantidad, cantidad, id], callback);
+        conexion.query(sql, [cantidad, cantidad, id, cantidad], callback);
     },
 
     // Cambia solo el estado del producto (activo/inactivo)

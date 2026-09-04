@@ -167,10 +167,11 @@ const ApartadoModel = {
         conexion.query(sql, callback);
     },
 
-    // Cancela un apartado por expiración del sistema
+    // Cancela un apartado por expiración del sistema.
+    // Solo cancela si el apartado sigue pendiente (evita doble cancelación).
     cancelarApartadoPorExpiracion: (idApartado, callback) => {
-        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
-        conexion.query(sql, ['cancelado', 'admin', idApartado], callback);
+        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ? AND estado = ?';
+        conexion.query(sql, ['cancelado', 'admin', idApartado, 'pendiente'], callback);
     }
 };
 

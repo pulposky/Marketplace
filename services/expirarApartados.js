@@ -26,11 +26,14 @@ function cancelarApartadosExpirados() {
         if (!apartados || apartados.length === 0) return;
 
         apartados.forEach((apartado) => {
-            ApartadoModel.cancelarApartadoPorExpiracion(apartado.id_apartado, (errCancel) => {
+            ApartadoModel.cancelarApartadoPorExpiracion(apartado.id_apartado, (errCancel, resultado) => {
                 if (errCancel) {
                     console.error(`[Expiración] Error cancelando apartado #${apartado.id_apartado}:`, errCancel.message);
                     return;
                 }
+
+                // Si affectedRows = 0, el apartado ya fue cancelado por otro proceso
+                if (!resultado || resultado.affectedRows === 0) return;
 
                 // Aviso al cliente que su apartado se canceló por vencimiento
                 NotificacionClienteModel.buscarClientePorNombre(apartado.nombre_cliente, (errCli, registros) => {
