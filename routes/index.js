@@ -1,9 +1,9 @@
-// =============================================
-// ROUTER PRINCIPAL
-// =============================================
-// Agrupa los routers de cada área (público,
-// clientes y admin) para montarlos de una vez.
-// =============================================
+/* ============================================= */
+/* INDEX.JS - ROUTER PRINCIPAL                   */
+/* ============================================= */
+/* Agrupa los routers de cada área (público,      */
+/* clientes y admin) para montarlos de una vez.   */
+/* ============================================= */
 
 const express = require('express');
 const router = express.Router();

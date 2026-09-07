@@ -1,11 +1,11 @@
-// =============================================
-// MIDDLEWARE DE AUTENTICACIÓN
-// =============================================
-// Este middleware protege las rutas que solo
-// pueden acceder usuarios logueados. Si no hay
-// sesión, responde con 401 para peticiones AJAX
-// o redirige al inicio si es una URL normal.
-// =============================================
+/* ============================================= */
+/* VERIFICARUSUARIO.JS - AUTENTICACIÓN           */
+/* ============================================= */
+/* Protege las rutas que solo pueden acceder      */
+/* usuarios logueados. Si no hay sesión, responde */
+/* con 401 para peticiones AJAX o redirige al     */
+/* inicio si es una URL normal.                  */
+/* ============================================= */
 
 const protegerRuta = (req, res, next) => {
     // Si hay sesión activa, dejo pasar

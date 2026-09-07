@@ -1,14 +1,14 @@
-// =============================================
-// CONFIGURACIÓN DE LA BASE DE DATOS
-// =============================================
-// Devuelve las opciones de conexión a MySQL desde
-// el .env con valores por defecto. Se usa en
-// database/conexion.js para crear la conexión.
-//
-// Nota de convención: el .env usa la convención BD_*
-// (BD_HOST, BD_USER...). Por compatibilidad también
-// se aceptan las variables DB_* si existieran.
-// =============================================
+/* ============================================= */
+/* DATABASE.JS - CONFIGURACIÓN DE BASE DE DATOS  */
+/* ============================================= */
+/* Devuelve las opciones de conexión a MySQL       */
+/* desde el .env con valores por defecto. Se usa  */
+/* en database/conexion.js para crear la conexión. */
+/*                                                */
+/* Nota de convención: el .env usa la convención  */
+/* BD_* (BD_HOST, BD_USER...). Por compatibilidad */
+/* también se aceptan las variables DB_*.         */
+/* ============================================= */
 
 module.exports = {
     host: process.env.BD_HOST || process.env.DB_HOST || 'localhost',

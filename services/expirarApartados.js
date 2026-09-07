@@ -1,14 +1,14 @@
-// =============================================
-// SERVICIO: EXPIRACIÓN AUTOMÁTICA DE APARTADOS
-// =============================================
-// Job en segundo plano que cada 60 segundos revisa
-// si hay apartados pendientes con más de 1 hora de
-// antigüedad. Si los encuentra, los cancela y
-// devuelve el stock al producto.
-//
-// Se arranca desde server.js con:
-//   require('./services/expirarApartados').iniciar();
-// =============================================
+/* ============================================= */
+/* EXPIRARAPARTADOS.JS - EXPIRACIÓN AUTOMÁTICA   */
+/* ============================================= */
+/* Job en segundo plano que cada 60 segundos      */
+/* revisa si hay apartados pendientes con más de  */
+/* 1 hora de antigüedad. Si los encuentra, los    */
+/* cancela y devuelve el stock al producto.       */
+/*                                                */
+/* Se arranca desde server.js con:                */
+/*   require('./services/expirarApartados').iniciar(); */
+/* ============================================= */
 
 const ProductoModel = require('../models/productoModel');
 const ApartadoModel = require('../models/apartadoModel');

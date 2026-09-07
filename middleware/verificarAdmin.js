@@ -1,12 +1,12 @@
-// =============================================
-// MIDDLEWARE DE AUTENTICACIÓN POR ROL (ADMIN)
-// =============================================
-// Igual que verificarUsuario pero además exige
-// que el rol sea admin o aprendiz. Lo usan las
-// rutas nuevas del panel admin (clientes,
-// reportes, entregas) para que un cliente
-// logueado no pueda llamarlas.
-// =============================================
+/* ============================================= */
+/* VERIFICARADMIN.JS - AUTENTICACIÓN ADMIN       */
+/* ============================================= */
+/* Igual que verificarUsuario pero además exige   */
+/* que el rol sea admin o aprendiz. Lo usan las   */
+/* rutas del panel admin (clientes, reportes,     */
+/* entregas) para que un cliente logueado no      */
+/* pueda llamarlas.                              */
+/* ============================================= */
 
 const verificarAdmin = (req, res, next) => {
     // Es API si el cliente lo pide (XHR/JSON) o si la ruta empieza por /api/

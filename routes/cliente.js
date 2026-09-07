@@ -1,9 +1,9 @@
-// =============================================
-// ROUTER DE ÁREA DEL CLIENTE
-// =============================================
-// Páginas y APIs de un cliente logueado: su
-// perfil, sus apartados y crear/cancelar reservas.
-// =============================================
+/* ============================================= */
+/* CLIENTE.JS - ROUTER DEL ÁREA CLIENTE          */
+/* ============================================= */
+/* Páginas y APIs de un cliente logueado: su      */
+/* perfil, sus apartados y crear/cancelar reservas. */
+/* ============================================= */
 
 const express = require('express');
 const router = express.Router();

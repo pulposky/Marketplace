@@ -1,13 +1,14 @@
-// =============================================
-// MIDDLEWARE: PROTECCIÓN CSRF
-// =============================================
-// Genera un token por sesión y lo expone en cada
-// vista (res.locals.csrfToken) para que el frontend
-// lo repita en toda petición que cambie estado
-// (POST/PUT/PATCH/DELETE). El frontend lo envía en
-// la cabecera "x-csrf-token" y acá se compara con
-// el de la sesión. Si no coincide, se rechaza.
-// =============================================
+/* ============================================= */
+/* CSRF.JS - MIDDLEWARE DE PROTECCIÓN CSRF       */
+/* ============================================= */
+/* Genera un token por sesión y lo expone en      */
+/* cada vista (res.locals.csrfToken) para que el  */
+/* frontend lo repita en toda petición que cambie */
+/* estado (POST/PUT/PATCH/DELETE). El frontend    */
+/* lo envía en la cabecera "x-csrf-token" y acá   */
+/* se compara con el de la sesión. Si no          */
+/* coincide, se rechaza.                          */
+/* ============================================= */
 
 const crypto = require('crypto');
 

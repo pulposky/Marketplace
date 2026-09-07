@@ -1,10 +1,10 @@
-// =============================================
-// APLICACIÓN EXPRESS
-// =============================================
-// Acá se construye la app: motor de vistas,
-// middlewares, sesión y rutas. No arranca el
-// servidor; eso lo hace server.js.
-// =============================================
+/* ============================================= */
+/* APP.JS - APLICACIÓN EXPRESS                   */
+/* ============================================= */
+/* Acá se construye la app: motor de vistas,     */
+/* middlewares, sesión y rutas. No arranca el    */
+/* servidor; eso lo hace server.js.              */
+/* ============================================= */
 
 const express = require('express');
 const path = require('path');

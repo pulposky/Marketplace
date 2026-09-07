@@ -1,5 +1,5 @@
 // =============================================
-// CSRF - CLIENTE
+// CSRF - Protección de peticiones fetch del navegador
 // =============================================
 // Lee el token que el servidor pone en el <meta>
 // name="csrf-token" y lo agrega automáticamente
@@ -8,16 +8,21 @@
 // rompe ni necesita modificarse.
 // =============================================
 
+// IIFE que se ejecuta apenas carga el script
 (function () {
     'use strict';
 
+    // Obtener el token CSRF desde la etiqueta <meta> que pinta el servidor
     const meta = document.querySelector('meta[name="csrf-token"]');
     const token = meta && meta.getAttribute('content') ? meta.getAttribute('content') : '';
 
+    // Si no hay token (por ejemplo en una página pública sin CSRF), no hago nada
     if (!token) return;
 
+    // Guardo una referencia al fetch original para envolverlo sin perder el contexto
     const fetchOriginal = window.fetch.bind(window);
 
+    // Sobrescribo window.fetch para inyectar la cabecera CSRF en todas las peticiones
     window.fetch = function (url, opciones) {
         opciones = opciones || {};
         opciones.credentials = opciones.credentials || 'same-origin';

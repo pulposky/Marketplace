@@ -1,11 +1,11 @@
-// =============================================
-// MIDDLEWARE: CONTADOR DE VISITAS
-// =============================================
-// Registra cada petición GET en la tabla
-// page_views para poder mostrar estadísticas
-// de tráfico en el dashboard de históricos.
-// Solo registra rutas de páginas HTML (no API).
-// =============================================
+/* ============================================= */
+/* CONTADORVISITAS.JS - CONTADOR DE VISITAS      */
+/* ============================================= */
+/* Registra cada petición GET en la tabla         */
+/* page_views para poder mostrar estadísticas     */
+/* de tráfico en el dashboard de históricos.      */
+/* Solo registra rutas de páginas HTML (no API).  */
+/* ============================================= */
 
 const conexion = require('../database/conexion');
 
@@ -33,7 +33,7 @@ const contarVisita = (req, res, next) => {
             // No bloqueo la petición si falla el insert
         });
 
-        // Limpio registros de más de 30 días
+        // TODO: optimizar - este DELETE corre en cada petición; mover a un cron job diario
         conexion.query('DELETE FROM page_views WHERE fecha < DATE_SUB(NOW(), INTERVAL 30 DAY)', () => {});
     }
     next();

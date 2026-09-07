@@ -1,5 +1,5 @@
 // =============================================
-// LOGIN - JAVASCRIPT COMPARTIDO
+// LOGIN - Inicio de sesión (cliente y admin/aprendiz)
 // =============================================
 // Función para procesar el login desde los modales.
 // Se usa tanto en main.ejs como en productos.ejs.
@@ -129,8 +129,10 @@ async function procesarLogin(payload) {
 function configurarFormLogin(formulario, opciones) {
     if (!formulario) return;
 
+    // Callback opcional que se ejecuta si el login cliente termina bien
     const alLoginExitoso = (opciones && opciones.alLoginExitoso) || null;
 
+    // Obtener referencias de los campos del formulario de login
     const tipoCliente = document.getElementById('tipo_cliente');
     const tipoUsuario = document.getElementById('tipo_usuario');
     const clienteFields = document.getElementById('clienteFields');

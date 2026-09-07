@@ -7,6 +7,7 @@
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Obtener referencias del DOM: modales, formulario y elementos de mensaje
     const ventanaOlvide = document.getElementById('modalOlvide');
     const ventanaLogin = document.getElementById('modalLogin');
     const formularioOlvide = document.getElementById('formOlvide');

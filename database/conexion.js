@@ -1,11 +1,11 @@
-// =============================================
-// CONEXIÓN A LA BASE DE DATOS
-// =============================================
-// Acá me conecto a MySQL usando mysql2.
-// Las credenciales las saco del archivo .env
-// y si no hay nada ahí uso valores por defecto
-// para que no explote en desarrollo.
-// =============================================
+/* ============================================= */
+/* CONEXION.JS - CONEXIÓN A LA BASE DE DATOS     */
+/* ============================================= */
+/* Acá me conecto a MySQL usando mysql2. Las      */
+/* credenciales las saco del archivo .env y si no  */
+/* hay nada ahí uso valores por defecto para que  */
+/* no explote en desarrollo.                     */
+/* ============================================= */
 
 const mysql = require('mysql2');
 const dbConfig = require('../config/database');

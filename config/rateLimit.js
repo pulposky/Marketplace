@@ -1,11 +1,11 @@
-// =============================================
-// CONFIGURACIÓN DE LÍMITES DE PETICIONES
-// =============================================
-// Definiciones reutilizables de express-rate-limit.
-// La general se usa en toda la app (app.js) y la
-// de auth se aplica a login/registro para frenar
-// la fuerza bruta.
-// =============================================
+/* ============================================= */
+/* RATELIMIT.JS - LÍMITES DE PETICIONES          */
+/* ============================================= */
+/* Definiciones reutilizables de                  */
+/* express-rate-limit. La general se usa en toda  */
+/* la app (app.js) y la de auth se aplica a       */
+/* login/registro para frenar la fuerza bruta.    */
+/* ============================================= */
 
 const rateLimit = require('express-rate-limit');
 

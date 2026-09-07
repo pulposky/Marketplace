@@ -1,18 +1,22 @@
-// =============================================
-// SERVIDOR PRINCIPAL - MARKETPLACE SENA
-// =============================================
-// Es el punto de entrada: primero carga las
-// variables del .env, luego levanta la app Express
-// (definida en app.js) y por último arranca los
-// trabajos en segundo plano y el puerto de escucha.
-// =============================================
+/* ============================================= */
+/* SERVER.JS - SERVIDOR PRINCIPAL                */
+/* ============================================= */
+/* Es el punto de entrada: primero carga las      */
+/* variables del .env, luego levanta la app       */
+/* Express (definida en app.js) y por último      */
+/* arranca los trabajos en segundo plano y el    */
+/* puerto de escucha.                            */
+/* ============================================= */
+
+// Limpia la consola al iniciar para tener un log de desarrollo más limpio
 console.clear();
 
 const dotenv = require('dotenv');
 
-// Cargo las variables del .env (DB_HOST, PORT, etc.)
+// Cargo las variables de entorno del archivo .env (DB_HOST, PORT, etc.)
 dotenv.config();
 
+// Instancia principal de Express configurada con rutas y middlewares
 const app = require('./app');
 
 // -----------------------------------------------
@@ -24,30 +28,38 @@ const app = require('./app');
 const expirarApartados = require('./services/expirarApartados');
 expirarApartados.iniciar();
 
+// Configuración del puerto (prioriza .env, por defecto usa 3000)
 const PORT = Number(process.env.PORT) || 3000;
 
-// Arranco el servidor, si no hay puerto en .env uso el 3000
+// Arranco la escucha del servidor HTTP
 const server = app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
 });
 
-// Manejo de errores no capturados (evita que se caiga sin avisar)
+// Manejo de errores no capturados globales (evita que la app muera en silencio)
 process.on('uncaughtException', (err) => {
-    console.error('Error no capturado:', err);
+    console.error('Error no capturado (uncaughtException):', err);
 });
 
 process.on('unhandledRejection', (reason) => {
-    console.error('Promesa rechazada sin manejar:', reason);
+    console.error('Promesa rechazada sin manejar (unhandledRejection):', reason);
 });
 
-// Cierre limpio al detener el servidor (Ctrl+C, SIGTERM)
-const apagar = (senal) => {
-    console.log(`\nRecibido ${senal}, cerrando servidor...`);
+// Cierre limpio del proceso (Graceful Shutdown) ante señales de detención (Ctrl+C, SIGTERM)
+const apagar = (señal) => {
+    console.log(`\nRecibido ${señal}, cerrando servidor de forma limpia...`);
+    
     server.close(() => {
+        console.log('Servidor Express cerrado.');
         process.exit(0);
     });
-    // Falla de seguridad: si no cierra en 10s, fuerza la salida
-    setTimeout(() => process.exit(1), 10000).unref();
+    
+    // Mecanismo de seguridad: si las conexiones tardan más de 10s en cerrarse, fuerza la salida
+    setTimeout(() => {
+        console.error('Forzando la salida del proceso por exceso de tiempo.');
+        process.exit(1);
+    }, 10000).unref();
 };
+
 process.on('SIGINT', () => apagar('SIGINT'));
 process.on('SIGTERM', () => apagar('SIGTERM'));

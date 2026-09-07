@@ -1,13 +1,14 @@
-// =============================================
-// CONFIGURACIÓN DE LA SESIÓN
-// =============================================
-// Opciones de express-session: la clave secreta
-// y la cookie de sesión. Se importa en app.js.
-// =============================================
+/* ============================================= */
+/* SESSION.JS - CONFIGURACIÓN DE LA SESIÓN        */
+/* ============================================= */
+/* Opciones de express-session: la clave secreta  */
+/* y la cookie de sesión. Se importa en app.js.   */
+/* ============================================= */
 
 const esProduccion = process.env.NODE_ENV === 'production';
 
 module.exports = {
+    // TODO: en producción la clave secreta DEBE venir de .env, eliminar el fallback hardcoded
     secret: process.env.SESSION_SECRET || 'mi_clave_secreta',
     resave: false,
     saveUninitialized: false,

@@ -1,9 +1,9 @@
-// =============================================
-// UTILIDAD: IMÁGENES DE PRODUCTOS
-// =============================================
-// Une cada producto con su foto en la carpeta
-// /img/upload comparando los nombres normalizados.
-// =============================================
+/* ============================================= */
+/* IMAGENES.JS - UTILIDAD DE IMÁGENES            */
+/* ============================================= */
+/* Une cada producto con su foto en la carpeta    */
+/* /img/upload comparando los nombres normalizados. */
+/* ============================================= */
 
 const fs = require('fs');
 const path = require('path');

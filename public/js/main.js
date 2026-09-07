@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cargarCarrusel();
 
-    // Referencias a los modales
+    // Obtener referencias del DOM: modales, botones e inputs del formulario de apartado
     const ventanaApartar = document.getElementById('modalApartarProducto');
     const ventanaLogin = document.getElementById('modalLogin');
 

@@ -1,11 +1,11 @@
-// =============================================
-// MIDDLEWARE: VALIDACIÓN Y SANEAMIENTO DE INPUTS
-// =============================================
-// Usa express-validator para validar y limpiar
-// los datos que llegan del frontend (login,
-// registro y formularios). Evita datos corruptos
-// y reduce el riesgo de inyección.
-// =============================================
+/* ============================================= */
+/* VALIDAR.JS - VALIDACIÓN Y SANEAMIENTO        */
+/* ============================================= */
+/* Usa express-validator para validar y limpiar   */
+/* los datos que llegan del frontend (login,      */
+/* registro y formularios). Evita datos corruptos */
+/* y reduce el riesgo de inyección.              */
+/* ============================================= */
 
 const { body, validationResult } = require('express-validator');
 

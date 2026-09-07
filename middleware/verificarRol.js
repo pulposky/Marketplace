@@ -1,12 +1,12 @@
-// =============================================
-// MIDDLEWARE DE AUTENTICACIÓN POR ROL
-// =============================================
-// Igual que verificarAdmin pero permite restringir
-// rutas a roles específicos (p. ej. solo 'admin').
-// Recibe la lista de roles permitidos y, si el
-// usuario no está logueado o no tiene el rol,
-// responde 401/403 en APIs o redirige en páginas.
-// =============================================
+/* ============================================= */
+/* VERIFICARROL.JS - AUTENTICACIÓN POR ROL       */
+/* ============================================= */
+/* Permite restringir rutas a roles específicos   */
+/* (p. ej. solo 'admin'). Recibe la lista de      */
+/* roles permitidos y, si el usuario no está      */
+/* logueado o no tiene el rol, responde 401/403   */
+/* en APIs o redirige en páginas.                */
+/* ============================================= */
 
 const verificarRol = (rolesPermitidos) => {
     const permitidos = (Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos])

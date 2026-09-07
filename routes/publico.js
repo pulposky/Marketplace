@@ -1,10 +1,11 @@
-// =============================================
-// ROUTER DE ÁREA PÚBLICA
-// =============================================
-// Páginas y APIs que cualquier visitante puede
-// usar sin sesión: inicio, catálogo, imágenes del
-// carrusel, lista de productos y verificar sesión.
-// =============================================
+/* ============================================= */
+/* PUBLICO.JS - ROUTER DE ÁREA PÚBLICA           */
+/* ============================================= */
+/* Páginas y APIs que cualquier visitante puede   */
+/* usar sin sesión: inicio, catálogo, imágenes    */
+/* del carrusel, lista de productos y verificar   */
+/* sesión.                                       */
+/* ============================================= */
 
 const express = require('express');
 const router = express.Router();

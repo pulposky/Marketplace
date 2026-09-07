@@ -1,3 +1,8 @@
+/* ============================================= */
+/* APARTADO CONTROLLER - Ciclo de vida de        */
+/* apartados: crear, confirmar, entregar,        */
+/* cancelar (individual y por lote).             */
+/* ============================================= */
 // =============================================
 // CONTROLADOR DE APARTADOS
 // =============================================
@@ -106,8 +111,10 @@ const ApartadoController = {
                     () => {}
                 );
 
-                // 3. Descuento el límite de venta con WHERE para evitar carrera.
-                //    Si affectedRows = 0, otro usuario tomó el stock primero.
+                // FIXME: El stock se descuenta DESPUÉS de crear el apartado.
+                // Si hay concurrencia alta, dos clientes pueden crear apartados
+                // con el mismo stock. Un SELECT FOR UPDATE o una transacción
+                // con nivel SERIALIZABLE sería más seguro.
                 ProductoModel.restarLimiteVenta(productoId, unidadesARestar, (errorUpdate, resultadoUpdate) => {
                     if (errorUpdate) {
                         console.error('Error actualizando límite tras apartado:', errorUpdate);
@@ -279,6 +286,9 @@ const ApartadoController = {
                             // Sin stock: revierto todo lo creado en este lote
                             idsCreados.forEach((idCreado, i) => {
                                 ApartadoModel.cancelarApartadoCliente(idCreado, () => {});
+                                // FIXME: No se devuelve el stock del último ítem (el que falló)
+                                // porque el loop lo salta con la condición i < length - 1.
+                                // Revisar si esto causa loss de stock.
                                 if (i < idsCreados.length - 1) {
                                     ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
                                 }

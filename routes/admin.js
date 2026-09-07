@@ -1,10 +1,10 @@
-// =============================================
-// ROUTER DE ÁREA ADMIN
-// =============================================
-// Panel de administración y todas sus APIs:
-// productos, apartados/pedidos, clientes,
-// notificaciones, reportes y estadísticas.
-// =============================================
+/* ============================================= */
+/* ADMIN.JS - ROUTER DE ÁREA ADMIN               */
+/* ============================================= */
+/* Panel de administración y todas sus APIs:      */
+/* productos, apartados/pedidos, clientes,        */
+/* notificaciones, reportes y estadísticas.       */
+/* ============================================= */
 
 const express = require('express');
 const router = express.Router();
