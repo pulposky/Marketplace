@@ -183,7 +183,7 @@ Cuando el autor no está seguro o deja algo a medias, lo anota en el código (ej
 | **Sesiones** | `express-session` | Estado del usuario logueado con cookie |
 | **Seguridad** | `helmet`, `express-rate-limit`, `express-validator`, `bcryptjs` | Cabeceras, fuerza bruta, sanitización e hashing |
 | **CSRF** | Middleware propio (`middleware/csrf.js`) | Protección contra falsificación de peticiones |
-| **Excel** | `exceljs` | Exportación de analytics con gráficos OOXML |
+| **PDF** | `pdfkit` | Exportación de la analítica a PDF con tablas y estados vacíos |
 | **Compresión** | `compression` (gzip) | Respuestas más livianas |
 | **Env** | `dotenv` | Variables de entorno (`BD_*`, `PORT`, etc.) |
 | **Frontend** | `HTML + CSS + JS vanilla` | Sin frameworks; ligero y sin build step |
@@ -550,7 +550,7 @@ Exporta CSV (`;` como separador, BOM UTF-8 para tildes): pedidos y clientes.
 
 ### `historico/historicosApiController.js`
 
-Devuelve datos de analytics como JSON y `exportarHistoricos` genera un **Excel con gráficos OOXML** (exceljs), con varias hojas y estilos.
+Devuelve datos de analytics como JSON y `exportarHistoricos` genera un **PDF** (pdfkit) con un resumen y una tabla por sección, mostrando un mensaje cuando no hay datos.
 
 ### `carrusel/carruselApiController.js`
 

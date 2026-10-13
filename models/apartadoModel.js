@@ -81,7 +81,6 @@ const ApartadoModel = {
     //   'historial' -> entregados + cancelados (pedidos terminados)
     //   otro / 'todos' -> historial completo
     // Devuelve listado ordenado por id_apartado descendente.
-    // TODO: validar que el parámetro 'estado' sea uno de los valores permitidos antes de armar la consulta SQL
     obtenerTodosApartados: (estado, callback) => {
         if (typeof estado === 'function') {
             callback = estado;

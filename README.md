@@ -1,40 +1,66 @@
 # 🛒 Marketplace
 
-Plataforma web para la reserva de productos agrícolas y procesados. Los clientes exploran el catálogo, apartan productos en línea y luego acuden al punto de venta a pagar y reclamar su pedido.
+**Tu catálogo en línea con reserva de productos y pago en tienda.**
+
+Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Marketplace** es una plataforma web lista para producción donde tus clientes exploran el catálogo, **apartan** (reservan) productos en segundos y pasan al punto de venta a pagar y reclamar su pedido. Tú administras todo desde un panel con estadísticas, ofertas y control de inventario **en tiempo real**.
+
+> 💡 **Ideal para:** tiendas de barrio, distribuidoras, fruvers, agroindustria y cualquier negocio que quiera vender en línea hoy y cobrar en tienda.
+
+[![Node.js](https://img.shields.io/badge/Node.js-v16%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-v8%2B-4479A1?logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/mysql/)
+[![EJS](https://img.shields.io/badge/EJS-templates-B4CA65?logo=ejs&logoColor=black)](https://ejs.co/)
+[![License](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contribuir)
 
 ---
 
-## Tabla de contenidos
+## 📑 Tabla de contenidos
 
-- [✨ Características](#-características)
+- [✨ ¿Por qué elegir Marketplace?](#-por-qué-elegir-marketplace)
+- [🚀 Características](#-características)
 - [🛠️ Tecnologías](#️-tecnologías)
 - [📦 Requisitos previos](#-requisitos-previos)
 - [⚙️ Instalación](#️-instalación)
-- [🗄️ Base de datos](#️-base-de-datos)
+- [🗄️ Configuración de la base de datos](#️-configuración-de-la-base-de-datos)
 - [🚀 Ejecutar el servidor](#-ejecutar-el-servidor)
 - [📂 Estructura del proyecto](#-estructura-del-proyecto)
 - [🔌 Endpoints API](#-endpoints-api)
-- [🖥️ Sistema POS vinculado](#️-sistema-pos-vinculado)
+- [🔗 Integración con el punto de venta](#-integración-con-el-punto-de-venta)
 - [👤 Roles de usuario](#-roles-de-usuario)
 - [💡 Funcionalidades](#-funcionalidades)
+- [🤝 Contribuir](#-contribuir)
+- [📜 Licencia](#-licencia)
 
 ---
 
-## ✨ Características
+## ✨ ¿Por qué elegir Marketplace?
+
+- ⚡ **Monta y vende:** Node.js + Express + MySQL, sin frameworks pesados ni configuración compleja.
+- 📉 **Cero sobreventas:** el stock se descuenta solo al apartar y se libera automáticamente si el pedido expira.
+- 🧾 **Panel de administración completo:** productos, ofertas, pedidos, clientes y estadísticas en un solo lugar.
+- 📊 **Decisiones con datos:** ranking de productos más vendidos, mejores clientes, ventas por día y tráfico del sitio.
+- 🔗 **Conectado a tu punto de venta:** comparte la misma base de datos para sincronizar inventario y clientes entre el canal web y la tienda.
+- 📱 **Responsive y rápido:** funciona igual de bien en escritorio y en el celular del cliente.
+
+---
+
+## 🚀 Características
 
 | Función | Descripción |
 | --- | --- |
-| 🛍️**Catálogo dinámico** | Búsqueda en tiempo real y filtro por categorías |
-| 📦**Sistema de apartados** | Reserva de productos con descuento automático de stock |
-| 🥚**Manejo de huevos** | Conversión automática entre cubetas y unidades (1 cubeta = 30) |
-| 🎠**Carousel automático** | Carga imágenes desde una carpeta sin tocar código |
-| 🔔**Notificaciones** | Alertas en tiempo real para nuevos apartados |
-| 📊**Dashboard admin** | Estadísticas: ventas, productos top, clientes frecuentes, visitas |
-| 🔐**Autenticación** | Sesiones con roles (admin, empleado, cliente) |
-| 📱**Diseño responsivo** | Optimizado para escritorio y móvil |
-| 🔢**Registro de visitas** | Métricas de tráfico del marketplace |
-| ⚡**Gestión de stock** | Devolución automática al cancelar apartados |
-| 🏷️**Ofertas y descuentos** | Descuentos por producto, gestión desde el panel admin y precio capturado al apartar |
+| 🛍️ **Catálogo dinámico** | Búsqueda en tiempo real y filtro por categorías |
+| 📦 **Sistema de apartados** | Reserva de productos con descuento automático de stock |
+| 🥚 **Manejo de huevos** | Conversión automática entre cubetas y unidades (1 cubeta = 30) |
+| 🎠 **Carousel automático** | Carga imágenes desde una carpeta sin tocar código |
+| 🔔 **Notificaciones** | Alertas en tiempo real para nuevos apartados |
+| 📊 **Dashboard admin** | Estadísticas: ventas, productos top, clientes frecuentes, visitas |
+| 🔐 **Autenticación** | Sesiones con roles (admin, empleado, cliente) |
+| 📱 **Diseño responsivo** | Optimizado para escritorio y móvil |
+| 🔢 **Registro de visitas** | Métricas de tráfico del marketplace |
+| ⚡ **Gestión de stock** | Devolución automática al cancelar apartados |
+| 🏷️ **Ofertas y descuentos** | Descuentos por producto, gestión desde el panel admin y precio capturado al apartar |
+| ⏱️ **Expiración automática** | Los apartados sin confirmar se cancelan y liberan stock tras 1 hora |
 
 ---
 
@@ -53,61 +79,63 @@ Plataforma web para la reserva de productos agrícolas y procesados. Los cliente
 
 ## 📦 Requisitos previos
 
-- [![Node.js](https://img.shields.io/badge/Node.js-v16%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-- [![MySQL](https://img.shields.io/badge/MySQL-v8%2B-4479A1?logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/mysql/)
-- [![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white)](https://git-scm.com/)
+Antes de empezar necesitas tener instalado:
+
+- [![Node.js](https://img.shields.io/badge/Node.js-v16%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/) — Node.js 16 o superior
+- [![MySQL](https://img.shields.io/badge/MySQL-v8%2B-4479A1?logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/mysql/) — MySQL 8 o superior
+- [![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white)](https://git-scm.com/) — Git (opcional, para clonar)
 
 ---
 
 ## ⚙️ Instalación
 
 ```bash
-# 📥 Clonar el repositorio
+# 📥 1. Clona el repositorio
 git clone https://github.com/pulposky/Marketplace.git
 
-# 📂 Entrar a la carpeta
+# 📂 2. Entra a la carpeta del proyecto
 cd Marketplace
 
-# 📦 Instalar dependencias
+# 📦 3. Instala las dependencias
 npm install
 ```
 
 ---
 
-## 🗄️ Base de datos
+## 🗄️ Configuración de la base de datos
 
-### 1. Crear el archivo `.env`
+### 1. Crea tu archivo `.env`
+
+En la raíz del proyecto, crea un archivo `.env` con tus credenciales:
 
 ```env
-DB_HOST="localhost"
-DB_PORT=3306
-DB_USER="root"
-DB_PASSWORD="tu_contraseña"
-BD_DATABASE="sena_pdv"
+BD_HOST="localhost"
+BD_PORT=3306
+BD_USER="root"
+BD_PASSWORD="tu_contraseña"
+BD_DATABASE="marketplace"
 
 PORT=3000
 ```
 
-> ⚠️ Ojo: las credenciales usan prefijo `DB_` y solo el nombre de la base usa `BD_DATABASE` (así lo lee `database/conexion.js`).
+> ⚠️ Usa el nombre de base de datos que prefieras en `BD_DATABASE`. Solo asegúrate de que coincida con el nombre que crea el script de la base de datos.
 
-### 2. Ejecutar el script SQL
+### 2. Ejecuta el script SQL
+
+El script crea la base de datos y todas sus tablas automáticamente:
 
 ```bash
 mysql -u root -p < database/schema.sql
 ```
 
-> Si ya tienes una base de datos `sena_pdv` antigua (sin el estado `entregado`), ejecuta también la migración:
->
-> ```bash
-> mysql -u root -p < database/migracion_v2.sql
-> ```
+> ✅ ¿Todo listo? Al arrancar el servidor, la consola te confirmará la conexión con el mensaje **"Conexión al pool de base de datos establecida correctamente"**.
 
 ### 📋 Tablas creadas
 
 | Tabla | Sistema | Descripción |
 | --- | --- | --- |
 | `producto` | Compartida | Catálogo: precio, unidad, categoría, stock, `limite_venta` y oferta (`descuento`, fechas) |
-| `usuarios` | Compartida | Credenciales de admin/aprendiz (web) y cajeros (POS) |
+| `usuarios` | Compartida | Credenciales de admin/empleado (web) y cajeros (POS) |
 | `clientes` | Compartida | Registro de clientes de ambos canales |
 | `apartados` | Solo web | Reservas: pendiente → confirmado → entregado / cancelado (guarda `precio_aplicado`) |
 | `notificaciones` | Solo web | Alertas para el admin |
@@ -123,8 +151,16 @@ El script es **integrado**: crea las tablas de la web y también las del POS, to
 
 ## 🚀 Ejecutar el servidor
 
+### Producción
+
 ```bash
 npm start
+```
+
+### Desarrollo (reinicio automático con nodemon)
+
+```bash
+npm run dev
 ```
 
 Servidor disponible en: **http://localhost:3000**
@@ -138,6 +174,8 @@ Marketplace/
 ├── app.js                         # Construcción de la app Express (middlewares y rutas)
 ├── server.js                      # Punto de entrada (levanta app, job de expiración y puerto)
 ├── config/
+│   ├── database.js                # Configuración de la conexión MySQL
+│   ├── rateLimit.js               # Límite de peticiones por IP
 │   └── session.js                 # Configuración de la sesión
 ├── controllers/
 │   ├── sitio/
@@ -275,7 +313,7 @@ Marketplace/
 
 ---
 
-## 🖥️ Sistema POS (vinculado)
+## 🔗 Integración con el punto de venta
 
 El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplicación de escritorio desarrollada en **Python** con **Flet** y **MySQL**.
 
@@ -298,7 +336,7 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 | :---: | --- |
 | 👤 **Cliente** | Explorar catálogo, buscar, apartar, cancelar apartados |
 | 👨‍💼 **Empleado** | Panel admin, gestión de productos, pedidos y estadísticas |
-| 👨‍💼 **Admin** | Control total: productos, pedidos, usuarios, notificaciones |
+| 🛡️ **Admin** | Control total: productos, pedidos, usuarios, notificaciones |
 
 ---
 
@@ -312,7 +350,7 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 4. Se crea el apartado y se descuenta del stock.
 5. El admin recibe una notificación.
 6. El admin confirma el apartado.
-7. El cliente va al punto de vista a pagar y reclamar su pedido.
+7. El cliente va al punto de venta a pagar y reclamar su pedido.
 
 ### 🥚 Manejo de huevos
 
@@ -341,7 +379,32 @@ Formatos soportados: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`
 
 ---
 
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Si tienes una idea, un reporte de bug o una mejora:
+
+1. Haz un **fork** del proyecto.
+2. Crea tu rama: `git checkout -b feature/mi-mejora`.
+3. Haz **commit** de tus cambios: `git commit -m "feat: mi mejora"`.
+4. Sube tu rama: `git push origin feature/mi-mejora`.
+5. Abre un **Pull Request** 🚀
+
+También puedes abrir un [issue](https://github.com/pulposky/Marketplace/issues) si encuentras algún problema.
+
+---
+
 ## 📜 Licencia
 
+Este proyecto está bajo la licencia **ISC**. Consulta el archivo de licencia para más detalles.
+
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-```
+
+---
+
+<div align="center">
+
+**⭐ Si este proyecto te resulta útil, dale una estrella en GitHub. ¡Ayuda mucho! ⭐**
+
+Hecho con ❤️ para emprendedores que quieren vender en línea.
+
+</div>

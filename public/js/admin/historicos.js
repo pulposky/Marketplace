@@ -21,6 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
         '#fce7f3', '#fbcfe8', '#f9a8d4'
     ];
 
+    // Muestra un mensaje dentro de la tarjeta cuando no hay datos
+    // (o cuando falla la carga), en lugar de dejar el gráfico vacío.
+    const mostrarVacio = (idCanvas, mensaje) => {
+        const canvas = document.getElementById(idCanvas);
+        if (!canvas) return;
+        const contenedor = canvas.closest('.grafico-contenedor');
+        if (!contenedor) return;
+
+        // Si ya hay un mensaje, no duplicar
+        if (contenedor.querySelector('.grafico-vacio')) return;
+
+        canvas.style.display = 'none';
+        const aviso = document.createElement('div');
+        aviso.className = 'grafico-vacio';
+        aviso.innerHTML = `<span>📊</span><p>${mensaje}</p>`;
+        contenedor.appendChild(aviso);
+    };
+
     // Opciones comunes para gráficos de barras
     const opcionesBarras = {
         responsive: true,
@@ -47,7 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/admin/historicos/productos')
         .then(r => r.json())
         .then(data => {
-            if (!data.length) return;
+            if (!data.length) {
+                return mostrarVacio('graficoProductos', 'Aún no hay productos entregados.');
+            }
             const ctx = document.getElementById('graficoProductos').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
@@ -67,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         })
-        .catch(() => {});
+        .catch(() => mostrarVacio('graficoProductos', 'No se pudieron cargar los datos.'));
 
     // ==========================================
     // GRÁFICO: Clientes que más compran
@@ -75,7 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/admin/historicos/clientes')
         .then(r => r.json())
         .then(data => {
-            if (!data.length) return;
+            if (!data.length) {
+                return mostrarVacio('graficoClientes', 'Aún no hay clientes con pedidos entregados.');
+            }
             const ctx = document.getElementById('graficoClientes').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
@@ -94,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 options: opcionesBarras
             });
         })
-        .catch(() => {});
+        .catch(() => mostrarVacio('graficoClientes', 'No se pudieron cargar los datos.'));
 
     // ==========================================
     // GRÁFICO: Ventas por día (línea)
@@ -102,7 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/admin/historicos/ventas-dia')
         .then(r => r.json())
         .then(data => {
-            if (!data.length) return;
+            if (!data.length) {
+                return mostrarVacio('graficoVentasDia', 'Sin ventas entregadas en los últimos 30 días.');
+            }
             const ctx = document.getElementById('graficoVentasDia').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
@@ -140,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         })
-        .catch(() => {});
+        .catch(() => mostrarVacio('graficoVentasDia', 'No se pudieron cargar los datos.'));
 
     // ==========================================
     // GRÁFICO: Visitas por día (línea)
@@ -148,7 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/admin/historicos/visitas-dia')
         .then(r => r.json())
         .then(data => {
-            if (!data.length) return;
+            if (!data.length) {
+                return mostrarVacio('graficoVisitasDia', 'Sin visitas registradas en los últimos 30 días.');
+            }
             const ctx = document.getElementById('graficoVisitasDia').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
@@ -186,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         })
-        .catch(() => {});
+        .catch(() => mostrarVacio('graficoVisitasDia', 'No se pudieron cargar los datos.'));
 
     // ==========================================
     // GRÁFICO: Estado de pedidos (dona)
@@ -194,7 +220,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/admin/historicos/estados')
         .then(r => r.json())
         .then(data => {
-            if (!data.length) return;
+            if (!data.length) {
+                return mostrarVacio('graficoEstados', 'Aún no hay pedidos registrados.');
+            }
             const ctx = document.getElementById('graficoEstados').getContext('2d');
             const coloresDona = {
                 'pendiente': '#f59e0b',
@@ -229,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         })
-        .catch(() => {});
+        .catch(() => mostrarVacio('graficoEstados', 'No se pudieron cargar los datos.'));
 
     // ==========================================
     // GRÁFICO: Rutas más visitadas
@@ -237,7 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/admin/historicos/rutas')
         .then(r => r.json())
         .then(data => {
-            if (!data.length) return;
+            if (!data.length) {
+                return mostrarVacio('graficoRutas', 'Sin rutas visitadas en los últimos 30 días.');
+            }
             const ctx = document.getElementById('graficoRutas').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
@@ -256,6 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 options: opcionesBarras
             });
         })
-        .catch(() => {});
+        .catch(() => mostrarVacio('graficoRutas', 'No se pudieron cargar los datos.'));
 
 });
