@@ -10,16 +10,22 @@
 const mysql = require('mysql2');
 const dbConfig = require('../config/database');
 
-// Creo la conexión con los datos del .env (centralizados en config/database)
-const conexion = mysql.createConnection(dbConfig);
+// Creo el pool de conexiones con los datos del .env (centralizados en config/database)
+const conexion = mysql.createPool({
+    ...dbConfig,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
-// Probamos la conexión al arrancar, si falla avisa en consola
-conexion.connect((error) => {
+// Probamos la conexión al arrancar pidiendo una conexión al pool
+conexion.getConnection((error, conn) => {
     if (error) {
         console.error('Error de conexión a la base de datos:', error);
         return;
     }
-    console.log('Conexión a la base de datos establecida correctamente');
+    conn.release();
+    console.log('Conexión al pool de base de datos establecida correctamente');
 });
 
 module.exports = conexion;
