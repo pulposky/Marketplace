@@ -54,7 +54,8 @@ Esto es clave para entender todo el código: hay **tres actores** y **un ciclo d
 | Actor | Rol | Permisos |
 |-------|-----|----------|
 | 👤 **Cliente** | Explora el catálogo, aparta productos, cancela sus reservas, edita su perfil. | Acceso a: catálogo, perfil, mis apartados |
-| 🔧 **Admin / Aprendiz** | Gestiona el panel: productos, ofertas, pedidos (confirma/entrega/cancela), clientes, estadísticas. | Admin total / Aprendiz con acceso limitado |
+| 🔧 **Admin / Supervisor / Promotor / Técnico** | Gestiona el panel: productos, ofertas, pedidos (confirma/entrega/cancela), clientes, estadísticas. | Acceso total al panel |
+| 🎓 **Aprendiz** | Gestiona productos, ofertas y pedidos. | Acceso limitado (sin clientes, analytics, carrusel ni reportes) |
 | 🖥️ **POS (Python)** | Cobra y factura presencialmente; marca apartados como `entregado`. | Comparte la BD MySQL, no tiene interfaz web |
 
 ---
@@ -286,7 +287,7 @@ Marketplace/
 │
 ├── middleware/                      # ─── Funciones pre-controller ───
 │   ├── verificarUsuario.js          #   Exige sesión (protegerRuta)
-│   ├── verificarAdmin.js            #   Exige rol admin/aprendiz
+│   ├── verificarAdmin.js            #   Exige rol del panel (admin/supervisor/promotor/técnico/aprendiz)
 │   ├── verificarRol.js              #   Exige un rol específico (factory)
 │   ├── csrf.js                      #   Genera y valida token CSRF
 │   ├── validar.js                   #   Validación con express-validator
@@ -297,6 +298,7 @@ Marketplace/
 │
 ├── utils/                           # ─── Helpers compartidos ───
 │   ├── helpers.js                   #   normalizarCategorias, calcularPrecioOferta
+│   ├── roles.js                     #   Roles del panel (esRolPanel, esRolAdmin, ROLES_ADMIN)
 │   └── imagenes.js                  #   Asociación producto ↔ imagen
 │
 ├── public/                          # ─── Todo lo que se sirve al navegador ───
@@ -579,14 +581,16 @@ Sube/elimina imágenes de `public/img/carrusel` con prefijo numérico de orden.
 | `index.js` | Une `publico`, `cliente` y `admin` | — |
 | `publico.js` | Raíz, catálogo, detalle, login/logout/registro + APIs públicas | `limiteAuth` + `validarLogin`/`validarRegistro` |
 | `cliente.js` | Perfil, mis apartados, apartar, cancelar, notificaciones | `protegerRuta` |
-| `admin.js` | Páneas del panel + todas las APIs de admin | `verificarAdmin` o `verificarRol('admin')` |
+| `admin.js` | Páneas del panel + todas las APIs de admin | `verificarAdmin` o `verificarRol(ROLES_ADMIN)` |
 
 ### Detalle de roles en rutas
 
 | Middleware | Permite | Excluye |
 |------------|---------|---------|
-| `verificarAdmin` | admin **o** aprendiz | — |
-| `verificarRol('admin')` | **solo** admin | Aprendiz (no gestiona clientes, analytics, carrusel, reportes) |
+| `verificarAdmin` | admin, supervisor, promotor, técnico **o** aprendiz | — |
+| `verificarRol(ROLES_ADMIN)` | admin, supervisor, promotor y técnico | Aprendiz (no gestiona clientes, analytics, carrusel, reportes) |
+
+> **📌 Única fuente de verdad:** la lista de roles vive en `utils/roles.js` (`ROLES_ADMIN`, `ROLES_PANEL`, `esRolAdmin`, `esRolPanel`). Para sumar un rol nuevo, se agrega en `EQUIVALENCIAS_ROL` y en `ROLES_ADMIN`/`ROLES_PANEL` y no hay que tocar el resto de los controllers ni las vistas.
 
 > **⚠️ Nota de orden en Express:** en `admin.js`, la ruta de precio (`/ofertas/precio/:id`) se declara **antes** que la genérica (`/ofertas/:id`) para que Express la matchee primero.
 
@@ -597,12 +601,12 @@ Sube/elimina imágenes de `public/img/carrusel` con prefijo numérico de orden.
 | Middleware | Archivo | Descripción |
 |------------|---------|-------------|
 | `protegerRuta` | `verificarUsuario.js` | Sin sesión → 401 JSON (AJAX) o redirige `/` (página) |
-| `verificarAdmin` | `verificarAdmin.js` | Sin sesión o rol → 401/403 JSON o redirección |
-| `verificarRol(rol)` | `verificarRol.js` | **Factory** que devuelve middleware para roles concretos. Detecta API por `req.xhr`, ruta `/api/` o header `accept` |
+| `verificarAdmin` | `verificarAdmin.js` | Exige un rol del panel (`esRolPanel`); sin sesión o rol → 401/403 JSON o redirección |
+| `verificarRol(rol)` | `verificarRol.js` | **Factory** que devuelve middleware para roles concretos (normaliza con `rolCanonico`). Detecta API por `req.xhr`, ruta `/api/` o header `accept` |
 | `iniciarCsrf` | `csrf.js` | Expone token a vistas (`res.locals.csrfToken`) |
 | `verificarCsrf` | `csrf.js` | Exige token (cabecera `x-csrf-token` o campo `_csrf`) en POST/PUT/PATCH/DELETE. Si no → 403 JSON |
 | `validarLogin/Registro` | `validar.js` | Reglas de `express-validator`. Errores en formato `{ ok, tipo, mensaje }` |
-| `contadorVisitas` | `contadorVisitas.js` | Inserta en `page_views` (solo GET, no admin, no `/api/`, no archivos con `.`). Limpia registros > 30 días |
+| `contadorVisitas` | `contadorVisitas.js` | Inserta en `page_views` (solo GET, no roles del panel, no `/api/`, no archivos con `.`). Limpia registros > 30 días |
 
 ---
 
@@ -718,7 +722,7 @@ Lógica del catálogo con carrito y **apartado en lote** (`/api/apartar-lote`).
 | `rol` | VARCHAR | Rol del usuario |
 | `password` | VARCHAR | Hash bcrypt (puede ser NULL si nunca creó contraseña) |
 
-#### `usuarios` (admin/aprendiz)
+#### `usuarios` (personal del panel)
 
 | Columna | Tipo | Descripción |
 |---------|------|------------|
@@ -726,7 +730,7 @@ Lógica del catálogo con carrito y **apartado en lote** (`/api/apartar-lote`).
 | `nombre` | VARCHAR | Nombre |
 | `usuario` | VARCHAR | Usuario para login |
 | `password` | VARCHAR | Hash bcrypt |
-| `rol` | VARCHAR | `admin` o `aprendiz` |
+| `rol` | VARCHAR | `Administrador`, `Supervisor`, `Promotor`, `Técnico` o `Aprendiz` (también acepta variantes en minúscula/sin tilde) |
 
 > **Usuario por defecto:** `admin` / `admin123`
 
@@ -895,10 +899,17 @@ El UPDATE ajusta `estado` y `limite_venta` a la vez, evaluando `limite_venta - c
 
 ### 18.6 Restricciones por rol
 
+Los roles del panel se centralizan en `utils/roles.js`.
+
 | Rol | Permisos |
 |-----|----------|
-| **Admin** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
+| **Administrador** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
+| **Supervisor** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
+| **Promotor** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
+| **Técnico** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
 | **Aprendiz** | Productos, ofertas, pedidos (NO clientes, analytics, carrusel, reportes) |
+
+> **🔑 Cómo entrar:** son usuarios de la tabla `usuarios` (login por `usuario` + `password`, no por documento). Al iniciar sesión se redirigen a `/admin`.
 
 ---
 

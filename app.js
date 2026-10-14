@@ -13,6 +13,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
 const { iniciarCsrf, verificarCsrf } = require('./middleware/csrf');
+const { esRolAdmin, esRolPanel } = require('./utils/roles');
 
 const app = express();
 
@@ -44,6 +45,14 @@ app.use(express.static('public'));
 // Configuro EJS como motor de plantillas, las vistas están en public/views
 app.set('views', path.join(__dirname, 'public', 'views'));
 app.set('view engine', 'ejs');
+
+// Expongo los helpers de roles a todas las vistas EJS
+// (p. ej. esRolAdmin(usuario.role) para mostrar secciones)
+app.use((req, res, next) => {
+    res.locals.esRolAdmin = esRolAdmin;
+    res.locals.esRolPanel = esRolPanel;
+    next();
+});
 
 // Esto me permite leer formularios HTML y también JSON que mande el frontend con fetch
 // (el límite grande es para subir imágenes de producto en base64)

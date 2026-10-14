@@ -37,8 +37,7 @@
             <% if (usuario) { %>
                 <nav class="navegacion-navbar">
                     <ul class="lista-menu">
-                        <% const rolNav=String(usuario.role || '' ).trim().toLowerCase(); %>
-                            <% if (rolNav !=='admin' && rolNav !=='aprendiz' ) { %>
+                        <% if (!esRolPanel(usuario.role)) { %>
                                 <li class="item-menu requiere-login">
                                     <a href="/perfil" class="btn-perfil-nav">Mi Perfil</a>
                                 </li>

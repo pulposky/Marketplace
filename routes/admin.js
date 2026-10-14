@@ -22,6 +22,7 @@ const ReportesController = require('../controllers/reportesController');
 const verificarAdmin = require('../middleware/verificarAdmin');
 const verificarRol = require('../middleware/verificarRol');
 const noCache = require('../middleware/noCache');
+const { ROLES_ADMIN } = require('../utils/roles');
 
 router.use(noCache);
 
@@ -35,12 +36,13 @@ router.get('/admin/pedidos', verificarAdmin, AdminVistasController.mostrarPedido
 // Historial: pedidos confirmados, entregados y cancelados (no pendientes)
 router.get('/admin/historial-pedidos', verificarAdmin, AdminVistasController.mostrarHistorialPedidos);
 
-// Secciones exclusivas del admin (el aprendiz no gestiona
-// clientes, analítica ni carrusel; sí gestiona ofertas)
+// Secciones exclusivas del personal con acceso total
+// (admin, supervisor, promotor y técnico; el aprendiz no
+// gestiona clientes, analítica ni carrusel; sí gestiona ofertas)
 router.get('/admin/ofertas', verificarAdmin, AdminVistasController.mostrarGestionOfertas);
-router.get('/admin/historicos', verificarRol('admin'), HistoricosVistasController.mostrarHistoricos);
-router.get('/admin/clientes', verificarRol('admin'), AdminVistasController.mostrarGestionClientes);
-router.get('/admin/carrusel', verificarRol('admin'), CarruselVistasController.mostrarGestionCarrusel);
+router.get('/admin/historicos', verificarRol(ROLES_ADMIN), HistoricosVistasController.mostrarHistoricos);
+router.get('/admin/clientes', verificarRol(ROLES_ADMIN), AdminVistasController.mostrarGestionClientes);
+router.get('/admin/carrusel', verificarRol(ROLES_ADMIN), CarruselVistasController.mostrarGestionCarrusel);
 
 // -----------------------------------------------
 // API DE PRODUCTOS
@@ -84,8 +86,8 @@ router.patch('/api/admin/apartados/cancelar/:id', verificarAdmin, ApartadoContro
 // -----------------------------------------------
 // GET: lista de clientes con sus compras; acepta ?busqueda= para filtrar
 // PATCH: actualiza nombre, dirección y teléfono de un cliente
-router.get('/api/admin/clientes', verificarRol('admin'), AdminApiController.listarClientes);
-router.patch('/api/admin/clientes/:id', verificarRol('admin'), AdminApiController.actualizarCliente);
+router.get('/api/admin/clientes', verificarRol(ROLES_ADMIN), AdminApiController.listarClientes);
+router.patch('/api/admin/clientes/:id', verificarRol(ROLES_ADMIN), AdminApiController.actualizarCliente);
 
 // -----------------------------------------------
 // API DE CARRUSEL
@@ -93,15 +95,15 @@ router.patch('/api/admin/clientes/:id', verificarRol('admin'), AdminApiControlle
 // Solo el admin gestiona las imágenes de la portada.
 // POST subir: recibe un dataURL base64 y la guarda en img/carrusel
 // POST eliminar: borra una imagen de la carpeta del carrusel
-router.post('/api/admin/carrusel/subir', verificarRol('admin'), CarruselApiController.subirImagen);
-router.post('/api/admin/carrusel/eliminar', verificarRol('admin'), CarruselApiController.eliminarImagen);
+router.post('/api/admin/carrusel/subir', verificarRol(ROLES_ADMIN), CarruselApiController.subirImagen);
+router.post('/api/admin/carrusel/eliminar', verificarRol(ROLES_ADMIN), CarruselApiController.eliminarImagen);
 
 // -----------------------------------------------
 // API DE REPORTES CSV
 // -----------------------------------------------
 // Descargan un archivo .csv con todos los pedidos o clientes
-router.get('/api/admin/reportes/pedidos.csv', verificarRol('admin'), ReportesController.exportarPedidosCSV);
-router.get('/api/admin/reportes/clientes.csv', verificarRol('admin'), ReportesController.exportarClientesCSV);
+router.get('/api/admin/reportes/pedidos.csv', verificarRol(ROLES_ADMIN), ReportesController.exportarPedidosCSV);
+router.get('/api/admin/reportes/clientes.csv', verificarRol(ROLES_ADMIN), ReportesController.exportarClientesCSV);
 
 // -----------------------------------------------
 // API DE NOTIFICACIONES
@@ -117,12 +119,12 @@ router.patch('/api/admin/notificaciones/todas-leidas', verificarAdmin, Notificac
 // API DE HISTÓRICOS / ESTADÍSTICAS
 // -----------------------------------------------
 // Solo el admin ve analítica y reportes.
-router.get('/api/admin/historicos/productos', verificarRol('admin'), HistoricosApiController.apiProductosMasVendidos);
-router.get('/api/admin/historicos/clientes', verificarRol('admin'), HistoricosApiController.apiClientesQueMasCompran);
-router.get('/api/admin/historicos/estados', verificarRol('admin'), HistoricosApiController.apiPedidosPorEstado);
-router.get('/api/admin/historicos/ventas-dia', verificarRol('admin'), HistoricosApiController.apiVentasPorDia);
-router.get('/api/admin/historicos/visitas-dia', verificarRol('admin'), HistoricosApiController.apiVisitasPorDia);
-router.get('/api/admin/historicos/rutas', verificarRol('admin'), HistoricosApiController.apiVisitasPorRuta);
-router.get('/api/admin/historicos/exportar', verificarRol('admin'), HistoricosApiController.exportarHistoricos);
+router.get('/api/admin/historicos/productos', verificarRol(ROLES_ADMIN), HistoricosApiController.apiProductosMasVendidos);
+router.get('/api/admin/historicos/clientes', verificarRol(ROLES_ADMIN), HistoricosApiController.apiClientesQueMasCompran);
+router.get('/api/admin/historicos/estados', verificarRol(ROLES_ADMIN), HistoricosApiController.apiPedidosPorEstado);
+router.get('/api/admin/historicos/ventas-dia', verificarRol(ROLES_ADMIN), HistoricosApiController.apiVentasPorDia);
+router.get('/api/admin/historicos/visitas-dia', verificarRol(ROLES_ADMIN), HistoricosApiController.apiVisitasPorDia);
+router.get('/api/admin/historicos/rutas', verificarRol(ROLES_ADMIN), HistoricosApiController.apiVisitasPorRuta);
+router.get('/api/admin/historicos/exportar', verificarRol(ROLES_ADMIN), HistoricosApiController.exportarHistoricos);
 
 module.exports = router;

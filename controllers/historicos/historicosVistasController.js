@@ -6,13 +6,14 @@
 // =============================================
 
 const HistoricosModel = require('../../models/historicosModel');
+const { esRolAdmin } = require('../../utils/roles');
 
 const HistoricosVistasController = {
 
     mostrarHistoricos: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || rol !== 'admin') {
+        if (!usuarioSesion || !esRolAdmin(rol)) {
             return res.redirect('/admin');
         }
 

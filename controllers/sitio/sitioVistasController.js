@@ -10,15 +10,16 @@
 const ProductoModel = require('../../models/productoModel');
 const { normalizarCategorias } = require('../../utils/helpers');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
+const { esRolPanel } = require('../../utils/roles');
 
 const SitioVistasController = {
 
     // Página principal del marketplace
-    // Si el usuario es admin o aprendiz, lo mando directo al panel admin
+    // Si el usuario es del panel admin, lo mando directo al panel
     mostrarMain: (req, res) => {
         const rol = String(req.session?.usuario?.role || '').trim().toLowerCase();
 
-        if (rol === 'admin' || rol === 'aprendiz') {
+        if (esRolPanel(rol)) {
             return res.redirect('/admin');
         }
 

@@ -8,15 +8,15 @@
 
 const ProductoModel = require('../../models/productoModel');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
+const { esRolAdmin, esRolPanel } = require('../../utils/roles');
 
 const AdminVistasController = {
 
     // Panel principal de administración
-    // Solo ven admin y aprendiz, si no tiene permisos lo mando al inicio
+    // Solo entran los roles del panel, si no tiene permisos lo mando al inicio
     mostrarMainAdmin: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+        if (!usuarioSesion || !esRolPanel(usuarioSesion.role)) {
             return res.redirect('/');
         }
         res.render('admin/mainAdmin', { usuario: usuarioSesion });
@@ -25,8 +25,7 @@ const AdminVistasController = {
     // Página para habilitar/deshabilitar productos y cambiar cantidades
     mostrarHabilitarProducto: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+        if (!usuarioSesion || !esRolPanel(usuarioSesion.role)) {
             return res.redirect('/');
         }
 
@@ -47,8 +46,7 @@ const AdminVistasController = {
     // para que admin y aprendiz puedan configurarlos.
     mostrarGestionOfertas: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+        if (!usuarioSesion || !esRolPanel(usuarioSesion.role)) {
             return res.redirect('/admin');
         }
 
@@ -69,8 +67,7 @@ const AdminVistasController = {
     // (confirmados, entregados y cancelados) vive en su propia vista.
     mostrarPedidos: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+        if (!usuarioSesion || !esRolPanel(usuarioSesion.role)) {
             return res.redirect('/');
         }
 
@@ -88,8 +85,7 @@ const AdminVistasController = {
     // confirmados, entregados y cancelados.
     mostrarHistorialPedidos: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || (rol !== 'admin' && rol !== 'aprendiz')) {
+        if (!usuarioSesion || !esRolPanel(usuarioSesion.role)) {
             return res.redirect('/');
         }
 
@@ -102,11 +98,10 @@ const AdminVistasController = {
 
     // Vista de gestión de clientes del admin.
     // La lista la carga el JS con la API para poder buscar en vivo.
-    // Solo admin (no aprendiz).
+    // Solo el personal con acceso total (admin, supervisor, promotor, técnico).
     mostrarGestionClientes: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || rol !== 'admin') {
+        if (!usuarioSesion || !esRolAdmin(usuarioSesion.role)) {
             return res.redirect('/admin');
         }
 

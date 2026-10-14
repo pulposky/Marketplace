@@ -8,12 +8,13 @@
 /* ============================================= */
 
 const conexion = require('../database/conexion');
+const { esRolPanel } = require('../utils/roles');
 
 const contarVisita = (req, res, next) => {
     const rol = req.session?.usuario?.role ? String(req.session.usuario.role).trim().toLowerCase() : '';
 
-    // No registro visitas de admin ni aprendiz
-    if (rol === 'admin' || rol === 'aprendiz') {
+    // No registro visitas de los roles del panel admin (incluye aprendiz)
+    if (esRolPanel(rol)) {
         return next();
     }
 

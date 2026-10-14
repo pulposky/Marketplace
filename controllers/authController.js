@@ -11,6 +11,7 @@
 
 const bcrypt = require('bcryptjs');
 const UsuarioModel = require('../models/usuarioModel');
+const { EQUIVALENCIAS_ROL, normalizarRol, esRolPanel } = require('../utils/roles');
 
 const loginUsuarioController = async (req, res) => {
     // Extraigo los campos del body, puede venir usuario+password o solo documento
@@ -37,13 +38,12 @@ const loginUsuarioController = async (req, res) => {
             }
 
             // Determino el rol: primero miro la columna 'role', luego 'rol', y también 'is_admin'
-            let role = 'usuario';
-            const roleCampo = usuarioBD.role ? String(usuarioBD.role).trim().toLowerCase() : '';
-            const rolAlternativo = usuarioBD.rol ? String(usuarioBD.rol).trim().toLowerCase() : '';
+            // (EQUIVALENCIAS_ROL mapea 'Administrador' -> 'admin', 'Supervisor' -> 'supervisor', etc.)
+            const roleCampo = normalizarRol(usuarioBD.role);
+            const rolAlternativo = normalizarRol(usuarioBD.rol);
             const roleValue = roleCampo || rolAlternativo;
 
-            if (['admin', 'administrator', 'administrador'].includes(roleValue)) role = 'admin';
-            if (['aprendiz', 'apprentice'].includes(roleValue)) role = 'aprendiz';
+            let role = EQUIVALENCIAS_ROL[roleValue] || 'usuario';
             if (usuarioBD.is_admin === 1 || usuarioBD.is_admin === '1') role = 'admin';
 
             // Guardo los datos del usuario en la sesión
@@ -54,8 +54,9 @@ const loginUsuarioController = async (req, res) => {
                 role
             };
 
-            // Si es admin o aprendiz, le digo al frontend que redirija al panel admin
-            if (role === 'admin' || role === 'aprendiz') {
+            // Si es del panel admin (admin, supervisor, promotor, técnico o
+            // aprendiz), le digo al frontend que redirija al panel
+            if (esRolPanel(role)) {
                 return res.json({ ok: true, mensaje: 'Login correcto', redirect: '/admin' });
             }
 

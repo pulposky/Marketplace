@@ -1,0 +1,302 @@
+================================================================================
+  REVISIÓN DE ROLES: "admin" y "aprendiz"
+  Proyecto: Marketplace (SENAEMPRESA)
+  Fecha del análisis: 2026-10-14
+================================================================================
+
+Este documento describe TODO lo que pueden hacer los roles "admin" y "aprendiz"
+en la aplicación, a nivel de páginas, APIs y acciones. Sirve como base para dar
+o quitar permisos. Al final hay una sección con los archivos exactos que hay que
+tocar para cambiar los permisos de cada rol.
+
+--------------------------------------------------------------------------------
+0. RESUMEN CORTO (lo más importante)
+--------------------------------------------------------------------------------
+- El sistema tiene 3 tipos de rol reales en la sesión (`req.session.usuario.role`):
+    * "admin"    -> acceso total al panel.
+    * "aprendiz" -> acceso parcial al panel (NO ve clientes, analítica, carrusel
+                    ni reportes; SÍ gestiona productos, ofertas y pedidos).
+    * "cliente"  -> rol de los usuarios registrados (sin acceso al panel).
+
+- El middleware `verificarAdmin` deja pasar a "admin" Y "aprendiz".
+  El middleware `verificarRol('admin')` deja pasar SOLO a "admin".
+
+- REGLA GENERAL: toda ruta que use `verificarAdmin` es accesible para AMBOS
+  (admin y aprendiz). Toda ruta que use `verificarRol('admin')` es SOLO admin.
+
+- IMPORTANTE: aunque en el registro de clientes existe la opción "aprendiz"
+  (tabla `clientes`), ese "aprendiz" NO es el rol del panel. Al iniciar sesión
+  por documento el rol de sesión SIEMPRE se guarda como "cliente".
+  El rol "aprendiz" del panel SOLO se obtiene desde la tabla `usuarios`
+  (login por usuario + contraseña). Ver authController.js líneas 39-59.
+
+--------------------------------------------------------------------------------
+1. DE DÓNDE SALE EL ROL (autenticación)
+--------------------------------------------------------------------------------
+Archivo: controllers/authController.js
+
+- Login de staff (admin/aprendiz) = por `usuario` + `password` (líneas 19-67).
+  Busca en la tabla `usuarios` y calcula el rol así (líneas 39-47):
+     1) Mira la columna `role`.
+     2) Si no, mira la columna `rol`.
+     3) Valores admin:  'admin', 'administrator', 'administrador'  -> role='admin'
+         Valores aprendiz: 'aprendiz', 'apprentice'               -> role='aprendiz'
+     4) Si `is_admin` es 1 o '1' -> fuerza role='admin'
+     - Cualquier otro valor -> role='usuario' (no entra al panel).
+  Si el rol es admin o aprendiz -> redirige a '/admin' (líneas 57-60).
+
+- Login de cliente = por `documento` (líneas 69-151). SIEMPRE guarda
+  role='cliente' (líneas 144-149), sin importar el campo `rol` de la tabla.
+
+- Registro de clientes (líneas 211-253): roles permitidos SOLO para la tabla
+  `clientes`: ['aprendiz','instructor','contratista','externo','administrativo']
+  (misma lista en middleware/validar.js línea 65). Esto NO crea usuarios del panel.
+
+--------------------------------------------------------------------------------
+2. MIDDLEWARES DE AUTORIZACIÓN (el corazón de los permisos)
+--------------------------------------------------------------------------------
+Archivo: middleware/verificarAdmin.js
+  - Exige sesión logueada.
+  - Deja pasar si el rol es 'admin' O 'aprendiz' (línea 28).
+  - Si no tiene permiso: responde 403 JSON.
+  -> Es el candado por defecto del panel para ambos roles.
+
+Archivo: middleware/verificarRol.js
+  - Recibe una lista de roles permitidos, p.ej. verificarRol('admin').
+  - Deja pasar SOLO si el rol de sesión está en la lista (línea 31).
+  - Si no: 403 JSON en APIs / redirige a '/admin' en páginas (líneas 32-39).
+  -> Se usa para las secciones exclusivas del admin.
+
+Otros middleware relacionados:
+  - middleware/verificarUsuario.js: solo exige estar logueado (no mira rol).
+  - middleware/contadorVisitas.js: NO cuenta visitas si rol es admin/aprendiz.
+  - middleware/noCache.js: se aplica a todo el panel (evita caché).
+
+--------------------------------------------------------------------------------
+3. QUÉ HACE EL ROL "ADMIN"
+--------------------------------------------------------------------------------
+El admin tiene acceso a TODO lo del aprendiz, MÁS las secciones exclusivas.
+
+3.1 PÁGINAS DEL PANEL
+  Panel principal ............... GET /admin                        (mainAdmin)
+  Gestión de productos .......... GET /admin/habilitar-producto
+  Pedidos (pendientes) .......... GET /admin/pedidos
+  Historial de pedidos .......... GET /admin/historial-pedidos
+  Ofertas y descuentos .......... GET /admin/ofertas
+  Analítica / estadísticas ...... GET /admin/historicos            [SOLO ADMIN]
+  Gestión de clientes ........... GET /admin/clientes              [SOLO ADMIN]
+  Carrusel de la portada ........ GET /admin/carrusel             [SOLO ADMIN]
+
+3.2 APIs DE PRODUCTOS
+  Crear producto ................ POST   /api/admin/productos
+  Editar datos de producto ...... PATCH  /api/admin/productos/:id/datos
+  Subir/reemplazar imagen ....... POST   /api/admin/productos/:id/imagen
+  Cambiar límite de venta ....... PATCH  /api/admin/productos/limite-venta/:id
+  Activar/desactivar producto ... PATCH  /api/admin/productos/estado/:id
+
+3.3 APIs DE OFERTAS
+  Listar ofertas vigentes ....... GET    /api/admin/ofertas
+  Cambiar precio rápido ......... PATCH  /api/admin/ofertas/precio/:id
+  Guardar descuento y fechas .... PATCH  /api/admin/ofertas/:id
+
+3.4 APIs DE PEDIDOS / APARTADOS
+  Listar apartados .............. GET    /api/admin/apartados?estado=...
+  Confirmar apartado ............ PATCH  /api/admin/apartados/confirmar/:id
+  Marcar como entregado ......... PATCH  /api/admin/apartados/entregado/:id
+  Cancelar apartado (devuelve
+  stock) ........................ PATCH  /api/admin/apartados/cancelar/:id
+
+3.5 APIs DE NOTIFICACIONES (campana del panel)
+  Ver notificaciones no leídas .. GET    /api/admin/notificaciones
+  Marcar una como leída ......... PATCH  /api/admin/notificaciones/:id/leida
+  Marcar todas como leídas ...... PATCH  /api/admin/notificaciones/todas-leidas
+
+3.6 APIs EXCLUSIVAS DEL ADMIN
+  Gestión de clientes:
+    Listar clientes (búsqueda) .. GET    /api/admin/clientes?busqueda=
+    Actualizar cliente .......... PATCH  /api/admin/clientes/:id
+  Carrusel:
+    Subir imagen del carrusel ... POST   /api/admin/carrusel/subir
+    Eliminar imagen carrusel .... POST   /api/admin/carrusel/eliminar
+  Reportes CSV:
+    Exportar pedidos ........... GET    /api/admin/reportes/pedidos.csv
+    Exportar clientes .......... GET    /api/admin/reportes/clientes.csv
+  Históricos / analítica:
+    Productos más vendidos ..... GET    /api/admin/historicos/productos
+    Clientes que más compran ... GET    /api/admin/historicos/clientes
+    Pedidos por estado ......... GET    /api/admin/historicos/estados
+    Ventas por día ............. GET    /api/admin/historicos/ventas-dia
+    Visitas por día ............ GET    /api/admin/historicos/visitas-dia
+    Rutas más visitadas ........ GET    /api/admin/historicos/rutas
+    Exportar PDF de analítica .. GET    /api/admin/historicos/exportar
+
+3.7 ACCIONES EXTRA (compartidas con el área cliente)
+  Como staff logueado, el admin también puede cancelar apartados por la ruta de
+  cliente: POST /api/apartados/cancelar/:idApartado. En apartadoController.js
+  (líneas 479-488) hay una comprobación "esStaff" que da vía libre a admin y
+  aprendiz para cancelar cualquier apartado, aunque no sea suyo.
+
+--------------------------------------------------------------------------------
+4. QUÉ HACE EL ROL "APRENDIZ"
+--------------------------------------------------------------------------------
+El aprendiz puede hacer TODO lo de las secciones 3.1 a 3.5 (productos, ofertas,
+pedidos y notificaciones). NO puede hacer NADA de la sección 3.6.
+
+4.1 LO QUE SÍ PUEDE HACER
+  Páginas:
+    - GET /admin
+    - GET /admin/habilitar-producto
+    - GET /admin/pedidos
+    - GET /admin/historial-pedidos
+    - GET /admin/ofertas
+  Productos:
+    - Crear producto (POST /api/admin/productos)
+    - Editar datos de producto (PATCH /api/admin/productos/:id/datos)
+    - Subir imagen de producto (POST /api/admin/productos/:id/imagen)
+    - Cambiar límite de venta (PATCH /api/admin/productos/limite-venta/:id)
+    - Activar/desactivar producto (PATCH /api/admin/productos/estado/:id)
+  Ofertas:
+    - Listar ofertas (GET /api/admin/ofertas)
+    - Cambiar precio rápido (PATCH /api/admin/ofertas/precio/:id)
+    - Guardar descuento y fechas (PATCH /api/admin/ofertas/:id)
+  Pedidos:
+    - Listar apartados (GET /api/admin/apartados)
+    - Confirmar apartado (PATCH /api/admin/apartados/confirmar/:id)
+    - Marcar entregado (PATCH /api/admin/apartados/entregado/:id)
+    - Cancelar apartado (PATCH /api/admin/apartados/cancelar/:id)
+  Notificaciones:
+    - Ver / marcar leídas (GET y PATCH de /api/admin/notificaciones...)
+  Extra:
+    - Cancelar cualquier apartado vía ruta de cliente (esStaff).
+
+4.2 LO QUE NO PUEDE HACER (exclusivo del admin)
+  - Ver la analítica / estadísticas (GET /admin/historicos y sus APIs).
+  - Gestionar clientes (GET /admin/clientes y sus APIs).
+  - Gestionar el carrusel de la portada (GET /admin/carrusel y sus APIs).
+  - Descargar reportes CSV (pedidos.csv y clientes.csv).
+  - Exportar el PDF de analítica.
+  - Ojo: los botones/tarjetas de esas secciones NO se le muestran en el menú
+    (ver public/views/admin/mainAdmin.ejs, condicionales de líneas 176, 200, 213),
+    y si escribe la URL directa, el middleware lo manda de vuelta a /admin.
+
+--------------------------------------------------------------------------------
+5. DIFERENCIAS VISUALES EN EL PANEL (frontend)
+--------------------------------------------------------------------------------
+Archivo: public/views/admin/mainAdmin.ejs
+  - Tarjeta "Ofertas y Descuentos" .... visible si role === 'admin' || 'aprendiz' (línea 152)
+  - Tarjeta "Carrusel de la Portada" .. visible SOLO si role === 'admin' (línea 176)
+  - Tarjeta "Gestión de Clientes" ..... visible SOLO si role === 'admin' (línea 200)
+  - Tarjeta "Analítica" ............... visible SOLO si role === 'admin' (línea 213)
+  - El resto de tarjetas (Productos, Pedidos, Historial) las ven ambos.
+  - El badge de rol se pinta tal cual viene en la sesión (línea 44 y 85).
+
+Comprobaciones de rol dentro de los controladores (por si acaso):
+  - adminVistasController.js: cada vista valida admin/aprendiz; la de clientes
+    exige rol === 'admin' (línea 109).
+  - historicosVistasController.js: exige rol === 'admin' (línea 15).
+  - adminApiController.js (actualizarCliente): exige rol === 'admin' (línea 32).
+  - apartadoController.js (marcarEntregado, línea 381): exige admin o aprendiz.
+  - apartadoController.js (cancelarApartado, línea 484): admin/aprendiz = staff.
+
+--------------------------------------------------------------------------------
+6. MAPA RÁPIDO RUTA -> MIDDLEWARE -> ROLES PERMITIDOS
+--------------------------------------------------------------------------------
+(admin = A, aprendiz = P, cliente = C)
+Ruta (método)                                      Middleware        A  P  C
+----------------------------------------------     ------------      -  -  -
+GET    /admin                                      verificarAdmin    X  X  .
+GET    /admin/habilitar-producto                   verificarAdmin    X  X  .
+GET    /admin/pedidos                              verificarAdmin    X  X  .
+GET    /admin/historial-pedidos                    verificarAdmin    X  X  .
+GET    /admin/ofertas                              verificarAdmin    X  X  .
+GET    /admin/historicos                           verificarRol      X  .  .
+GET    /admin/clientes                             verificarRol      X  .  .
+GET    /admin/carrusel                             verificarRol      X  .  .
+POST   /api/admin/productos                        verificarAdmin    X  X  .
+PATCH  /api/admin/productos/:id/datos              verificarAdmin    X  X  .
+POST   /api/admin/productos/:id/imagen             verificarAdmin    X  X  .
+PATCH  /api/admin/productos/limite-venta/:id       verificarAdmin    X  X  .
+PATCH  /api/admin/productos/estado/:id             verificarAdmin    X  X  .
+GET    /api/admin/ofertas                          verificarAdmin    X  X  .
+PATCH  /api/admin/ofertas/precio/:id               verificarAdmin    X  X  .
+PATCH  /api/admin/ofertas/:id                      verificarAdmin    X  X  .
+GET    /api/admin/apartados                        verificarAdmin    X  X  .
+PATCH  /api/admin/apartados/confirmar/:id          verificarAdmin    X  X  .
+PATCH  /api/admin/apartados/entregado/:id          verificarAdmin    X  X  .
+PATCH  /api/admin/apartados/cancelar/:id           verificarAdmin    X  X  .
+GET    /api/admin/notificaciones                   verificarAdmin    X  X  .
+PATCH  /api/admin/notificaciones/:id/leida         verificarAdmin    X  X  .
+PATCH  /api/admin/notificaciones/todas-leidas      verificarAdmin    X  X  .
+GET    /api/admin/clientes                         verificarRol      X  .  .
+PATCH  /api/admin/clientes/:id                     verificarRol      X  .  .
+POST   /api/admin/carrusel/subir                   verificarRol      X  .  .
+POST   /api/admin/carrusel/eliminar                verificarRol      X  .  .
+GET    /api/admin/reportes/pedidos.csv             verificarRol      X  .  .
+GET    /api/admin/reportes/clientes.csv            verificarRol      X  .  .
+GET    /api/admin/historicos/productos             verificarRol      X  .  .
+GET    /api/admin/historicos/clientes              verificarRol      X  .  .
+GET    /api/admin/historicos/estados               verificarRol      X  .  .
+GET    /api/admin/historicos/ventas-dia            verificarRol      X  .  .
+GET    /api/admin/historicos/visitas-dia           verificarRol      X  .  .
+GET    /api/admin/historicos/rutas                 verificarRol      X  .  .
+GET    /api/admin/historicos/exportar              verificarRol      X  .  .
+
+NOTA: todas estas rutas están definidas en routes/admin.js (líneas 32-126).
+
+--------------------------------------------------------------------------------
+7. DÓNDE CAMBIAR PERMISOS (guía para dar/quitar)
+--------------------------------------------------------------------------------
+A) Para mover una SECCIÓN COMPLETA de "solo admin" a "admin + aprendiz"
+   (o al revés), edita routes/admin.js:
+     - Actualmente SOLO admin -> usa  verificarRol('admin')
+     - Actualmente ambos      -> usa  verificarAdmin
+   Cambia el middleware de la(s) ruta(s) que quieras. Ejemplo:
+     - Dar analítica al aprendiz:
+         router.get('/admin/historicos', verificarRol('admin'), ...)
+         -> cambiar a verificarAdmin y repetir en las 7 rutas /api/admin/historicos/*
+     - Quitar productos al aprendiz:
+         router.post('/api/admin/productos', verificarAdmin, ...)
+         -> cambiar a verificarRol('admin')
+
+B) Para que un rol NUEVO tenga los mismos permisos que "admin" o "aprendiz":
+   - middleware/verificarAdmin.js línea 28: agregar el rol a la condición.
+   - middleware/verificarRol.js: no hace falta; solo pasar la lista.
+   - authController.js líneas 45-47: mapear el nuevo valor de la BD a 'admin'
+     o 'aprendiz' (o crear un rol de sesión nuevo).
+   - public/views/admin/mainAdmin.ejs: ajustar los condicionales de las
+     tarjetas (líneas 114, 152, 176, 200, 213) para mostrar/ocultar menús.
+
+C) Para quitar a "aprendiz" una acción puntual dentro de una sección que sí ve:
+   - Cambia SOLO esa ruta en routes/admin.js de verificarAdmin a verificarRol('admin').
+   - Y oculta el botón correspondiente en la vista/JS para no confundir al usuario.
+     (Las vistas por lo general NO comprueban rol; el candado real es la ruta.)
+
+D) Comprobaciones de rol "extra" dentro de controladores (revisar también):
+   - controllers/admin/adminApiController.js línea 31-34 (actualizarCliente).
+   - controllers/apartadoController.js líneas 379-383 y 479-488.
+   - controllers/admin/adminVistasController.js (líneas 19, 29, 51, 73, 92, 109).
+   - controllers/historicos/historicosVistasController.js línea 15.
+
+E) Ubicación de las vistas y del JS del panel (por si hay que ocultar botones):
+   - Vistas:  public/views/admin/*.ejs
+   - JS:      public/js/admin/*.js
+              (mainAdmin.js, habilitarProducto.js, gestionOfertas.js,
+               pedidosAdmin.js, gestionClientes.js, carruselAdmin.js,
+               historicos.js)
+
+--------------------------------------------------------------------------------
+8. ARCHIVOS CLAVE DEL SISTEMA DE ROLES (para consulta)
+--------------------------------------------------------------------------------
+  middleware/verificarAdmin.js .......... deja pasar admin + aprendiz
+  middleware/verificarRol.js ............ deja pasar solo roles indicados
+  middleware/verificarUsuario.js ........ solo exige sesión
+  middleware/contadorVisitas.js ......... ignora admin/aprendiz
+  routes/admin.js ....................... define QUÉ middleware usa cada ruta
+  controllers/authController.js ......... asigna el rol en el login
+  middleware/validar.js ................. valida los roles del registro
+  controllers/admin/* ................... vistas y API del panel
+  models/usuarioModel.js ................ consultas de usuarios y clientes
+
+================================================================================
+  FIN DEL DOCUMENTO
+================================================================================

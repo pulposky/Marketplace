@@ -2,11 +2,14 @@
 /* VERIFICARADMIN.JS - AUTENTICACIÓN ADMIN       */
 /* ============================================= */
 /* Igual que verificarUsuario pero además exige   */
-/* que el rol sea admin o aprendiz. Lo usan las   */
+/* que el rol sea del panel: admin, supervisor,   */
+/* promotor, técnico o aprendiz. Lo usan las      */
 /* rutas del panel admin (clientes, reportes,     */
 /* entregas) para que un cliente logueado no      */
 /* pueda llamarlas.                              */
 /* ============================================= */
+
+const { esRolPanel } = require('../utils/roles');
 
 const verificarAdmin = (req, res, next) => {
     // Es API si el cliente lo pide (XHR/JSON) o si la ruta empieza por /api/
@@ -25,7 +28,7 @@ const verificarAdmin = (req, res, next) => {
     }
 
     const rol = String(req.session.usuario.role || '').trim().toLowerCase();
-    if (rol !== 'admin' && rol !== 'aprendiz') {
+    if (!esRolPanel(rol)) {
         return res.status(403).json({
             ok: false,
             mensaje: "No tienes permisos para acceder a esta función."

@@ -22,10 +22,9 @@
 <body>
 
     <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
-    <% const rolUsuario=usuario && usuario.role ? String(usuario.role).trim().toLowerCase() : '' ; %>
         <header class="header-catalogo">
             <div class="contenedor-header">
-                <a href="<%= (rolUsuario === 'admin' || rolUsuario === 'aprendiz') ? '/admin' : '/' %>"
+                <a href="<%= esRolPanel(usuario && usuario.role) ? '/admin' : '/' %>"
                     class="btn-regresar">
                     ← Regresar al Inicio
                 </a>

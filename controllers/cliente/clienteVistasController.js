@@ -8,6 +8,7 @@
 const ApartadoModel = require('../../models/apartadoModel');
 const UsuarioModel = require('../../models/usuarioModel');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
+const { esRolPanel } = require('../../utils/roles');
 
 const ClienteVistasController = {
 
@@ -47,7 +48,7 @@ const ClienteVistasController = {
         }
 
         const rol = String(usuarioSesion.role || '').trim().toLowerCase();
-        if (rol === 'admin' || rol === 'aprendiz') {
+        if (esRolPanel(rol)) {
             return res.redirect('/admin');
         }
 

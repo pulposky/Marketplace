@@ -8,6 +8,7 @@
 
 const bcrypt = require('bcryptjs');
 const UsuarioModel = require('../../models/usuarioModel');
+const { esRolPanel } = require('../../utils/roles');
 
 const ClienteApiController = {
 
@@ -20,9 +21,9 @@ const ClienteApiController = {
         }
 
         // El perfil editable es solo para clientes;
-        // admin y aprendiz no tienen esta vista
+        // los roles del panel no tienen esta vista
         const rolSesion = String(req.session.usuario.role || '').trim().toLowerCase();
-        if (rolSesion === 'admin' || rolSesion === 'aprendiz') {
+        if (esRolPanel(rolSesion)) {
             return res.status(403).json({ ok: false, mensaje: 'Los administradores no tienen perfil de cliente.' });
         }
 

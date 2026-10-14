@@ -42,7 +42,9 @@ USE `sena_pdv`;
 
 -- ------------------------------------------------------------
 -- Tabla: usuarios
--- Login de admins y aprendices en la web, y cajeros en el POS
+-- Login del personal del panel web (Administrador, Supervisor,
+-- Promotor, Técnico, Aprendiz) y de cajeros en el POS.
+-- Los roles del panel se normalizan en utils/roles.js
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `usuarios` (
   `id_usuario` INT AUTO_INCREMENT PRIMARY KEY,

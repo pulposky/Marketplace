@@ -20,6 +20,7 @@ const ApartadoModel = require('../models/apartadoModel');
 const NotificacionModel = require('../models/notificacionModel');
 const NotificacionClienteModel = require('../models/notificacionClienteModel');
 const { calcularPrecioOferta } = require('../utils/helpers');
+const { esRolPanel } = require('../utils/roles');
 
 const ApartadoController = {
 
@@ -378,7 +379,7 @@ const ApartadoController = {
 
         // Validación de rol para las APIs del admin
         const rolSesion = String(req.session.usuario.role || '').trim().toLowerCase();
-        if (rolSesion !== 'admin' && rolSesion !== 'aprendiz') {
+        if (!esRolPanel(rolSesion)) {
             return res.status(403).json({ error: 'No tienes permisos para entregar pedidos.' });
         }
 
@@ -477,11 +478,11 @@ const ApartadoController = {
             const apartado = resultados[0];
 
             // Verifico que el apartado pertenezca al cliente logueado
-            // (o que sea admin/aprendiz). Evita cancelar apartados ajenos.
+            // (o que sea del panel admin). Evita cancelar apartados ajenos.
             const usuarioSesion = req.session.usuario;
             const rolSesion = String(usuarioSesion.role || '').trim().toLowerCase();
             const esPropietario = apartado.nombre_cliente === (usuarioSesion.nombre || usuarioSesion.documento);
-            const esStaff = rolSesion === 'admin' || rolSesion === 'aprendiz';
+            const esStaff = esRolPanel(rolSesion);
 
             if (!esPropietario && !esStaff) {
                 return res.status(403).json({ error: 'No puedes cancelar un apartado que no es tuyo.' });
