@@ -145,7 +145,7 @@
    sitio/
      sitioVistasController.js
        Páginas públicas: mostrarMain (portada, redirige a /admin si es
-       admin/aprendiz), mostrarCatalogo (filtros, búsqueda, ofertas,
+       admin), mostrarCatalogo (filtros, búsqueda, ofertas,
        orden), mostrarDetalleProducto (ficha /producto/:id, valida 404 y
        estado activo).
      sitioApiController.js
@@ -182,7 +182,7 @@
      estado, precios, ofertas y subir/actualizar la imagen (base64 a
      /public/img/upload) y API de listado con filtros.
    authController.js
-     Login doble: por usuario (admin/aprendiz con tabla usuarios) o por
+     Login doble: por usuario (staff del panel con tabla usuarios) o por
      documento (clientes con tabla clientes), creación de contraseña
      del cliente (paso 0), verificación de sesión (verificarSesion),
      registro de clientes, restablecer contraseña y logout.
@@ -214,12 +214,12 @@
      peticiones que cambian estado (verificarCsrf).
    contadorVisitas.js
      Registra en page_views cada GET de página HTML (no API ni assets),
-     ignorando a admin/aprendiz, y limpia registros de más de 30 días.
+     ignorando a los roles del panel, y limpia registros de más de 30 días.
    verificarUsuario.js
      `protegerRuta`: exige sesión. En AJAX responde 401 JSON; en URLs
      normales redirige a "/".
    verificarAdmin.js
-     Exige sesión Y rol admin/aprendiz (401/403 en API, redirección en
+     Exige sesión Y rol del panel (admin/supervisor/promotor/técnico; 401/403 en API, redirección en
      páginas).
    verificarRol.js
      Como verificarAdmin pero recibe la lista de roles permitidos

@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const ProductoModel = require('../models/productoModel');
+const auditoriaService = require('../services/auditoriaService');
 const { normalizarCategorias, calcularPrecioOferta } = require('../utils/helpers');
 const { normalizeText } = require('../utils/imagenes');
 
@@ -48,6 +49,8 @@ const ProductoController = {
                 return res.status(500).json({ error: 'Error en el servidor al crear el producto.' });
             }
 
+            auditoriaService.registrar(req, 'producto_crear', `Creó el producto "${String(nombre).trim()}" (id ${resultado.insertId}).`);
+
             return res.status(201).json({
                 ok: true,
                 id: resultado.insertId,
@@ -85,6 +88,7 @@ const ProductoController = {
                 console.error('Error actualizando datos de producto:', error);
                 return res.status(500).json({ error: 'Error en el servidor al guardar los datos.' });
             }
+            auditoriaService.registrar(req, 'producto_editar', `Editó los datos del producto "${String(nombre).trim()}" (id ${id}).`);
             return res.json({ ok: true, mensaje: 'Producto actualizado correctamente.' });
         });
     },
@@ -120,6 +124,8 @@ const ProductoController = {
                     console.error('Error escribiendo imagen:', errorFs);
                     return res.status(500).json({ error: 'Error en el servidor al guardar la imagen.' });
                 }
+
+                auditoriaService.registrar(req, 'producto_imagen', `Actualizó la imagen del producto "${producto.nombre}" (id ${id}).`);
 
                 return res.json({
                     ok: true,
@@ -178,6 +184,8 @@ const ProductoController = {
                 return res.status(500).json({ error: 'Error en el servidor al guardar cantidad.' });
             }
 
+            auditoriaService.registrar(req, 'producto_stock', `Cambió el stock online del producto id ${id} a ${limite} (${nuevoEstado}).`);
+
             return res.json({
                 ok: true,
                 limite,
@@ -207,6 +215,7 @@ const ProductoController = {
                     console.error('Error actualizando estado y cantidad:', error);
                     return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
                 }
+                auditoriaService.registrar(req, 'producto_estado', `Cambió el estado/stock del producto id ${id} a ${estadoFinal} (cantidad ${limite}).`);
                 return res.json({ ok: true, estado: estadoFinal });
             });
         } else {
@@ -215,6 +224,7 @@ const ProductoController = {
                     console.error('Error actualizando estado:', error);
                     return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
                 }
+                auditoriaService.registrar(req, 'producto_estado', `Cambió el estado del producto id ${id} a ${nuevoEstado}.`);
                 return res.json({ ok: true, estado: nuevoEstado });
             });
         }
@@ -263,6 +273,8 @@ const ProductoController = {
                 return res.status(500).json({ error: 'Error en el servidor al guardar el precio.' });
             }
 
+            auditoriaService.registrar(req, 'oferta_precio', `Cambió el precio del producto id ${id} a ${precio.toFixed(2)}.`);
+
             return res.json({
                 ok: true,
                 mensaje: 'Precio actualizado correctamente.',
@@ -301,6 +313,8 @@ const ProductoController = {
                 console.error('Error guardando oferta:', error);
                 return res.status(500).json({ error: 'Error en el servidor al guardar la oferta.' });
             }
+
+            auditoriaService.registrar(req, 'oferta_guardar', `Guardó la oferta del producto id ${id} (descuento ${datos.descuento}%).`);
 
             return res.json({
                 ok: true,

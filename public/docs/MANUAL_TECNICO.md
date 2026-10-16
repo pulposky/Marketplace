@@ -54,8 +54,8 @@ Esto es clave para entender todo el código: hay **tres actores** y **un ciclo d
 | Actor | Rol | Permisos |
 |-------|-----|----------|
 | 👤 **Cliente** | Explora el catálogo, aparta productos, cancela sus reservas, edita su perfil. | Acceso a: catálogo, perfil, mis apartados |
-| 🔧 **Admin / Supervisor / Promotor / Técnico** | Gestiona el panel: productos, ofertas, pedidos (confirma/entrega/cancela), clientes, estadísticas. | Acceso total al panel |
-| 🎓 **Aprendiz** | Gestiona productos, ofertas y pedidos. | Acceso limitado (sin clientes, analytics, carrusel ni reportes) |
+| 🔧 **Admin / Supervisor / Promotor** | Gestiona el panel completo: productos, ofertas, pedidos (confirma/entrega/cancela), clientes, analítica, carrusel y reportes. | Acceso total al panel |
+| 🛠️ **Técnico** | Mantenimiento del sitio: productos/stock, precios/ofertas, imágenes de producto y carrusel, y pedidos. | Acceso al panel **sin** clientes, analítica ni reportes |
 | 🖥️ **POS (Python)** | Cobra y factura presencialmente; marca apartados como `entregado`. | Comparte la BD MySQL, no tiene interfaz web |
 
 ---
@@ -287,7 +287,7 @@ Marketplace/
 │
 ├── middleware/                      # ─── Funciones pre-controller ───
 │   ├── verificarUsuario.js          #   Exige sesión (protegerRuta)
-│   ├── verificarAdmin.js            #   Exige rol del panel (admin/supervisor/promotor/técnico/aprendiz)
+│   ├── verificarAdmin.js            #   Exige rol del panel (admin/supervisor/promotor/técnico)
 │   ├── verificarRol.js              #   Exige un rol específico (factory)
 │   ├── csrf.js                      #   Genera y valida token CSRF
 │   ├── validar.js                   #   Validación con express-validator
@@ -298,7 +298,7 @@ Marketplace/
 │
 ├── utils/                           # ─── Helpers compartidos ───
 │   ├── helpers.js                   #   normalizarCategorias, calcularPrecioOferta
-│   ├── roles.js                     #   Roles del panel (esRolPanel, esRolAdmin, ROLES_ADMIN)
+│   ├── roles.js                     #   Roles del panel (ROLES_ADMIN, ROLES_MANTENIMIENTO, ROLES_CARRUSEL, ROLES_PANEL, esRolAdmin, esRolMantenimiento, puedeGestionarCarrusel, esRolPanel)
 │   └── imagenes.js                  #   Asociación producto ↔ imagen
 │
 ├── public/                          # ─── Todo lo que se sirve al navegador ───
@@ -469,7 +469,7 @@ Cada modelo importa `conexion` y exporta un objeto con métodos. Los métodos re
 | Método | Descripción |
 |--------|------------|
 | `login(documento)` | Busca cliente por documento (incluye password) |
-| `loginPorUsuario(usuario)` | Busca admin/aprendiz |
+| `loginPorUsuario(usuario)` | Busca staff del panel |
 | `crearPassword(idCliente, hash)` | Guarda password hasheada |
 | `existeDocumento(documento)` | Verifica duplicado |
 | `registrar(datos)` | Inserta nuevo cliente |
@@ -514,7 +514,7 @@ Soporta **dos tipos** de login:
 
 | Tipo | Flujo | Respuesta |
 |------|-------|-----------|
-| **Admin/Aprendiz** | `usuario + password` → bcrypt → determina rol → redirige `/admin` | Redirect |
+| **Staff del panel** | `usuario + password` → bcrypt → determina rol → redirige `/admin` | Redirect |
 | **Cliente** | `documento` → flujo multi-paso con `tipo` | JSON con tipo |
 
 Flujo multi-paso del cliente:
@@ -581,16 +581,41 @@ Sube/elimina imágenes de `public/img/carrusel` con prefijo numérico de orden.
 | `index.js` | Une `publico`, `cliente` y `admin` | — |
 | `publico.js` | Raíz, catálogo, detalle, login/logout/registro + APIs públicas | `limiteAuth` + `validarLogin`/`validarRegistro` |
 | `cliente.js` | Perfil, mis apartados, apartar, cancelar, notificaciones | `protegerRuta` |
-| `admin.js` | Páneas del panel + todas las APIs de admin | `verificarAdmin` o `verificarRol(ROLES_ADMIN)` |
+| `admin.js` | Páginas del panel + todas las APIs de admin | `verificarAdmin` (entrar al panel) y `verificarPermiso('<clave>')` (cada módulo) |
 
-### Detalle de roles en rutas
+### Detalle de permisos en rutas
 
-| Middleware | Permite | Excluye |
-|------------|---------|---------|
-| `verificarAdmin` | admin, supervisor, promotor, técnico **o** aprendiz | — |
-| `verificarRol(ROLES_ADMIN)` | admin, supervisor, promotor y técnico | Aprendiz (no gestiona clientes, analytics, carrusel, reportes) |
+El panel ya no se protege con listas de roles fijas por sección, sino con **permisos**
+editables por el Administrador. Cada módulo tiene una clave y su ruta usa
+`verificarPermiso('<clave>')`:
 
-> **📌 Única fuente de verdad:** la lista de roles vive en `utils/roles.js` (`ROLES_ADMIN`, `ROLES_PANEL`, `esRolAdmin`, `esRolPanel`). Para sumar un rol nuevo, se agrega en `EQUIVALENCIAS_ROL` y en `ROLES_ADMIN`/`ROLES_PANEL` y no hay que tocar el resto de los controllers ni las vistas.
+| Clave | Módulo |
+|-------|--------|
+| `productos` | Productos y stock |
+| `ofertas` | Precios y ofertas |
+| `pedidos` | Pedidos (confirmar/entregar/cancelar) e historial |
+| `carrusel` | Carrusel de la portada |
+| `clientes` | Gestión de clientes |
+| `analitica` | Analítica, estadísticas y reportes CSV |
+| `categorias` | Categorías de productos |
+| `contenido` | Contenido editable del sitio / mini-CMS (bloques publicados en `/informacion`) |
+| `banners` | Banners y promociones de la portada |
+| `respaldo` | Respaldo y exportación (CSV por tabla + JSON completo) |
+| `usuarios` | Personal del panel (crear/editar/activar). Sin poder sobre cuentas `admin` salvo que seas Administrador |
+| `auditoria` | Registro de acciones del panel |
+
+| Middleware | Permite | Notas |
+|------------|---------|-------|
+| `verificarAdmin` | cualquier rol del panel (admin, supervisor, promotor, técnico) | Solo deja **entrar** a `/admin`; no da acceso a los módulos |
+| `verificarPermiso('<clave>')` | quien tenga ese permiso; el **Administrador siempre** | 403 en API, redirect a `/admin` en páginas |
+| `verificarRol([ROL_SUPERADMIN])` | solo el Administrador | Reservado para `/admin/permisos` y su API |
+
+> **📌 Única fuente de verdad:** los roles se centralizan en `utils/roles.js`
+> (`ROL_SUPERADMIN`, `ROLES_ADMIN`, `ROLES_MANTENIMIENTO`, `ROLES_CARRUSEL`,
+> `ROLES_PANEL`, `esSuperAdmin`, `esRolAdmin`, `esRolPanel`...) y los permisos en
+> `utils/permisos.js` (`PERMISOS`, `ROLES_GESTIONABLES`, `PERMISOS_POR_DEFECTO`).
+> El Administrador los edita en **`/admin/permisos`**; se guardan en la tabla
+> `permisos_rol` y se cachean en memoria (`services/permisosService.js`).
 
 > **⚠️ Nota de orden en Express:** en `admin.js`, la ruta de precio (`/ofertas/precio/:id`) se declara **antes** que la genérica (`/ofertas/:id`) para que Express la matchee primero.
 
@@ -730,7 +755,8 @@ Lógica del catálogo con carrito y **apartado en lote** (`/api/apartar-lote`).
 | `nombre` | VARCHAR | Nombre |
 | `usuario` | VARCHAR | Usuario para login |
 | `password` | VARCHAR | Hash bcrypt |
-| `rol` | VARCHAR | `Administrador`, `Supervisor`, `Promotor`, `Técnico` o `Aprendiz` (también acepta variantes en minúscula/sin tilde) |
+| `rol` | VARCHAR | `Administrador`, `Supervisor`, `Promotor` o `Técnico` (también acepta variantes en minúscula/sin tilde). El Administrador puede crear/editar personal desde `/admin/usuarios`. |
+| `activo` | TINYINT(1) | 1 = puede iniciar sesión, 0 = desactivado (lo crea la web al arrancar) |
 
 > **Usuario por defecto:** `admin` / `admin123`
 
@@ -897,17 +923,32 @@ El UPDATE ajusta `estado` y `limite_venta` a la vez, evaluando `limite_venta - c
 
 `apartarLote` valida **todos** los ítems antes de escribir nada; si alguno falla, no se crea ningún apartado.
 
-### 18.6 Restricciones por rol
+### 18.6 Restricciones por rol y permisos
 
-Los roles del panel se centralizan en `utils/roles.js`.
+Los roles del panel se centralizan en `utils/roles.js` y los permisos en
+`utils/permisos.js`. El **Administrador** es el superadmin: siempre tiene todo y es el
+único que puede dar o quitar permisos desde **`/admin/permisos`**.
 
-| Rol | Permisos |
+| Rol | Permisos por defecto |
 |-----|----------|
-| **Administrador** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
-| **Supervisor** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
-| **Promotor** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
-| **Técnico** | Todo: productos, ofertas, pedidos, clientes, analytics, carrusel, reportes |
-| **Aprendiz** | Productos, ofertas, pedidos (NO clientes, analytics, carrusel, reportes) |
+| **Administrador** | Todo (superadmin, no se puede restringir) |
+| **Supervisor** | Panel completo de contenido: productos, ofertas, pedidos, carrusel, clientes, analítica, categorías, configuración, contenido y banners |
+| **Promotor** | Igual que Supervisor |
+| **Técnico** | productos, ofertas, pedidos, carrusel (NO clientes, analítica, contenido ni banners) |
+
+> Los valores por defecto son el punto de partida; el Administrador los puede cambiar
+> en cualquier momento desde `/admin/permisos` (módulo de permisos y roles).
+>
+> El rol **Aprendiz** ya no existe. Los módulos sensibles —usuarios del panel
+> (`/admin/usuarios`), categorías
+> (`/admin/categorias`), auditoría (`/admin/auditoria`), contenido (`/admin/contenido`),
+> banners (`/admin/banners`) y respaldo (`/admin/respaldo`)— son **delegables** desde
+> `/admin/permisos`. Por defecto `categorias`, `contenido` y `banners`
+> vienen activos para supervisor/promotor; `usuarios`, `auditoria` y `respaldo` solo
+> los tiene el admin hasta que los conceda.
+>
+> **Anti-escalado:** aunque un rol reciba el permiso `usuarios`, el API no le deja crear,
+> editar, cambiar contraseña ni activar/desactivar cuentas con rol `admin`.
 
 > **🔑 Cómo entrar:** son usuarios de la tabla `usuarios` (login por `usuario` + `password`, no por documento). Al iniciar sesión se redirigen a `/admin`.
 

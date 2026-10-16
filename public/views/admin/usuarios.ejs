@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Usuarios del Panel - Panel Admin</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
+    <link rel="stylesheet" href="/css/admin/gestionesAdmin.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Usuarios del Panel</span> - Panel Admin
+            </div>
+            <div class="header-derecha">
+                <a href="/admin" class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <div class="titulo-catalogo">Personal del panel</div>
+        <p class="texto-ayuda">
+            Crea, edita, activa o desactiva a los usuarios del panel y asígnales su rol.
+            El rol determina a qué módulos entran (los permisos de cada rol se configuran en
+            <strong>Permisos y Roles</strong>). Un usuario <em>desactivado</em> no puede iniciar sesión.
+        </p>
+
+        <div class="barra-acciones">
+            <input type="text" id="inputBuscarUsuario" class="input-buscar" placeholder="Buscar por nombre o usuario...">
+            <button type="button" class="btn btn-primario" id="btnNuevoUsuario">+ Nuevo usuario</button>
+        </div>
+
+        <div class="tabla-envoltura">
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTablaUsuarios"></tbody>
+            </table>
+            <div class="estado-vacio" id="estadoVacioUsuarios" style="display:none;">
+                No hay usuarios para mostrar.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL CREAR / EDITAR -->
+    <div class="modal-fondo" id="modalUsuario">
+        <div class="modal-caja">
+            <h3 id="tituloModalUsuario">Nuevo usuario</h3>
+            <form id="formUsuario">
+                <input type="hidden" id="usuarioId">
+                <div class="campo">
+                    <label for="campoNombre">Nombre completo</label>
+                    <input type="text" id="campoNombre" maxlength="100" required>
+                </div>
+                <div class="campo">
+                    <label for="campoUsuario">Nombre de usuario</label>
+                    <input type="text" id="campoUsuario" maxlength="50" required>
+                    <span class="ayuda-campo">Con este nombre inicia sesión (3 a 50 caracteres).</span>
+                </div>
+                <div class="campo">
+                    <label for="campoRol">Rol</label>
+                    <select id="campoRol" required>
+                        <% rolesStaff.forEach(function(rol) { %>
+                            <option value="<%= rol.valor %>"><%= rol.etiqueta %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="campo" id="campoPasswordContenedor">
+                    <label for="campoPassword">Contraseña</label>
+                    <input type="password" id="campoPassword" minlength="6" autocomplete="new-password">
+                    <span class="ayuda-campo">Mínimo 6 caracteres.</span>
+                </div>
+                <div class="modal-acciones">
+                    <button type="button" class="btn btn-secundario" id="btnCancelarUsuario">Cancelar</button>
+                    <button type="submit" class="btn btn-primario" id="btnGuardarUsuario">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CAMBIAR CONTRASEÑA -->
+    <div class="modal-fondo" id="modalPassword">
+        <div class="modal-caja">
+            <h3>Cambiar contraseña</h3>
+            <form id="formPassword">
+                <input type="hidden" id="passwordUsuarioId">
+                <p class="texto-ayuda" id="passwordUsuarioTexto" style="margin-bottom:14px;"></p>
+                <div class="campo">
+                    <label for="campoNuevaPassword">Nueva contraseña</label>
+                    <input type="password" id="campoNuevaPassword" minlength="6" required autocomplete="new-password">
+                    <span class="ayuda-campo">Mínimo 6 caracteres.</span>
+                </div>
+                <div class="modal-acciones">
+                    <button type="button" class="btn btn-secundario" id="btnCancelarPassword">Cancelar</button>
+                    <button type="submit" class="btn btn-primario">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+    </footer>
+
+    <script>
+        // Opciones de rol y usuario actual para el JS.
+        window.USUARIO_ACTUAL = {
+            id: <%- JSON.stringify(usuario.id || null) %>,
+            usuario: <%- JSON.stringify(usuario.usuario || '') %>
+        };
+        // Solo el Administrador puede gestionar cuentas de Administrador.
+        window.ES_SUPERADMIN = <%- JSON.stringify(!!esSuperadmin) %>;
+    </script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/usuariosAdmin.js"></script>
+</body>
+</html>

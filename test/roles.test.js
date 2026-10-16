@@ -13,9 +13,15 @@ const {
     normalizarRol,
     rolCanonico,
     EQUIVALENCIAS_ROL,
+    ROL_SUPERADMIN,
     ROLES_ADMIN,
+    ROLES_MANTENIMIENTO,
+    ROLES_CARRUSEL,
     ROLES_PANEL,
+    esSuperAdmin,
     esRolAdmin,
+    esRolMantenimiento,
+    puedeGestionarCarrusel,
     esRolPanel
 } = require('../utils/roles');
 
@@ -45,19 +51,45 @@ test('rolCanonico: convierte los valores crudos de la BD al rol de sesión', () 
     assert.strictEqual(rolCanonico(''), '');
 });
 
-test('esRolAdmin: los cuatro roles con acceso total dan true', () => {
+test('esRolAdmin: los roles con acceso total dan true', () => {
     for (const rol of ROLES_ADMIN) {
         assert.strictEqual(esRolAdmin(rol), true, `${rol} debe tener acceso admin`);
     }
     assert.strictEqual(esRolAdmin('Administrador'), true);
-    assert.strictEqual(esRolAdmin('Técnico'), true);
+    // El técnico ya NO tiene acceso total (es mantenimiento del sitio).
+    assert.strictEqual(esRolAdmin('Técnico'), false);
     assert.strictEqual(esRolAdmin('aprendiz'), false);
     assert.strictEqual(esRolAdmin('cliente'), false);
     assert.strictEqual(esRolAdmin(''), false);
     assert.strictEqual(esRolAdmin(undefined), false);
 });
 
-test('esRolPanel: incluye a los roles admin y también al aprendiz', () => {
+test('esSuperAdmin: solo el Administrador es superadmin', () => {
+    assert.strictEqual(ROL_SUPERADMIN, 'admin');
+    assert.strictEqual(esSuperAdmin('admin'), true);
+    assert.strictEqual(esSuperAdmin('Administrador'), true);
+    assert.strictEqual(esSuperAdmin('supervisor'), false);
+    assert.strictEqual(esSuperAdmin('Técnico'), false);
+    assert.strictEqual(esSuperAdmin(''), false);
+});
+
+test('esRolMantenimiento: solo el técnico es mantenimiento del sitio', () => {
+    assert.strictEqual(esRolMantenimiento('Técnico'), true);
+    assert.strictEqual(esRolMantenimiento('tecnico'), true);
+    assert.strictEqual(esRolMantenimiento('admin'), false);
+    assert.strictEqual(esRolMantenimiento('aprendiz'), false);
+    assert.strictEqual(esRolMantenimiento(''), false);
+});
+
+test('puedeGestionarCarrusel: acceso total + técnico; el cliente no', () => {
+    assert.strictEqual(puedeGestionarCarrusel('admin'), true);
+    assert.strictEqual(puedeGestionarCarrusel('supervisor'), true);
+    assert.strictEqual(puedeGestionarCarrusel('promotor'), true);
+    assert.strictEqual(puedeGestionarCarrusel('Técnico'), true);
+    assert.strictEqual(puedeGestionarCarrusel('cliente'), false);
+});
+
+test('esRolPanel: incluye a los roles de admin y al técnico', () => {
     for (const rol of ROLES_PANEL) {
         assert.strictEqual(esRolPanel(rol), true, `${rol} debe poder entrar al panel`);
     }
@@ -69,8 +101,10 @@ test('esRolPanel: incluye a los roles admin y también al aprendiz', () => {
     assert.strictEqual(esRolPanel(null), false);
 });
 
-test('ROLES_ADMIN no incluye al aprendiz y ROLES_PANEL sí', () => {
-    assert.ok(!ROLES_ADMIN.includes('aprendiz'));
-    assert.ok(ROLES_PANEL.includes('aprendiz'));
-    assert.deepStrictEqual(ROLES_ADMIN, ['admin', 'supervisor', 'promotor', 'tecnico']);
+test('ROLES_ADMIN no incluye al técnico; ROLES_PANEL sí', () => {
+    assert.ok(!ROLES_ADMIN.includes('tecnico'));
+    assert.ok(ROLES_PANEL.includes('tecnico'));
+    assert.deepStrictEqual(ROLES_ADMIN, ['admin', 'supervisor', 'promotor']);
+    assert.deepStrictEqual(ROLES_MANTENIMIENTO, ['tecnico']);
+    assert.deepStrictEqual(ROLES_CARRUSEL, ['admin', 'supervisor', 'promotor', 'tecnico']);
 });

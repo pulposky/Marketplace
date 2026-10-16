@@ -4,10 +4,15 @@
 // Consultas SQL para autenticar usuarios.
 // Tiene dos formas de login:
 //   1. Por documento (clientes, tabla 'clientes')
-//   2. Por usuario + password (admin/aprendiz, tabla 'usuarios')
+//   2. Por usuario + password (staff del panel, tabla 'usuarios')
+// También trae el CRUD del personal del panel que usa
+// /admin/usuarios (permiso 'usuarios').
 // =============================================
 
 const conexion = require('../database/conexion');
+
+// Pool con Promesas para las funciones nuevas (async/await).
+const pool = conexion.promise();
 
 const UsuarioModel = {
 
@@ -45,7 +50,7 @@ const UsuarioModel = {
         });
     },
 
-    // Login por usuario + password (lo usan admin y aprendiz)
+    // Login por usuario + password (lo usa el staff del panel)
     // Busca solo por usuario; la comparación de password se hace
     // con bcrypt para soportar hashes (nunca texto plano en SQL).
     loginPorUsuario: (usuario) => {
@@ -206,6 +211,105 @@ const UsuarioModel = {
             ORDER BY c.nombre ASC
         `;
         conexion.query(sql, valores, callback);
+    },
+
+    // ------------------------------------------------
+    // GESTIÓN DEL PERSONAL DEL PANEL (SOLO ADMIN)
+    // ------------------------------------------------
+    // El personal vive en la tabla 'usuarios' (compartida con el POS).
+    // Columnas: id_usuario, nombre, usuario, password, rol.
+    // Le agrego la columna 'activo' para poder desactivar sin borrar.
+
+    // Asegura la columna 'activo' (se llama al arrancar el server).
+    // MySQL no soporta ADD COLUMN IF NOT EXISTS, así que primero
+    // pregunto a information_schema si la columna ya existe.
+    asegurarEsquema: async () => {
+        const [columnas] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'usuarios' AND COLUMN_NAME = 'activo'`
+        );
+        if (columnas.length === 0) {
+            await pool.query('ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1');
+        }
+    },
+
+    // Lista el personal del panel (excluye a los clientes, que están en otra tabla).
+    // Si le paso una búsqueda filtra por nombre o usuario.
+    listarStaff: async (busqueda) => {
+        let filtro = '';
+        const valores = [];
+        if (busqueda && busqueda.trim()) {
+            filtro = 'WHERE nombre LIKE ? OR usuario LIKE ?';
+            const like = `%${busqueda.trim()}%`;
+            valores.push(like, like);
+        }
+
+        const [filas] = await pool.query(
+            `SELECT id_usuario AS id, nombre, usuario, rol, activo
+             FROM usuarios ${filtro}
+             ORDER BY nombre ASC`,
+            valores
+        );
+        return filas;
+    },
+
+    // Trae un usuario del panel por su id.
+    obtenerStaffPorId: async (id) => {
+        const [filas] = await pool.query(
+            'SELECT id_usuario AS id, nombre, usuario, rol, activo FROM usuarios WHERE id_usuario = ?',
+            [id]
+        );
+        return filas && filas[0];
+    },
+
+    // ¿Ya existe ese nombre de usuario? (ignorando un id, para editar).
+    existeUsuario: async (usuario, exceptoId) => {
+        const [filas] = await pool.query(
+            'SELECT id_usuario FROM usuarios WHERE usuario = ? AND id_usuario <> ?',
+            [String(usuario).trim(), Number(exceptoId) || 0]
+        );
+        return filas.length > 0;
+    },
+
+    // Crea un usuario del panel. 'password' ya viene como hash bcrypt.
+    crearStaff: async (datos) => {
+        const [resultado] = await pool.query(
+            'INSERT INTO usuarios (nombre, usuario, password, rol, activo) VALUES (?, ?, ?, ?, 1)',
+            [datos.nombre, datos.usuario, datos.password, datos.rol]
+        );
+        return resultado.insertId;
+    },
+
+    // Actualiza nombre, usuario y rol (no toca la contraseña).
+    actualizarStaff: async (id, datos) => {
+        await pool.query(
+            'UPDATE usuarios SET nombre = ?, usuario = ?, rol = ? WHERE id_usuario = ?',
+            [datos.nombre, datos.usuario, datos.rol, id]
+        );
+    },
+
+    // Cambia la contraseña (hash bcrypt ya generado).
+    actualizarPasswordStaff: async (id, hashPassword) => {
+        await pool.query(
+            'UPDATE usuarios SET password = ? WHERE id_usuario = ?',
+            [hashPassword, id]
+        );
+    },
+
+    // Activa o desactiva un usuario del panel.
+    actualizarActivoStaff: async (id, activo) => {
+        await pool.query(
+            'UPDATE usuarios SET activo = ? WHERE id_usuario = ?',
+            [activo ? 1 : 0, id]
+        );
+    },
+
+    // Cuenta cuántos administradores siguen activos (para no quedarnos sin ninguno).
+    contarAdminsActivos: async () => {
+        const [filas] = await pool.query(
+            "SELECT COUNT(*) AS total FROM usuarios WHERE activo = 1 AND rol IN ('admin', 'Administrador')"
+        );
+        return filas[0] ? Number(filas[0].total) : 0;
     },
 };
 

@@ -20,6 +20,10 @@ coverage/
 public/img/upload/*
 !public/img/upload/.gitkeep
 
+# Imágenes de banners promocionales (subidas)
+public/img/banners/*
+!public/img/banners/.gitkeep
+
 # Backups de base de datos
 *.sql
 *.sql.gz

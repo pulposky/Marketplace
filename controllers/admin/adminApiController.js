@@ -7,7 +7,7 @@
 // =============================================
 
 const UsuarioModel = require('../../models/usuarioModel');
-const { esRolAdmin } = require('../../utils/roles');
+const permisosService = require('../../services/permisosService');
 
 const AdminApiController = {
 
@@ -28,9 +28,9 @@ const AdminApiController = {
     // PATCH /api/admin/clientes/:id
     // Actualiza nombre, dirección y teléfono de un cliente
     actualizarCliente: async (req, res) => {
-        // Validación de rol: solo el personal con acceso total edita clientes.
-        const rolSesion = String(req.session?.usuario?.role || '').trim().toLowerCase();
-        if (!esRolAdmin(rolSesion)) {
+        // Validación de permiso: solo quien tenga 'clientes' edita clientes.
+        const rolSesion = req.session?.usuario?.role;
+        if (!permisosService.tienePermiso(rolSesion, 'clientes')) {
             return res.status(403).json({ ok: false, mensaje: 'No tienes permisos para gestionar clientes.' });
         }
 

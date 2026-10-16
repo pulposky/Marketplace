@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Permisos y Roles - Panel Admin</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
+    <link rel="stylesheet" href="/css/admin/permisosAdmin.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Permisos y Roles</span> - Panel Admin
+            </div>
+            <div class="header-derecha">
+                <a href="/admin" class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <div class="titulo-catalogo">Permisos por rol</div>
+        <p class="texto-ayuda">
+            Marca o desmarca los módulos que puede usar cada rol. El
+            <strong>Administrador</strong> siempre tiene todos los permisos y es el único
+            que puede cambiar esta configuración. Los cambios se aplican al instante.
+        </p>
+
+        <!-- MATRIZ DE PERMISOS (la llena el JS) -->
+        <div class="tabla-envoltura">
+            <table class="tabla-permisos">
+                <thead id="encabezadoPermisos"></thead>
+                <tbody id="cuerpoPermisos"></tbody>
+            </table>
+        </div>
+
+        <div class="acciones-permisos">
+            <button type="button" class="btn-guardar" id="btnGuardarPermisos">Guardar cambios</button>
+            <span class="estado-permisos" id="estadoPermisos"></span>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+    </footer>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/permisosAdmin.js"></script>
+</body>
+</html>

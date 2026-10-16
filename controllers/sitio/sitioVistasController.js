@@ -52,7 +52,7 @@ const SitioVistasController = {
                         ProductoModel.obtenerConOfertas((errorOfertas, ofertas) => {
                             const listaOfertas = (errorOfertas || !Array.isArray(ofertas)) ? [] : ofertas;
 
-                            res.render("main", {
+                            res.render('main', {
                                 destacados: destacadosConImagen,
                                 productos: todosConImagen,
                                 ofertas: listaOfertas,

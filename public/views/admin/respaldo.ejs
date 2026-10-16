@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Respaldo y Exportación - Panel Admin</title>
+    <link rel="stylesheet" href="/css/admin/gestionesAdmin.css">
+    <link rel="stylesheet" href="/css/toast.css">
+    <style>
+        .grid-respaldo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .tarjeta-respaldo {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .tarjeta-respaldo h3 {
+            color: #0f5132;
+            font-size: 1rem;
+        }
+        .tarjeta-respaldo p {
+            color: #6b7280;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+        .caja-completo {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .caja-completo h3 {
+            color: #14532d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Respaldo y Exportación</span> - Panel Admin
+            </div>
+            <div class="header-derecha">
+                <a href="/admin" class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <div class="titulo-catalogo">Respaldo de datos</div>
+        <p class="texto-ayuda">
+            Descarga la información del sistema para guardarla o analizarla. Los archivos CSV se abren
+            directo en Excel (separador <strong>;</strong> con tildes correctas). Por seguridad,
+            <strong>no</strong> se exportan las contraseñas.
+        </p>
+
+        <div class="grid-respaldo">
+            <% tablas.forEach(function (t) { %>
+            <div class="tarjeta-respaldo">
+                <h3><%= t.etiqueta %></h3>
+                <p>Descarga esta tabla en formato CSV.</p>
+                <a class="btn btn-secundario btn-mini" href="/api/admin/respaldo/tabla/<%= t.clave %>" download>
+                    Descargar CSV
+                </a>
+            </div>
+            <% }); %>
+        </div>
+
+        <div class="caja-completo">
+            <h3>Respaldo completo (JSON)</h3>
+            <p>Un solo archivo con todas las tablas de arriba, ideal para guardar una copia completa.</p>
+            <a class="btn btn-primario" href="/api/admin/respaldo/completo" download>
+                Descargar respaldo completo
+            </a>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+    </footer>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+</body>
+</html>

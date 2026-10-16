@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Auditoría - Panel Admin</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
+    <link rel="stylesheet" href="/css/admin/gestionesAdmin.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Auditoría</span> - Panel Admin
+            </div>
+            <div class="header-derecha">
+                <a href="/admin" class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <div class="titulo-catalogo">Registro de acciones</div>
+        <p class="texto-ayuda">
+            Aquí queda registrado quién hizo qué en el panel: confirmaciones y cancelaciones
+            de pedidos, cambios de precios/ofertas, gestión de usuarios, permisos, categorías
+            y configuración.
+        </p>
+
+        <div class="barra-acciones">
+            <input type="text" id="inputBuscarAuditoria" class="input-buscar" placeholder="Buscar por usuario o detalle...">
+            <select id="selectAccion" class="input-buscar" style="flex: 0 0 220px;">
+                <option value="">Todas las acciones</option>
+            </select>
+        </div>
+
+        <div class="tabla-envoltura">
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Acción</th>
+                        <th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTablaAuditoria"></tbody>
+            </table>
+            <div class="estado-vacio" id="estadoVacioAuditoria" style="display:none;">
+                No hay registros para los filtros seleccionados.
+            </div>
+        </div>
+
+        <div class="paginacion">
+            <button type="button" class="btn btn-secundario btn-mini" id="btnPaginaAnterior">← Anterior</button>
+            <span id="textoPagina">Página 1</span>
+            <button type="button" class="btn btn-secundario btn-mini" id="btnPaginaSiguiente">Siguiente →</button>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+    </footer>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/auditoriaAdmin.js"></script>
+</body>
+</html>

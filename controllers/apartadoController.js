@@ -19,6 +19,7 @@ const ProductoModel = require('../models/productoModel');
 const ApartadoModel = require('../models/apartadoModel');
 const NotificacionModel = require('../models/notificacionModel');
 const NotificacionClienteModel = require('../models/notificacionClienteModel');
+const auditoriaService = require('../services/auditoriaService');
 const { calcularPrecioOferta } = require('../utils/helpers');
 const { esRolPanel } = require('../utils/roles');
 
@@ -364,6 +365,7 @@ const ApartadoController = {
                 'Apartado confirmado',
                 `Tu apartado #${id} fue confirmado. Puedes pasar a pagarlo en el punto de venta.`
             );
+            auditoriaService.registrar(req, 'pedido_confirmar', `Confirmó el apartado #${id} (${nombreAdmin}).`);
             return res.status(200).json({ mensaje: 'Pedido confirmado correctamente.' });
         });
     },
@@ -405,6 +407,7 @@ const ApartadoController = {
                 'Apartado entregado',
                 `Tu apartado #${id} fue entregado en el punto de venta. ¡Gracias por comprar con nosotros!`
             );
+            auditoriaService.registrar(req, 'pedido_entregar', `Marcó como entregado el apartado #${id}.`);
             return res.status(200).json({ mensaje: 'Pedido marcado como entregado correctamente.' });
         });
     },
@@ -449,6 +452,7 @@ const ApartadoController = {
                         console.error('Error devolviendo stock:', errStock);
                         return res.status(200).json({ mensaje: 'Pedido cancelado, pero hubo un detalle al restaurar el stock.' });
                     }
+                    auditoriaService.registrar(req, 'pedido_cancelar', `Canceló el apartado #${id} y devolvió el stock.`);
                     return res.status(200).json({ mensaje: 'Pedido cancelado y stock devuelto correctamente.' });
                 });
             });

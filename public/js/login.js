@@ -1,12 +1,12 @@
 // =============================================
-// LOGIN - Inicio de sesión (cliente y admin/aprendiz)
+// LOGIN - Inicio de sesión (cliente y staff del panel)
 // =============================================
 // Función para procesar el login desde los modales.
 // Se usa tanto en main.ejs como en productos.ejs.
 //
 // Soporta dos tipos de payload:
 //   - { documento } → login de cliente
-//   - { usuario, password } → login de admin/aprendiz
+//   - { usuario, password } → login del staff del panel
 //
 // Muestra mensajes de error o éxito en el
 // elemento #mensaje del modal.
@@ -209,7 +209,7 @@ function configurarFormLogin(formulario, opciones) {
         evento.preventDefault();
         const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
 
-        // ----- LOGIN ADMIN / APRENDIZ -----
+        // ----- LOGIN DEL STAFF DEL PANEL -----
         if (tipo === 'usuario') {
             const payload = {
                 usuario: document.getElementById('user')?.value || '',

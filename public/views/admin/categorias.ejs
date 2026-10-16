@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Categorías - Panel Admin</title>
+    <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
+    <link rel="stylesheet" href="/css/admin/gestionesAdmin.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Categorías</span> - Panel Admin
+            </div>
+            <div class="header-derecha">
+                <a href="/admin" class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <div class="titulo-catalogo">Categorías de productos</div>
+        <p class="texto-ayuda">
+            Administra la lista de categorías. Al <strong>renombrar</strong> una categoría,
+            también se actualizan todos los productos que la usaban. Solo se puede eliminar
+            una categoría que no tenga productos asignados.
+        </p>
+
+        <div class="barra-acciones">
+            <input type="text" id="inputNuevaCategoria" class="input-buscar" maxlength="100" placeholder="Nombre de la nueva categoría...">
+            <button type="button" class="btn btn-primario" id="btnCrearCategoria">+ Agregar categoría</button>
+        </div>
+
+        <div class="tabla-envoltura">
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Productos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTablaCategorias"></tbody>
+            </table>
+            <div class="estado-vacio" id="estadoVacioCategorias" style="display:none;">
+                No hay categorías registradas.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL RENOMBRAR -->
+    <div class="modal-fondo" id="modalCategoria">
+        <div class="modal-caja">
+            <h3>Renombrar categoría</h3>
+            <form id="formCategoria">
+                <input type="hidden" id="categoriaId">
+                <div class="campo">
+                    <label for="campoNombreCategoria">Nuevo nombre</label>
+                    <input type="text" id="campoNombreCategoria" maxlength="100" required>
+                </div>
+                <div class="modal-acciones">
+                    <button type="button" class="btn btn-secundario" id="btnCancelarCategoria">Cancelar</button>
+                    <button type="submit" class="btn btn-primario">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+    </footer>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/categoriasAdmin.js"></script>
+</body>
+</html>

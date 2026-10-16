@@ -8,7 +8,8 @@
 
 const ProductoModel = require('../../models/productoModel');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
-const { esRolAdmin, esRolPanel } = require('../../utils/roles');
+const { esRolPanel } = require('../../utils/roles');
+const permisosService = require('../../services/permisosService');
 
 const AdminVistasController = {
 
@@ -43,7 +44,7 @@ const AdminVistasController = {
 
     // Panel de gestión de ofertas del admin
     // Lista todos los productos con su descuento y fechas vigentes
-    // para que admin y aprendiz puedan configurarlos.
+    // para que el staff del panel pueda configurarlos.
     mostrarGestionOfertas: (req, res) => {
         const usuarioSesion = req.session?.usuario;
         if (!usuarioSesion || !esRolPanel(usuarioSesion.role)) {
@@ -98,10 +99,10 @@ const AdminVistasController = {
 
     // Vista de gestión de clientes del admin.
     // La lista la carga el JS con la API para poder buscar en vivo.
-    // Solo el personal con acceso total (admin, supervisor, promotor, técnico).
+    // Requiere el permiso 'clientes'.
     mostrarGestionClientes: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        if (!usuarioSesion || !esRolAdmin(usuarioSesion.role)) {
+        if (!usuarioSesion || !permisosService.tienePermiso(usuarioSesion.role, 'clientes')) {
             return res.redirect('/admin');
         }
 

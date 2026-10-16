@@ -3,7 +3,7 @@
 // =============================================
 // Maneja el login y logout de usuarios.
 // Soporta dos tipos de login:
-//   1. Por usuario + password (admin/aprendiz)
+//   1. Por usuario + password (staff del panel)
 //   2. Por documento (clientes)
 // La sesión se guarda en req.session y el rol
 // se determina buscando en la BD.
@@ -17,7 +17,7 @@ const loginUsuarioController = async (req, res) => {
     // Extraigo los campos del body, puede venir usuario+password o solo documento
     const { documento, usuario, password, nuevaPassword } = req.body;
 
-    // ----- LOGIN POR USUARIO (admin / aprendiz) -----
+    // ----- LOGIN POR USUARIO (staff del panel) -----
     if (usuario) {
         if (!password) {
             return res.json({ ok: false, tipo: 'vacio', mensaje: 'El campo password no puede estar vacío' });
@@ -37,6 +37,13 @@ const loginUsuarioController = async (req, res) => {
                 return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Usuario o contraseña incorrectos' });
             }
 
+            // Si el Administrador desactivó a este usuario, no lo dejo entrar
+            // (la columna 'activo' la crea usuarioModel.asegurarEsquema; si aún
+            // no existe, viene undefined y lo trato como activo).
+            if (usuarioBD.activo !== undefined && Number(usuarioBD.activo) === 0) {
+                return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Tu usuario está desactivado. Contacta al administrador.' });
+            }
+
             // Determino el rol: primero miro la columna 'role', luego 'rol', y también 'is_admin'
             // (EQUIVALENCIAS_ROL mapea 'Administrador' -> 'admin', 'Supervisor' -> 'supervisor', etc.)
             const roleCampo = normalizarRol(usuarioBD.role);
@@ -47,15 +54,16 @@ const loginUsuarioController = async (req, res) => {
             if (usuarioBD.is_admin === 1 || usuarioBD.is_admin === '1') role = 'admin';
 
             // Guardo los datos del usuario en la sesión
+            // (en la BD la llave es id_usuario; uso ?? por si cambia el nombre)
             req.session.usuario = {
-                id: usuarioBD.id,
+                id: usuarioBD.id_usuario ?? usuarioBD.id,
                 usuario: usuarioBD.usuario,
                 nombre: usuarioBD.nombre || usuarioBD.usuario,
                 role
             };
 
-            // Si es del panel admin (admin, supervisor, promotor, técnico o
-            // aprendiz), le digo al frontend que redirija al panel
+            // Si es del panel admin (admin, supervisor, promotor o técnico),
+            // le digo al frontend que redirija al panel
             if (esRolPanel(role)) {
                 return res.json({ ok: true, mensaje: 'Login correcto', redirect: '/admin' });
             }

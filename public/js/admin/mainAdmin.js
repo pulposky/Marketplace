@@ -11,6 +11,12 @@
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Permisos del usuario actual (los inyecta la vista).
+    // Si no vienen, asumo que puede todo para no romper nada.
+    const PERMISOS = new Set(Array.isArray(window.PERMISOS_USUARIO)
+        ? window.PERMISOS_USUARIO
+        : ['productos', 'ofertas', 'pedidos', 'carrusel', 'clientes', 'analitica']);
+
     // Referencias a los elementos del DOM
     const campanaBoton = document.getElementById('campanaBoton');
     const campanaBadge = document.getElementById('campanaBadge');
@@ -224,27 +230,31 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { /* silencioso */ }
 
         // Pedidos pendientes
-        try {
-            const resp = await fetch('/api/admin/apartados?estado=pendiente');
-            if (resp.ok) {
-                const datos = await resp.json();
-                const el = document.getElementById('statPedidos');
-                if (el) el.textContent = Array.isArray(datos) ? datos.length : 0;
-            }
-        } catch (e) { /* silencioso */ }
+        if (PERMISOS.has('pedidos')) {
+            try {
+                const resp = await fetch('/api/admin/apartados?estado=pendiente');
+                if (resp.ok) {
+                    const datos = await resp.json();
+                    const el = document.getElementById('statPedidos');
+                    if (el) el.textContent = Array.isArray(datos) ? datos.length : 0;
+                }
+            } catch (e) { /* silencioso */ }
+        }
 
         // Ofertas activas (solo productos activos con oferta vigente)
-        try {
-            const resp = await fetch('/api/admin/ofertas');
-            if (resp.ok) {
-                const datos = await resp.json();
-                const activas = Array.isArray(datos)
-                    ? datos.filter((p) => String(p.estado).toLowerCase() === 'activo').length
-                    : 0;
-                const el = document.getElementById('statOfertas');
-                if (el) el.textContent = activas;
-            }
-        } catch (e) { /* silencioso */ }
+        if (PERMISOS.has('ofertas')) {
+            try {
+                const resp = await fetch('/api/admin/ofertas');
+                if (resp.ok) {
+                    const datos = await resp.json();
+                    const activas = Array.isArray(datos)
+                        ? datos.filter((p) => String(p.estado).toLowerCase() === 'activo').length
+                        : 0;
+                    const el = document.getElementById('statOfertas');
+                    if (el) el.textContent = activas;
+                }
+            } catch (e) { /* silencioso */ }
+        }
 
         // Notificaciones sin leer
         try {

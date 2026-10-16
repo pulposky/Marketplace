@@ -13,7 +13,8 @@ const helmet = require('helmet');
 const compression = require('compression');
 const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
 const { iniciarCsrf, verificarCsrf } = require('./middleware/csrf');
-const { esRolAdmin, esRolPanel } = require('./utils/roles');
+const { esRolAdmin, esRolPanel, esRolMantenimiento, puedeGestionarCarrusel, esSuperAdmin } = require('./utils/roles');
+const permisosService = require('./services/permisosService');
 
 const app = express();
 
@@ -51,6 +52,9 @@ app.set('view engine', 'ejs');
 app.use((req, res, next) => {
     res.locals.esRolAdmin = esRolAdmin;
     res.locals.esRolPanel = esRolPanel;
+    res.locals.esRolMantenimiento = esRolMantenimiento;
+    res.locals.puedeGestionarCarrusel = puedeGestionarCarrusel;
+    res.locals.esSuperAdmin = esSuperAdmin;
     next();
 });
 
@@ -64,6 +68,15 @@ app.use(limiteGeneral);
 
 // La sesión va ANTES de las rutas, sino no funciona
 app.use(session(require('./config/session')));
+
+// Permisos por rol: expongo a las vistas si el usuario puede hacer algo.
+// Va DESPUÉS de la sesión porque necesita el rol guardado en ella.
+app.use((req, res, next) => {
+    const rol = req.session?.usuario?.role;
+    res.locals.tienePermiso = (clave) => permisosService.tienePermiso(rol, clave);
+    res.locals.permisosUsuario = rol ? permisosService.listaPermisosDe(rol) : [];
+    next();
+});
 
 // Token CSRF: se genera y expone en cada vista
 app.use(iniciarCsrf);

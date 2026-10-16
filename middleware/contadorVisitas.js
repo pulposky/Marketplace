@@ -13,7 +13,7 @@ const { esRolPanel } = require('../utils/roles');
 const contarVisita = (req, res, next) => {
     const rol = req.session?.usuario?.role ? String(req.session.usuario.role).trim().toLowerCase() : '';
 
-    // No registro visitas de los roles del panel admin (incluye aprendiz)
+    // No registro visitas de los roles del panel admin
     if (esRolPanel(rol)) {
         return next();
     }

@@ -3,7 +3,7 @@
 /* ============================================= */
 /* Igual que verificarUsuario pero además exige   */
 /* que el rol sea del panel: admin, supervisor,   */
-/* promotor, técnico o aprendiz. Lo usan las      */
+/* promotor o técnico. Lo usan las               */
 /* rutas del panel admin (clientes, reportes,     */
 /* entregas) para que un cliente logueado no      */
 /* pueda llamarlas.                              */

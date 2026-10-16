@@ -6,14 +6,13 @@
 // =============================================
 
 const HistoricosModel = require('../../models/historicosModel');
-const { esRolAdmin } = require('../../utils/roles');
+const permisosService = require('../../services/permisosService');
 
 const HistoricosVistasController = {
 
     mostrarHistoricos: (req, res) => {
         const usuarioSesion = req.session?.usuario;
-        const rol = usuarioSesion?.role ? String(usuarioSesion.role).trim().toLowerCase() : '';
-        if (!usuarioSesion || !esRolAdmin(rol)) {
+        if (!usuarioSesion || !permisosService.tienePermiso(usuarioSesion.role, 'analitica')) {
             return res.redirect('/admin');
         }
 

@@ -140,6 +140,11 @@ mysql -u root -p < database/schema.sql
 | `apartados` | Solo web | Reservas: pendiente → confirmado → entregado / cancelado (guarda `precio_aplicado`) |
 | `notificaciones` | Solo web | Alertas para el admin |
 | `page_views` | Solo web | Registro de visitas |
+| `permisos_rol` | Solo web | Permisos (módulos) que puede usar cada rol del panel |
+| `categorias` | Solo web | Categorías de productos (nombre único) |
+| `auditoria` | Solo web | Registro de acciones del panel |
+| `contenido_sitio` | Solo web | Bloques de texto editables (mini-CMS), publicados en `/informacion` |
+| `banners` | Solo web | Franjas promocionales de la portada con fechas e imagen |
 | `venta`, `detalle_venta` | Solo POS | Facturación en punto de venta |
 | `compras`, `detalle_compras`, `proveedores` | Solo POS | Compras a proveedores |
 | `entradas`, `detalle_entradas` | Solo POS | Ajustes de inventario |
@@ -180,13 +185,28 @@ Marketplace/
 ├── controllers/
 │   ├── sitio/
 │   │   ├── sitioVistasController.js   # Páginas públicas (inicio, catálogo, detalle)
-│   │   └── sitioApiController.js      # API del carrusel (imágenes JSON)
+│   │   ├── sitioApiController.js      # API del carrusel (imágenes JSON)
+│   │   └── informacionVistasController.js # Páginas públicas /informacion (mini-CMS)
 │   ├── cliente/
 │   │   ├── clienteVistasController.js # Perfil y "mis apartados"
 │   │   └── clienteApiController.js    # API de edición de perfil
 │   ├── admin/
 │   │   ├── adminVistasController.js   # Pantallas del panel
-│   │   └── adminApiController.js      # APIs de gestión de clientes
+│   │   ├── adminApiController.js      # APIs de gestión de clientes
+│   │   ├── permisosVistasController.js# Página de permisos y roles (admin)
+│   │   ├── permisosApiController.js   # APIs leer/guardar permisos por rol
+│   │   ├── usuariosVistasController.js# Página de usuarios del panel (admin)
+│   │   ├── usuariosApiController.js   # APIs CRUD del personal del panel
+│   │   ├── categoriasVistasController.js    # Página de categorías (admin)
+│   │   ├── categoriasApiController.js       # APIs CRUD de categorías
+│   │   ├── auditoriaVistasController.js     # Página de auditoría (admin)
+│   │   ├── auditoriaApiController.js        # API del registro de acciones
+│   │   ├── contenidoVistasController.js     # Página del contenido editable (mini-CMS)
+│   │   ├── contenidoApiController.js        # APIs CRUD de bloques de contenido
+│   │   ├── bannersVistasController.js       # Página de banners/promociones
+│   │   ├── bannersApiController.js          # APIs CRUD de banners (imagen base64)
+│   │   ├── respaldoVistasController.js      # Página de respaldo/exportación
+│   │   └── respaldoApiController.js         # Descargas CSV por tabla + JSON completo
 │   ├── carrusel/
 │   │   ├── carruselVistasController.js# Página de gestión del carrusel
 │   │   └── carruselApiController.js   # APIs subir/eliminar imágenes
@@ -204,7 +224,13 @@ Marketplace/
 │   ├── apartadoModel.js           # SQL de apartados/pedidos y notificaciones de apartados
 │   ├── usuarioModel.js            # SQL de usuarios
 │   ├── notificacionModel.js       # SQL de las notificaciones de la campana
-│   └── historicosModel.js         # SQL de estadísticas
+│   ├── historicosModel.js         # SQL de estadísticas
+│   ├── permisosModel.js           # SQL de permisos por rol (tabla permisos_rol)
+│   ├── categoriaModel.js          # SQL de categorías de productos (tabla categorias)
+│   ├── auditoriaModel.js          # SQL del registro de acciones (tabla auditoria)
+│   ├── contenidoModel.js          # SQL del contenido editable (tabla contenido_sitio)
+│   ├── bannerModel.js             # SQL de banners/promociones (tabla banners)
+│   └── respaldoModel.js           # Lecturas de solo lectura para exportar (sin contraseñas)
 ├── routes/
 │   ├── index.js                   # Une los routers de cada área
 │   ├── publico.js                 # Rutas públicas
@@ -212,12 +238,18 @@ Marketplace/
 │   └── admin.js                   # Rutas del panel de administración
 ├── middleware/
 │   ├── verificarAdmin.js          # Restricción de acceso a administradores
+│   ├── verificarPermiso.js        # Restricción de acceso por permiso/módulo
 │   ├── verificarUsuario.js        # Protección de rutas con sesión
 │   └── contadorVisitas.js         # Registro de tráfico
 ├── services/
-│   └── expirarApartados.js        # Job que cancela apartados tras 1 hora
+│   ├── expirarApartados.js        # Job que cancela apartados tras 1 hora
+│   ├── permisosService.js         # Caché en memoria de los permisos por rol
+│   ├── contenidoService.js        # Caché en memoria de los enlaces de contenido (footer)
+│   ├── auditoriaService.js        # Registro de acciones (fire-and-forget)
+│   └── iniciarModulos.js          # Asegura tablas/columnas nuevas al arrancar
 ├── utils/
 │   ├── helpers.js                 # Utilidades compartidas (normalizar categorías)
+│   ├── permisos.js                # Catálogo de permisos y defaults por rol
 │   └── imagenes.js                # Carga/depuración de imágenes de productos
 ├── database/
 │   ├── schema.sql                 # Script de tablas
@@ -232,7 +264,8 @@ Marketplace/
 │   │   ├── toast.js
 │   │   └── admin/
 │   ├── img/                       # Imágenes
-│   │   └── carrusel/              # Carousel dinámico
+│   │   ├── carrusel/              # Carousel dinámico
+│   │   └── banners/               # Imágenes de los banners/promociones
 │   └── views/                     # Plantillas EJS
 │       ├── main.ejs
 │       ├── productos.ejs
@@ -253,6 +286,8 @@ Marketplace/
 | :---: | --- | --- |
 | `GET` | `/` | Página principal |
 | `GET` | `/catalogo` | Catálogo con filtros |
+| `GET` | `/informacion` | Índice del contenido del sitio (mini-CMS) |
+| `GET` | `/informacion/:clave` | Bloque de contenido publicado (mini-CMS) |
 | `GET` | `/api/productos` | Productos en JSON |
 | `GET` | `/api/carrusel-imagenes` | Imágenes del carousel |
 | `GET` | `/api/verificar-sesion` | Verificar sesión activa |
@@ -285,6 +320,14 @@ Marketplace/
 | `GET` | `/admin/pedidos` | Historial de pedidos |
 | `GET` | `/admin/clientes` | Gestión de clientes |
 | `GET` | `/admin/historicos` | Dashboard estadísticas |
+| `GET` | `/admin/carrusel` | Imágenes del carrusel |
+| `GET` | `/admin/permisos` | Permisos y roles (solo Administrador) |
+| `GET` | `/admin/usuarios` | Personal del panel (permiso `usuarios`) |
+| `GET` | `/admin/categorias` | Categorías de productos (permiso `categorias`) |
+| `GET` | `/admin/auditoria` | Registro de acciones (permiso `auditoria`) |
+| `GET` | `/admin/contenido` | Contenido editable del sitio (permiso `contenido`) |
+| `GET` | `/admin/banners` | Banners y promociones (permiso `banners`) |
+| `GET` | `/admin/respaldo` | Respaldo y exportación (permiso `respaldo`) |
 | `PATCH` | `/api/admin/productos/limite-venta/:id` | Actualizar stock |
 | `PATCH` | `/api/admin/productos/estado/:id` | Cambiar estado |
 | `GET` | `/api/admin/ofertas` | Listar ofertas activas |
@@ -299,6 +342,29 @@ Marketplace/
 | `GET` | `/api/admin/notificaciones` | Notificaciones |
 | `PATCH` | `/api/admin/notificaciones/:id/leida` | Marcar leída |
 | `PATCH` | `/api/admin/notificaciones/todas-leidas` | Marcar todas |
+| `GET` | `/api/admin/permisos` | Leer permisos por rol (solo Administrador) |
+| `PATCH` | `/api/admin/permisos` | Guardar permisos por rol (solo Administrador) |
+| `GET` | `/api/admin/usuarios` | Listar personal del panel (permiso `usuarios`) |
+| `POST` | `/api/admin/usuarios` | Crear usuario del panel (permiso `usuarios`) |
+| `PATCH` | `/api/admin/usuarios/:id` | Editar usuario del panel (permiso `usuarios`) |
+| `PATCH` | `/api/admin/usuarios/:id/password` | Cambiar contraseña (permiso `usuarios`) |
+| `PATCH` | `/api/admin/usuarios/:id/activo` | Activar/desactivar (permiso `usuarios`) |
+| `GET` | `/api/admin/categorias` | Listar categorías (permiso `categorias`) |
+| `POST` | `/api/admin/categorias` | Crear categoría (permiso `categorias`) |
+| `PATCH` | `/api/admin/categorias/:id` | Renombrar categoría (permiso `categorias`) |
+| `DELETE` | `/api/admin/categorias/:id` | Eliminar categoría (permiso `categorias`) |
+| `GET` | `/api/admin/auditoria` | Registro de acciones (permiso `auditoria`) |
+| `GET` | `/api/admin/contenido` | Listar bloques de contenido (permiso `contenido`) |
+| `POST` | `/api/admin/contenido` | Crear bloque de contenido (permiso `contenido`) |
+| `PATCH` | `/api/admin/contenido/:id` | Editar bloque de contenido (permiso `contenido`) |
+| `DELETE` | `/api/admin/contenido/:id` | Eliminar bloque de contenido (permiso `contenido`) |
+| `GET` | `/api/admin/banners` | Listar banners (permiso `banners`) |
+| `POST` | `/api/admin/banners` | Crear banner (permiso `banners`) |
+| `PATCH` | `/api/admin/banners/:id` | Editar banner (permiso `banners`) |
+| `PATCH` | `/api/admin/banners/:id/activo` | Activar/desactivar banner (permiso `banners`) |
+| `DELETE` | `/api/admin/banners/:id` | Eliminar banner (permiso `banners`) |
+| `GET` | `/api/admin/respaldo/completo` | Descargar respaldo completo JSON (permiso `respaldo`) |
+| `GET` | `/api/admin/respaldo/tabla/:clave` | Descargar tabla en CSV (permiso `respaldo`) |
 
 ### 📈 Estadísticas
 
@@ -335,8 +401,9 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 | Rol | Permisos |
 | :---: | --- |
 | 👤 **Cliente** | Explorar catálogo, buscar, apartar, cancelar apartados |
-| 👨‍💼 **Empleado** | Panel admin, gestión de productos, pedidos y estadísticas |
-| 🛡️ **Admin** | Control total: productos, pedidos, usuarios, notificaciones |
+| 🛠️ **Técnico** | Mantenimiento: productos/stock, precios/ofertas, imágenes (producto y carrusel) y pedidos |
+| 👨‍💼 **Supervisor / Promotor** | Panel completo: productos, pedidos, clientes, estadísticas, carrusel, categorías, configuración, contenido y banners |
+| 🛡️ **Admin** | **Superadmin**: control total; único que administra permisos. Puede delegar cualquier módulo (usuarios, configuración, categorías, auditoría, contenido, banners, respaldo...) con `/admin/permisos` |
 
 ---
 

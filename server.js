@@ -28,6 +28,25 @@ const app = require('./app');
 const expirarApartados = require('./services/expirarApartados');
 expirarApartados.iniciar();
 
+// -----------------------------------------------
+// PERMISOS POR ROL
+// -----------------------------------------------
+// Carga en memoria la matriz de permisos guardada en MySQL
+// (crea la tabla y siembra los valores por defecto si falta).
+// Mientras carga se usan los valores por defecto, así la app
+// arranca aunque la base de datos tarde o no esté disponible.
+const permisosService = require('./services/permisosService');
+permisosService.iniciar();
+
+// -----------------------------------------------
+// MÓDULOS DEL SUPERADMIN
+// -----------------------------------------------
+// Personal del panel (columna usuarios.activo),
+// categorías y auditoría. Crea las tablas/columnas
+// que falten para esos módulos.
+const iniciarModulos = require('./services/iniciarModulos');
+iniciarModulos.iniciar();
+
 // Configuración del puerto (prioriza .env, por defecto usa 3000)
 const PORT = Number(process.env.PORT) || 3000;
 

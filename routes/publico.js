@@ -27,6 +27,8 @@ router.get('/catalogo', SitioVistasController.mostrarCatalogo);
 // Vista: ficha de detalle de un producto
 router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
 
+// Vistas: contenido editable del sitio (mini-CMS)
+
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
 router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);

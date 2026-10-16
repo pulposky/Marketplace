@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const auditoriaService = require('../../services/auditoriaService');
 
 const CARPETA_CARRUSEL = path.join(__dirname, '..', '..', 'public', 'img', 'carrusel');
 
@@ -87,6 +88,8 @@ const CarruselApiController = {
                     return res.status(500).json({ error: 'Error en el servidor al guardar la imagen.' });
                 }
 
+                auditoriaService.registrar(req, 'carrusel_subir', `Subió la imagen "${nombreArchivo}" al carrusel.`);
+
                 return res.json({
                     ok: true,
                     mensaje: 'Imagen agregada al carrusel correctamente.',
@@ -125,6 +128,8 @@ const CarruselApiController = {
                     console.error('Error eliminando imagen de carrusel:', errorFs);
                     return res.status(500).json({ error: 'Error en el servidor al eliminar la imagen.' });
                 }
+
+                auditoriaService.registrar(req, 'carrusel_eliminar', `Eliminó la imagen "${nombre}" del carrusel.`);
 
                 return res.json({ ok: true, mensaje: 'Imagen eliminada del carrusel.' });
             });

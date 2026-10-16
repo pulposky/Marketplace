@@ -19,53 +19,74 @@ const NotificacionesController = require('../controllers/notificacionesControlle
 const HistoricosVistasController = require('../controllers/historicos/historicosVistasController');
 const HistoricosApiController = require('../controllers/historicos/historicosApiController');
 const ReportesController = require('../controllers/reportesController');
+const PermisosVistasController = require('../controllers/admin/permisosVistasController');
+const PermisosApiController = require('../controllers/admin/permisosApiController');
+const UsuariosVistasController = require('../controllers/admin/usuariosVistasController');
+const UsuariosApiController = require('../controllers/admin/usuariosApiController');
+const CategoriasVistasController = require('../controllers/admin/categoriasVistasController');
+const CategoriasApiController = require('../controllers/admin/categoriasApiController');
+const AuditoriaVistasController = require('../controllers/admin/auditoriaVistasController');
+const AuditoriaApiController = require('../controllers/admin/auditoriaApiController');
+const RespaldoVistasController = require('../controllers/admin/respaldoVistasController');
+const RespaldoApiController = require('../controllers/admin/respaldoApiController');
 const verificarAdmin = require('../middleware/verificarAdmin');
 const verificarRol = require('../middleware/verificarRol');
+const verificarPermiso = require('../middleware/verificarPermiso');
 const noCache = require('../middleware/noCache');
-const { ROLES_ADMIN } = require('../utils/roles');
+const { ROL_SUPERADMIN } = require('../utils/roles');
 
 router.use(noCache);
 
 // -----------------------------------------------
 // PÁGINAS DEL PANEL
 // -----------------------------------------------
-// Accesos generales (admin y aprendiz)
+// Acceso general al panel (cualquier rol del panel).
+// Cada sección interna se protege con su permiso.
 router.get('/admin', verificarAdmin, AdminVistasController.mostrarMainAdmin);
-router.get('/admin/habilitar-producto', verificarAdmin, AdminVistasController.mostrarHabilitarProducto);
-router.get('/admin/pedidos', verificarAdmin, AdminVistasController.mostrarPedidos);
+router.get('/admin/habilitar-producto', verificarPermiso('productos'), AdminVistasController.mostrarHabilitarProducto);
+router.get('/admin/pedidos', verificarPermiso('pedidos'), AdminVistasController.mostrarPedidos);
 // Historial: pedidos confirmados, entregados y cancelados (no pendientes)
-router.get('/admin/historial-pedidos', verificarAdmin, AdminVistasController.mostrarHistorialPedidos);
+router.get('/admin/historial-pedidos', verificarPermiso('pedidos'), AdminVistasController.mostrarHistorialPedidos);
 
-// Secciones exclusivas del personal con acceso total
-// (admin, supervisor, promotor y técnico; el aprendiz no
-// gestiona clientes, analítica ni carrusel; sí gestiona ofertas)
-router.get('/admin/ofertas', verificarAdmin, AdminVistasController.mostrarGestionOfertas);
-router.get('/admin/historicos', verificarRol(ROLES_ADMIN), HistoricosVistasController.mostrarHistoricos);
-router.get('/admin/clientes', verificarRol(ROLES_ADMIN), AdminVistasController.mostrarGestionClientes);
-router.get('/admin/carrusel', verificarRol(ROLES_ADMIN), CarruselVistasController.mostrarGestionCarrusel);
+// Secciones protegidas por permiso (el Administrador las administra
+// desde /admin/permisos).
+router.get('/admin/ofertas', verificarPermiso('ofertas'), AdminVistasController.mostrarGestionOfertas);
+router.get('/admin/historicos', verificarPermiso('analitica'), HistoricosVistasController.mostrarHistoricos);
+router.get('/admin/clientes', verificarPermiso('clientes'), AdminVistasController.mostrarGestionClientes);
+router.get('/admin/carrusel', verificarPermiso('carrusel'), CarruselVistasController.mostrarGestionCarrusel);
+
+// Administración de permisos: SOLO el Administrador (superadmin).
+router.get('/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosVistasController.mostrarPermisos);
+
+// Módulos del superadmin que también se pueden delegar por permiso:
+// personal del panel, ajustes del sitio, categorías y auditoría.
+// El Administrador los concede o quita desde /admin/permisos.
+router.get('/admin/usuarios', verificarPermiso('usuarios'), UsuariosVistasController.mostrarUsuarios);
+router.get('/admin/categorias', verificarPermiso('categorias'), CategoriasVistasController.mostrarCategorias);
+router.get('/admin/auditoria', verificarPermiso('auditoria'), AuditoriaVistasController.mostrarAuditoria);
+router.get('/admin/respaldo', verificarPermiso('respaldo'), RespaldoVistasController.mostrarRespaldo);
 
 // -----------------------------------------------
 // API DE PRODUCTOS
 // -----------------------------------------------
 // PATCH para actualizar límite de venta y estado de un producto
-router.patch('/api/admin/productos/limite-venta/:id', verificarAdmin, ProductoController.actualizarLimiteVenta);
-router.patch('/api/admin/productos/estado/:id', verificarAdmin, ProductoController.actualizarEstadoManual);
+router.patch('/api/admin/productos/limite-venta/:id', verificarPermiso('productos'), ProductoController.actualizarLimiteVenta);
+router.patch('/api/admin/productos/estado/:id', verificarPermiso('productos'), ProductoController.actualizarEstadoManual);
 
 // CRUD de productos: crear, editar datos y gestionar la imagen
-router.post('/api/admin/productos', verificarAdmin, ProductoController.crearProducto);
-router.patch('/api/admin/productos/:id/datos', verificarAdmin, ProductoController.actualizarDatosProducto);
-router.post('/api/admin/productos/:id/imagen', verificarAdmin, ProductoController.subirImagenProducto);
+router.post('/api/admin/productos', verificarPermiso('productos'), ProductoController.crearProducto);
+router.patch('/api/admin/productos/:id/datos', verificarPermiso('productos'), ProductoController.actualizarDatosProducto);
+router.post('/api/admin/productos/:id/imagen', verificarPermiso('productos'), ProductoController.subirImagenProducto);
 
 // -----------------------------------------------
 // API DE OFERTAS
 // -----------------------------------------------
 // GET: productos en oferta vigente (con precio original y descontado)
 // PATCH: guarda el descuento y las fechas de vigencia de un producto
-// Admin y aprendiz configuran ofertas.
-router.get('/api/admin/ofertas', verificarAdmin, ProductoController.obtenerOfertasActivas);
+router.get('/api/admin/ofertas', verificarPermiso('ofertas'), ProductoController.obtenerOfertasActivas);
 // Nota: la ruta de precio va ANTES de la de :id para que Express la matchee primero
-router.patch('/api/admin/ofertas/precio/:id', verificarAdmin, ProductoController.actualizarPrecioRapido);
-router.patch('/api/admin/ofertas/:id', verificarAdmin, ProductoController.actualizarOferta);
+router.patch('/api/admin/ofertas/precio/:id', verificarPermiso('ofertas'), ProductoController.actualizarPrecioRapido);
+router.patch('/api/admin/ofertas/:id', verificarPermiso('ofertas'), ProductoController.actualizarOferta);
 
 // -----------------------------------------------
 // API DE PEDIDOS / APARTADOS
@@ -76,34 +97,33 @@ router.patch('/api/admin/ofertas/:id', verificarAdmin, ProductoController.actual
 // PATCH confirmar: cambia estado a "confirmado"
 // PATCH entregado: marca el pedido como entregado
 // PATCH cancelar: cambia estado a "cancelado" y devuelve el stock
-router.get('/api/admin/apartados', verificarAdmin, ApartadoController.obtenerApartadosAdmin);
-router.patch('/api/admin/apartados/confirmar/:id', verificarAdmin, ApartadoController.confirmarApartado);
-router.patch('/api/admin/apartados/entregado/:id', verificarAdmin, ApartadoController.marcarEntregado);
-router.patch('/api/admin/apartados/cancelar/:id', verificarAdmin, ApartadoController.cancelarApartadoAdmin);
+router.get('/api/admin/apartados', verificarPermiso('pedidos'), ApartadoController.obtenerApartadosAdmin);
+router.patch('/api/admin/apartados/confirmar/:id', verificarPermiso('pedidos'), ApartadoController.confirmarApartado);
+router.patch('/api/admin/apartados/entregado/:id', verificarPermiso('pedidos'), ApartadoController.marcarEntregado);
+router.patch('/api/admin/apartados/cancelar/:id', verificarPermiso('pedidos'), ApartadoController.cancelarApartadoAdmin);
 
 // -----------------------------------------------
 // API DE GESTIÓN DE CLIENTES
 // -----------------------------------------------
 // GET: lista de clientes con sus compras; acepta ?busqueda= para filtrar
 // PATCH: actualiza nombre, dirección y teléfono de un cliente
-router.get('/api/admin/clientes', verificarRol(ROLES_ADMIN), AdminApiController.listarClientes);
-router.patch('/api/admin/clientes/:id', verificarRol(ROLES_ADMIN), AdminApiController.actualizarCliente);
+router.get('/api/admin/clientes', verificarPermiso('clientes'), AdminApiController.listarClientes);
+router.patch('/api/admin/clientes/:id', verificarPermiso('clientes'), AdminApiController.actualizarCliente);
 
 // -----------------------------------------------
 // API DE CARRUSEL
 // -----------------------------------------------
-// Solo el admin gestiona las imágenes de la portada.
 // POST subir: recibe un dataURL base64 y la guarda en img/carrusel
 // POST eliminar: borra una imagen de la carpeta del carrusel
-router.post('/api/admin/carrusel/subir', verificarRol(ROLES_ADMIN), CarruselApiController.subirImagen);
-router.post('/api/admin/carrusel/eliminar', verificarRol(ROLES_ADMIN), CarruselApiController.eliminarImagen);
+router.post('/api/admin/carrusel/subir', verificarPermiso('carrusel'), CarruselApiController.subirImagen);
+router.post('/api/admin/carrusel/eliminar', verificarPermiso('carrusel'), CarruselApiController.eliminarImagen);
 
 // -----------------------------------------------
 // API DE REPORTES CSV
 // -----------------------------------------------
 // Descargan un archivo .csv con todos los pedidos o clientes
-router.get('/api/admin/reportes/pedidos.csv', verificarRol(ROLES_ADMIN), ReportesController.exportarPedidosCSV);
-router.get('/api/admin/reportes/clientes.csv', verificarRol(ROLES_ADMIN), ReportesController.exportarClientesCSV);
+router.get('/api/admin/reportes/pedidos.csv', verificarPermiso('analitica'), ReportesController.exportarPedidosCSV);
+router.get('/api/admin/reportes/clientes.csv', verificarPermiso('analitica'), ReportesController.exportarClientesCSV);
 
 // -----------------------------------------------
 // API DE NOTIFICACIONES
@@ -118,13 +138,55 @@ router.patch('/api/admin/notificaciones/todas-leidas', verificarAdmin, Notificac
 // -----------------------------------------------
 // API DE HISTÓRICOS / ESTADÍSTICAS
 // -----------------------------------------------
-// Solo el admin ve analítica y reportes.
-router.get('/api/admin/historicos/productos', verificarRol(ROLES_ADMIN), HistoricosApiController.apiProductosMasVendidos);
-router.get('/api/admin/historicos/clientes', verificarRol(ROLES_ADMIN), HistoricosApiController.apiClientesQueMasCompran);
-router.get('/api/admin/historicos/estados', verificarRol(ROLES_ADMIN), HistoricosApiController.apiPedidosPorEstado);
-router.get('/api/admin/historicos/ventas-dia', verificarRol(ROLES_ADMIN), HistoricosApiController.apiVentasPorDia);
-router.get('/api/admin/historicos/visitas-dia', verificarRol(ROLES_ADMIN), HistoricosApiController.apiVisitasPorDia);
-router.get('/api/admin/historicos/rutas', verificarRol(ROLES_ADMIN), HistoricosApiController.apiVisitasPorRuta);
-router.get('/api/admin/historicos/exportar', verificarRol(ROLES_ADMIN), HistoricosApiController.exportarHistoricos);
+router.get('/api/admin/historicos/productos', verificarPermiso('analitica'), HistoricosApiController.apiProductosMasVendidos);
+router.get('/api/admin/historicos/clientes', verificarPermiso('analitica'), HistoricosApiController.apiClientesQueMasCompran);
+router.get('/api/admin/historicos/estados', verificarPermiso('analitica'), HistoricosApiController.apiPedidosPorEstado);
+router.get('/api/admin/historicos/ventas-dia', verificarPermiso('analitica'), HistoricosApiController.apiVentasPorDia);
+router.get('/api/admin/historicos/visitas-dia', verificarPermiso('analitica'), HistoricosApiController.apiVisitasPorDia);
+router.get('/api/admin/historicos/rutas', verificarPermiso('analitica'), HistoricosApiController.apiVisitasPorRuta);
+router.get('/api/admin/historicos/exportar', verificarPermiso('analitica'), HistoricosApiController.exportarHistoricos);
+
+// -----------------------------------------------
+// API DE PERMISOS POR ROL (SOLO Administrador)
+// -----------------------------------------------
+router.get('/api/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosApiController.obtenerPermisos);
+router.patch('/api/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosApiController.guardarPermisos);
+
+// -----------------------------------------------
+// API DE USUARIOS DEL PANEL (permiso 'usuarios')
+// -----------------------------------------------
+router.get('/api/admin/usuarios', verificarPermiso('usuarios'), UsuariosApiController.listar);
+router.post('/api/admin/usuarios', verificarPermiso('usuarios'), UsuariosApiController.crear);
+router.patch('/api/admin/usuarios/:id/password', verificarPermiso('usuarios'), UsuariosApiController.cambiarPassword);
+router.patch('/api/admin/usuarios/:id/activo', verificarPermiso('usuarios'), UsuariosApiController.cambiarActivo);
+router.patch('/api/admin/usuarios/:id', verificarPermiso('usuarios'), UsuariosApiController.actualizar);
+
+// -----------------------------------------------
+// API DE CATEGORÍAS (permiso 'categorias')
+// -----------------------------------------------
+router.get('/api/admin/categorias', verificarPermiso('categorias'), CategoriasApiController.listar);
+router.post('/api/admin/categorias', verificarPermiso('categorias'), CategoriasApiController.crear);
+router.patch('/api/admin/categorias/:id', verificarPermiso('categorias'), CategoriasApiController.renombrar);
+router.delete('/api/admin/categorias/:id', verificarPermiso('categorias'), CategoriasApiController.eliminar);
+
+// -----------------------------------------------
+// API DE AUDITORÍA (permiso 'auditoria')
+// -----------------------------------------------
+router.get('/api/admin/auditoria', verificarPermiso('auditoria'), AuditoriaApiController.listar);
+
+// -----------------------------------------------
+// API DE CONTENIDO DEL SITIO / MINI-CMS (permiso 'contenido')
+// -----------------------------------------------
+
+// -----------------------------------------------
+// API DE BANNERS / PROMOCIONES (permiso 'banners')
+// -----------------------------------------------
+// La ruta de :id/activo va ANTES de :id para que Express la matchee primero
+
+// -----------------------------------------------
+// API DE RESPALDO Y EXPORTACIÓN (permiso 'respaldo')
+// -----------------------------------------------
+router.get('/api/admin/respaldo/completo', verificarPermiso('respaldo'), RespaldoApiController.exportarCompleto);
+router.get('/api/admin/respaldo/tabla/:clave', verificarPermiso('respaldo'), RespaldoApiController.exportarTabla);
 
 module.exports = router;

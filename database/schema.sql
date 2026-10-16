@@ -23,7 +23,9 @@
 --   SOLO POS    : proveedores, venta, detalle_venta, compras,
 --                 detalle_compras, entradas, detalle_entradas,
 --                 remision, detalle_remision
---   SOLO WEB    : apartados, notificaciones, page_views
+--   SOLO WEB    : apartados, notificaciones, page_views, permisos_rol,
+--                 categorias, auditoria, contenido_sitio,
+--                 banners
 --
 -- Nota sobre el inventario entre sistemas:
 --   - El POS maneja el stock físico en producto.stock.
@@ -43,16 +45,25 @@ USE `sena_pdv`;
 -- ------------------------------------------------------------
 -- Tabla: usuarios
 -- Login del personal del panel web (Administrador, Supervisor,
--- Promotor, Técnico, Aprendiz) y de cajeros en el POS.
+-- Promotor, Técnico) y de cajeros en el POS.
 -- Los roles del panel se normalizan en utils/roles.js
+--
+-- Columnas propias de la WEB:
+--   activo: 1 = puede iniciar sesión, 0 = desactivado por el
+--           Administrador (la web lo revisa al hacer login).
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `usuarios` (
   `id_usuario` INT AUTO_INCREMENT PRIMARY KEY,
   `nombre` VARCHAR(100) NOT NULL,
   `usuario` VARCHAR(50) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
-  `rol` VARCHAR(50) NOT NULL DEFAULT 'Cajero'
+  `rol` VARCHAR(50) NOT NULL DEFAULT 'Cajero',
+  `activo` TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Para bases ya creadas por el POS (que no tienen 'activo').
+-- La web también la crea sola al arrancar (models/usuarioModel.asegurarEsquema).
+ALTER TABLE `usuarios` ADD COLUMN IF NOT EXISTS `activo` TINYINT(1) NOT NULL DEFAULT 1;
 
 -- Usuario inicial por defecto (admin / admin123)
 -- Password hasheada con bcrypt para mayor seguridad
@@ -358,6 +369,93 @@ CREATE TABLE IF NOT EXISTS `page_views` (
   `ip` VARCHAR(45) DEFAULT NULL,
   `user_agent` TEXT DEFAULT NULL,
   `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabla: permisos_rol (permisos por rol del panel web)
+-- ------------------------------------------------------------
+-- Guarda qué módulos del panel puede usar cada rol. La administra
+-- el Administrador (superadmin) desde /admin/permisos. Las claves
+-- de permiso y los valores por defecto viven en utils/permisos.js.
+-- El Administrador no se guarda: siempre tiene todos los permisos.
+-- La app crea esta tabla y la siembra sola al arrancar; este bloque
+-- queda para documentación y para instalaciones manuales.
+CREATE TABLE IF NOT EXISTS `permisos_rol` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `rol` VARCHAR(50) NOT NULL,
+  `permiso` VARCHAR(50) NOT NULL,
+  `permitido` TINYINT(1) NOT NULL DEFAULT 0,
+  UNIQUE KEY `uk_rol_permiso` (`rol`, `permiso`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- Tabla: categorias (categorías de productos)
+-- ------------------------------------------------------------
+-- Lista canónica de categorías. El producto sigue guardando su
+-- categoría como texto en producto.categoria; al renombrar una
+-- categoría se actualizan los productos que la usaban.
+-- La app la crea y la siembra sola con las categorías existentes.
+CREATE TABLE IF NOT EXISTS `categorias` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(100) NOT NULL,
+  UNIQUE KEY `uk_categoria_nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabla: auditoria (registro de acciones del panel)
+-- ------------------------------------------------------------
+-- Anota quién hizo qué en el panel (pedidos, precios/ofertas,
+-- usuarios, permisos, categorías, configuración, carrusel).
+-- La app la crea sola al arrancar.
+CREATE TABLE IF NOT EXISTS `auditoria` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario` VARCHAR(100) DEFAULT NULL,
+  `rol` VARCHAR(50) DEFAULT NULL,
+  `accion` VARCHAR(50) NOT NULL,
+  `detalle` VARCHAR(255) DEFAULT NULL,
+  `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_auditoria_fecha` (`fecha`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabla: contenido_sitio (bloques de texto editables / mini-CMS)
+-- ------------------------------------------------------------
+-- Bloques de texto que el Administrador edita en /admin/contenido
+-- (quiénes somos, misión, términos...). Cada bloque tiene una
+-- 'clave' (slug) que forma su URL pública: /informacion/:clave.
+-- La app la crea y siembra sola al arrancar.
+CREATE TABLE IF NOT EXISTS `contenido_sitio` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `clave` VARCHAR(60) NOT NULL,
+  `titulo` VARCHAR(150) NOT NULL,
+  `contenido` TEXT DEFAULT NULL,
+  `orden` INT NOT NULL DEFAULT 0,
+  `actualizado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uk_contenido_clave` (`clave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabla: banners (franjas promocionales de la portada)
+-- ------------------------------------------------------------
+-- Banners que el Administrador crea en /admin/banners. Se muestran
+-- en la portada dentro de su rango de fechas (fecha_inicio/fecha_fin;
+-- si son NULL se muestran siempre). 'imagen' es el nombre del archivo
+-- guardado en public/img/banners. La app la crea sola al arrancar.
+CREATE TABLE IF NOT EXISTS `banners` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `titulo` VARCHAR(150) NOT NULL,
+  `texto` TEXT DEFAULT NULL,
+  `texto_boton` VARCHAR(60) DEFAULT NULL,
+  `enlace` VARCHAR(255) DEFAULT NULL,
+  `imagen` VARCHAR(255) DEFAULT NULL,
+  `color_fondo` VARCHAR(30) NOT NULL DEFAULT '#0b6e4f',
+  `color_texto` VARCHAR(30) NOT NULL DEFAULT '#ffffff',
+  `fecha_inicio` DATETIME DEFAULT NULL,
+  `fecha_fin` DATETIME DEFAULT NULL,
+  `activo` TINYINT(1) NOT NULL DEFAULT 1,
+  `orden` INT NOT NULL DEFAULT 0,
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
