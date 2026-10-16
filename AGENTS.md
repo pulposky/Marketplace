@@ -277,6 +277,9 @@ buscando el cliente **por nombre** (`notificacionClienteModel.buscarClientePorNo
 - **Carrusel**: imágenes en `public/img/carrusel/`, se listan dinámicamente
   (`GET /api/carrusel-imagenes`); al subir se prefijan `NNN-` para ordenar.
 - **Imágenes de producto**: `public/img/upload/`, asociadas **por nombre normalizado** (si el nombre cambia, se rompe la imagen).
+- **Créditos del creador**: la portada incluye `public/views/partials/creditoCreador.ejs`
+  en su footer. Sus estilos están en `public/css/creditoCreador.css`; contiene el nombre,
+  programa, ficha y portafolio del creador.
 
 ## 10. Deuda técnica conocida (tener cuidado / posibles tareas)
 

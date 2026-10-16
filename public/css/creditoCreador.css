@@ -1,0 +1,157 @@
+/* =============================================
+   CREDITOS Y AUTORIA DEL SITIO
+   ============================================= */
+
+.credito-creador {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    margin: 0 40px 28px;
+    padding: 20px 24px;
+    color: #dbe7f1;
+    background: rgba(255, 255, 255, .045);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 14px;
+    animation: aparecer-credito .65s ease-out both;
+}
+
+.credito-creador-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.credito-creador-icono {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    color: #b8e986;
+    background: rgba(57, 169, 0, .16);
+    border: 1px solid rgba(142, 218, 89, .3);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    transition: transform .25s ease, background-color .25s ease;
+}
+
+.credito-creador:hover .credito-creador-icono {
+    transform: rotate(-8deg) scale(1.06);
+    background: rgba(57, 169, 0, .25);
+}
+
+.credito-creador-etiqueta {
+    margin: 0 0 4px;
+    color: #a6bdcc;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.credito-creador h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.credito-creador h2 span {
+    color: #b8e986;
+}
+
+.credito-creador-datos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px 28px;
+}
+
+.credito-creador-datos p {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    color: #dbe7f1;
+    font-size: .82rem;
+}
+
+.credito-creador-datos strong {
+    color: #a6bdcc;
+    font-size: .72rem;
+    font-weight: 600;
+}
+
+.credito-creador-datos a {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    padding: 6px 11px;
+    color: #b8e986;
+    background: rgba(57, 169, 0, .12);
+    border: 1px solid rgba(142, 218, 89, .28);
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.credito-creador-datos a:hover,
+.credito-creador-datos a:focus-visible {
+    color: #fff;
+    background: rgba(57, 169, 0, .32);
+    border-color: rgba(184, 233, 134, .7);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+@keyframes aparecer-credito {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 850px) {
+    .credito-creador {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+        margin: 0 20px 24px;
+    }
+
+    .credito-creador-datos {
+        justify-content: flex-start;
+        padding-left: 56px;
+    }
+}
+
+@media (max-width: 520px) {
+    .credito-creador {
+        padding: 18px;
+    }
+
+    .credito-creador-datos {
+        flex-direction: column;
+        padding-left: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .credito-creador,
+    .credito-creador-icono,
+    .credito-creador-datos a {
+        animation: none;
+        transition: none;
+    }
+
+    .credito-creador:hover .credito-creador-icono,
+    .credito-creador-datos a:hover,
+    .credito-creador-datos a:focus-visible {
+        transform: none;
+    }
+}
