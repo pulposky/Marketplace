@@ -447,47 +447,7 @@
             </div>
         </div>
 
-        <!-- MODAL OLVIDÉ CONTRASEÑA -->
-        <div class="modal-fondo" id="modalOlvide">
-            <div class="modal-contenido">
-                <span class="cerrar-modal" id="cerrarModalOlvide">&times;</span>
-                <div class="contenedor-registro">
-                    <div class="marca">
-                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
-                        <span class="marca-texto">Marketplace</span>
-                    </div>
-                    <main class="registro" role="main">
-                        <div class="registro-encabezado">
-                            <h1>Olvidé mi contraseña</h1>
-                            <p>Completa tu documento y crea una nueva contraseña</p>
-                        </div>
-                        <form class="registro-form" id="formOlvide">
-                            <div class="campo">
-                                <label for="olvDocumento">Documento</label>
-                                <input type="text" id="olvDocumento" name="documento" placeholder="Número de documento">
-                            </div>
-                            <div class="campo">
-                                <label for="olvNuevaPassword">Nueva contraseña</label>
-                                <input type="password" id="olvNuevaPassword" name="nuevaPassword" placeholder="Nueva contraseña">
-                            </div>
-                            <div class="campo">
-                                <label for="olvConfirmarPassword">Confirmar contraseña</label>
-                                <input type="password" id="olvConfirmarPassword" placeholder="Repite tu contraseña">
-                            </div>
-                            <button type="submit" class="btn-principal">Restablecer contraseña</button>
-                        </form>
-                        <p class="registro-pie">
-                            ¿Ya la recordaste? <a href="#" class="enlace-fuerte" id="volverLoginOlvide">Inicia sesión</a>
-                        </p>
-                        <p id="mensajeOlvide" class="mensaje-registro"></p>
-                    </main>
-                    <footer class="pie-pagina">
-                        <span class="pie-punto" aria-hidden="true"></span>
-                        SENA · Colombia
-                    </footer>
-                </div>
-            </div>
-        </div>
+        <%- include('partials/modalAyudaRecuperacion') %>
 
         <!-- CARRITO FLOTANTE (abre el carrito y muestra el contador) -->
         <div class="carrito-fijo" id="carritoAnimado" role="button" tabindex="0"

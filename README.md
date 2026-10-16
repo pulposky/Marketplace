@@ -6,7 +6,7 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 
 > 💡 **Ideal para:** tiendas de barrio, distribuidoras, fruvers, agroindustria y cualquier negocio que quiera vender en línea hoy y cobrar en tienda.
 
-[![Node.js](https://img.shields.io/badge/Node.js-v16%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-v8%2B-4479A1?logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/mysql/)
 [![EJS](https://img.shields.io/badge/EJS-templates-B4CA65?logo=ejs&logoColor=black)](https://ejs.co/)
@@ -81,7 +81,7 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 
 Antes de empezar necesitas tener instalado:
 
-- [![Node.js](https://img.shields.io/badge/Node.js-v16%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/) — Node.js 16 o superior
+- [![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/) — Node.js 18 o superior
 - [![MySQL](https://img.shields.io/badge/MySQL-v8%2B-4479A1?logo=mysql&logoColor=white)](https://dev.mysql.com/downloads/mysql/) — MySQL 8 o superior
 - [![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white)](https://git-scm.com/) — Git (opcional, para clonar)
 
@@ -328,6 +328,7 @@ Marketplace/
 | `GET` | `/admin/contenido` | Contenido editable del sitio (permiso `contenido`) |
 | `GET` | `/admin/banners` | Banners y promociones (permiso `banners`) |
 | `GET` | `/admin/respaldo` | Respaldo y exportación (permiso `respaldo`) |
+| `GET` | `/admin/recuperacion` | Restablecimiento asistido de contraseñas de clientes (permiso `recuperacion`) |
 | `PATCH` | `/api/admin/productos/limite-venta/:id` | Actualizar stock |
 | `PATCH` | `/api/admin/productos/estado/:id` | Cambiar estado |
 | `GET` | `/api/admin/ofertas` | Listar ofertas activas |
@@ -363,6 +364,10 @@ Marketplace/
 | `PATCH` | `/api/admin/banners/:id` | Editar banner (permiso `banners`) |
 | `PATCH` | `/api/admin/banners/:id/activo` | Activar/desactivar banner (permiso `banners`) |
 | `DELETE` | `/api/admin/banners/:id` | Eliminar banner (permiso `banners`) |
+| `POST` | `/api/admin/recuperacion/cliente` | Generar contraseña temporal de cliente (permiso `recuperacion`) |
+| `GET` | `/api/admin/recuperacion/contacto` | Consultar el teléfono público de recuperación (permiso `recuperacion`) |
+| `PUT` | `/api/admin/recuperacion/contacto` | Configurar el teléfono público de recuperación (permiso `recuperacion`) |
+| `GET` | `/api/recuperacion/contacto` | Consultar el teléfono mostrado en el aviso de recuperación |
 | `GET` | `/api/admin/respaldo/completo` | Descargar respaldo completo JSON (permiso `respaldo`) |
 | `GET` | `/api/admin/respaldo/tabla/:clave` | Descargar tabla en CSV (permiso `respaldo`) |
 

@@ -12,6 +12,7 @@ const router = express.Router();
 
 const SitioVistasController = require('../controllers/sitio/sitioVistasController');
 const SitioApiController = require('../controllers/sitio/sitioApiController');
+const RecuperacionApiController = require('../controllers/sitio/recuperacionApiController');
 const ProductoController = require('../controllers/productoController');
 const AuthController = require('../controllers/authController');
 const { limiteAuth } = require('../config/rateLimit');
@@ -27,8 +28,6 @@ router.get('/catalogo', SitioVistasController.mostrarCatalogo);
 // Vista: ficha de detalle de un producto
 router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
 
-// Vistas: contenido editable del sitio (mini-CMS)
-
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
 router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);
@@ -43,8 +42,7 @@ router.get('/api/carrusel-imagenes', SitioApiController.carruselImagenes);
 
 // API: verificar si hay sesión activa (lo usa el frontend antes de apartar)
 router.get('/api/verificar-sesion', AuthController.verificarSesion);
+router.get('/api/recuperacion/contacto', RecuperacionApiController.obtenerContacto);
 
-// API: restablecer contraseña de un cliente existente
-router.post('/api/restablecer-password', limiteAuth, AuthController.restablecerPassword);
 
 module.exports = router;

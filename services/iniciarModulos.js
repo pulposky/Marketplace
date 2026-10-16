@@ -7,6 +7,7 @@
 const UsuarioModel = require('../models/usuarioModel');
 const CategoriaModel = require('../models/categoriaModel');
 const AuditoriaModel = require('../models/auditoriaModel');
+const RecuperacionModel = require('../models/recuperacionModel');
 
 async function iniciar() {
     try {
@@ -26,6 +27,12 @@ async function iniciar() {
         await AuditoriaModel.asegurarTabla();
     } catch (error) {
         console.error('[Modulos] No se pudo preparar auditoria:', error.message);
+    }
+
+    try {
+        await RecuperacionModel.asegurarTabla();
+    } catch (error) {
+        console.error('[Modulos] No se pudo preparar el contacto de recuperación:', error.message);
     }
 }
 

@@ -33,6 +33,15 @@ const UsuarioModel = {
         });
     },
 
+    // Busca un cliente por documento para que el Administrador le restablezca la clave.
+    obtenerClientePorDocumento: async (documento) => {
+        const [filas] = await pool.execute(
+            'SELECT id_cliente, nombre, documento FROM clientes WHERE documento = ? LIMIT 1',
+            [documento]
+        );
+        return filas[0] || null;
+    },
+
     // Crea o actualiza la contraseña de un cliente.
     // Recibe el hash bcrypt ya generado (nunca se guarda en texto plano).
     crearPassword: (idCliente, hashPassword) => {

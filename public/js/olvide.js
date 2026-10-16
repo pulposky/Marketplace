@@ -1,126 +1,57 @@
 // =============================================
-// OLVIDÉ CONTRASEÑA - JAVASCRIPT
+// AVISO DE RECUPERACION ADMINISTRADA
 // =============================================
-// Maneja el modal de "Olvidé mi contraseña".
-// Abre/cierra el modal igual que el de registro,
-// y envía el restablecimiento al backend.
+// Abro el aviso que explica cómo solicitar una
+// contraseña temporal al Administrador del sitio.
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Obtener referencias del DOM: modales, formulario y elementos de mensaje
-    const ventanaOlvide = document.getElementById('modalOlvide');
-    const ventanaLogin = document.getElementById('modalLogin');
-    const formularioOlvide = document.getElementById('formOlvide');
-    const botonCerrarOlvide = document.getElementById('cerrarModalOlvide');
-    const mensajeOlvide = document.getElementById('mensajeOlvide');
+    const modal = document.getElementById('modalOlvide');
+    const modalLogin = document.getElementById('modalLogin');
+    const contacto = document.getElementById('contactoRecuperacion');
 
-    // Enlaces "Recupérala" que abren el modal de olvidé contraseña
-    const enlacesOlvide = document.querySelectorAll('.enlace-olvide');
+    // Consulto el teléfono configurable cuando se abre el aviso.
+    async function cargarContactoRecuperacion() {
+        if (!contacto) return;
+        contacto.textContent = 'Cargando número de contacto…';
+        try {
+            const respuesta = await fetch('/api/recuperacion/contacto', { cache: 'no-store' });
+            const datos = await respuesta.json();
+            if (!respuesta.ok || !datos.ok) throw new Error('No se pudo consultar el número.');
+            contacto.replaceChildren();
+            if (datos.telefono) {
+                const enlace = document.createElement('a');
+                enlace.textContent = datos.telefono;
+                enlace.href = `tel:${datos.telefono.replace(/[^+\d]/g, '')}`;
+                contacto.appendChild(enlace);
+            } else {
+                contacto.textContent = 'El número de contacto aún no está configurado. Comunícate con el punto de atención.';
+            }
+        } catch (error) {
+            contacto.textContent = 'No se pudo cargar el número de contacto. Comunícate con el punto de atención.';
+        }
+    }
 
-    // Enlace "Volver al login" dentro del modal
-    const enlaceVolverLogin = document.getElementById('volverLoginOlvide');
-
-    // -----------------------------------------------
-    // ABRIR MODAL OLVIDÉ CONTRASEÑA
-    // -----------------------------------------------
-    enlacesOlvide.forEach(enlace => {
+    // Muestro el aviso y oculto el login mientras el cliente lo consulta.
+    document.querySelectorAll('.enlace-olvide').forEach((enlace) => {
         enlace.addEventListener('click', (evento) => {
             evento.preventDefault();
-            // Cerrar modal de login si está abierto
-            if (ventanaLogin) ventanaLogin.style.display = 'none';
-            // Abrir modal de olvidé contraseña
-            if (ventanaOlvide) ventanaOlvide.style.display = 'flex';
+            if (modalLogin) modalLogin.style.display = 'none';
+            if (modal) modal.style.display = 'flex';
+            cargarContactoRecuperacion();
         });
     });
 
-    // -----------------------------------------------
-    // CERRAR MODAL OLVIDÉ CONTRASEÑA
-    // -----------------------------------------------
-    if (botonCerrarOlvide) {
-        botonCerrarOlvide.addEventListener('click', () => {
-            ventanaOlvide.style.display = 'none';
-        });
-    }
-
-    // Cerrar al hacer click fuera del modal
+    // Cierro el aviso y regreso al formulario de login.
+    document.getElementById('cerrarModalOlvide')?.addEventListener('click', () => {
+        if (modal) modal.style.display = 'none';
+    });
+    document.getElementById('volverLoginOlvide')?.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        if (modal) modal.style.display = 'none';
+        if (modalLogin) modalLogin.style.display = 'flex';
+    });
     window.addEventListener('click', (evento) => {
-        if (evento.target === ventanaOlvide) {
-            ventanaOlvide.style.display = 'none';
-        }
+        if (evento.target === modal) modal.style.display = 'none';
     });
-
-    // -----------------------------------------------
-    // VOLVER AL LOGIN
-    // -----------------------------------------------
-    if (enlaceVolverLogin) {
-        enlaceVolverLogin.addEventListener('click', (evento) => {
-            evento.preventDefault();
-            if (ventanaOlvide) ventanaOlvide.style.display = 'none';
-            if (ventanaLogin) ventanaLogin.style.display = 'flex';
-        });
-    }
-
-    // -----------------------------------------------
-    // ENVÍO DEL FORMULARIO - RESTABLECER CONTRASEÑA
-    // -----------------------------------------------
-    if (formularioOlvide) {
-        formularioOlvide.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-
-            const documento = document.getElementById('olvDocumento')?.value?.trim();
-            const nuevaPassword = document.getElementById('olvNuevaPassword')?.value;
-            const confirmarPassword = document.getElementById('olvConfirmarPassword')?.value;
-
-            if (!documento) {
-                mostrarMensajeOlvide('Ingresa tu número de documento.', 'error');
-                return;
-            }
-            if (!nuevaPassword) {
-                mostrarMensajeOlvide('Ingresa una nueva contraseña.', 'error');
-                return;
-            }
-            if (nuevaPassword.length < 6) {
-                mostrarMensajeOlvide('La contraseña debe tener al menos 6 caracteres.', 'error');
-                return;
-            }
-            if (nuevaPassword !== confirmarPassword) {
-                mostrarMensajeOlvide('Las contraseñas no coinciden.', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/restablecer-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ documento, nuevaPassword })
-                });
-
-                const data = await response.json();
-
-                if (data.ok) {
-                    mostrarMensajeOlvide(data.mensaje, 'exito');
-                    formularioOlvide.reset();
-                    // Después de 2 segundos, volver al login
-                    setTimeout(() => {
-                        if (ventanaOlvide) ventanaOlvide.style.display = 'none';
-                        if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                    }, 2000);
-                } else {
-                    mostrarMensajeOlvide(data.mensaje || 'Error al restablecer la contraseña.', 'error');
-                }
-            } catch (error) {
-                console.error(error);
-                mostrarMensajeOlvide('Error de conexión con el servidor.', 'error');
-            }
-        });
-    }
-
-    // -----------------------------------------------
-    // MOSTRAR MENSAJE
-    // -----------------------------------------------
-    function mostrarMensajeOlvide(texto, tipo) {
-        if (!mensajeOlvide) return;
-        mensajeOlvide.textContent = texto;
-        mensajeOlvide.className = 'mensaje-registro ' + tipo;
-    }
 });

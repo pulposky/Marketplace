@@ -29,6 +29,7 @@ const PERMISOS = [
     { clave: 'analitica', nombre: 'Analítica', descripcion: 'Estadísticas, gráficos y reportes CSV.' },
     { clave: 'categorias', nombre: 'Categorías', descripcion: 'Crear, renombrar y eliminar categorías de productos.' },
     { clave: 'respaldo', nombre: 'Respaldo y exportación', descripcion: 'Descargar los datos del sistema en CSV o JSON.' },
+    { clave: 'recuperacion', nombre: 'Recuperación de contraseñas', descripcion: 'Configurar el teléfono público y restablecer claves de clientes.' },
     { clave: 'usuarios', nombre: 'Usuarios', descripcion: 'Crear, editar, activar/desactivar y asignar rol al personal del panel.' },
     { clave: 'auditoria', nombre: 'Auditoría', descripcion: 'Registro de quién hizo qué en el panel.' }
 ];
@@ -39,8 +40,8 @@ const CLAVES_PERMISO = PERMISOS.map((p) => p.clave);
 // Permisos por defecto de cada rol gestionable. Reproducen el
 // comportamiento que ya tenía el panel antes de existir este módulo.
 //
-// OJO: 'usuarios', 'respaldo' y 'auditoria' NO van por defecto en ningún rol
-// (son sensibles: el Administrador los concede a mano desde /admin/permisos).
+// OJO: 'usuarios', 'respaldo', 'recuperacion' y 'auditoria' NO van por defecto
+// en ningún rol; el Administrador los concede a mano desde /admin/permisos.
 const PERMISOS_POR_DEFECTO = {
     supervisor: ['productos', 'ofertas', 'pedidos', 'carrusel', 'clientes', 'analitica', 'categorias'],
     promotor: ['productos', 'ofertas', 'pedidos', 'carrusel', 'clientes', 'analitica', 'categorias'],

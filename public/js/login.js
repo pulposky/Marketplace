@@ -159,7 +159,7 @@ function configurarFormLogin(formulario, opciones) {
     }
 
     // Estado del flujo del cliente
-    // 'documento' | 'clave_existente' | 'crear_clave'
+    // 'documento' | 'clave_existente' | 'necesita_admin'
     let paso = 'documento';
     let documentoActual = '';
 
@@ -240,15 +240,16 @@ function configurarFormLogin(formulario, opciones) {
             if (!resultado || resultado.ok) return;
 
             if (resultado.necesitaPassword) {
-                // No tiene contraseña: muestro campos para crearla
-                paso = 'crear_clave';
-                if (campoDoc) campoDoc.style.display = 'none';
+                // Sin clave previa, exijo verificar el celular antes de crearla.
+                paso = 'necesita_admin';
+                if (campoDoc) campoDoc.style.display = 'block';
                 if (campoPwd) campoPwd.style.display = 'none';
-                if (campoNuevaPwd) campoNuevaPwd.style.display = 'block';
-                if (campoConfirmPwd) campoConfirmPwd.style.display = 'block';
-                if (boton) boton.textContent = 'Crear contraseña';
+                if (campoNuevaPwd) campoNuevaPwd.style.display = 'none';
+                if (campoConfirmPwd) campoConfirmPwd.style.display = 'none';
+                if (boton) boton.textContent = 'Solicitar ayuda';
                 limpiarMensajeLogin();
-                mostrarEnlaceOlvide(false);
+                mostrarEnlaceOlvide(true);
+                mostrarMensajeLogin('Solicita una clave temporal al Administrador para crear tu contraseña.', 'mensaje-naranja');
             } else if (resultado.requierePassword) {
                 // Ya tiene contraseña: muestro el campo de contraseña
                 paso = 'clave_existente';
@@ -263,44 +264,11 @@ function configurarFormLogin(formulario, opciones) {
             return;
         }
 
-        // PASO 2: crea una nueva contraseña
-        if (paso === 'crear_clave') {
-            const nueva = (inputNueva?.value || '');
-            const confirm = (inputConfirm?.value || '');
-            if (!nueva) {
-                mostrarMensajeLogin('La contraseña no puede estar vacía', 'mensaje-naranja');
-                return;
-            }
-            if (nueva.length < 6) {
-                mostrarMensajeLogin('La contraseña debe tener al menos 6 caracteres', 'mensaje-naranja');
-                return;
-            }
-            if (nueva !== confirm) {
-                mostrarMensajeLogin('Las contraseñas no coinciden', 'mensaje-rojo');
-                return;
-            }
-            const resultado = await procesarLogin({ documento: documentoActual, nuevaPassword: nueva });
-            if (resultado && resultado.passwordCreada) {
-                // Vuelvo al paso de documento: ahora debe iniciar sesión con su contraseña
-                paso = 'documento';
-                if (campoDoc) campoDoc.style.display = 'block';
-                if (campoPwd) campoPwd.style.display = 'none';
-                if (campoNuevaPwd) campoNuevaPwd.style.display = 'none';
-                if (campoConfirmPwd) campoConfirmPwd.style.display = 'none';
-                if (boton) boton.textContent = 'Iniciar sesión';
-                if (inputNueva) inputNueva.value = '';
-                if (inputConfirm) inputConfirm.value = '';
-                if (inputDoc) inputDoc.value = documentoActual;
-                mostrarEnlaceOlvide(false);
-                // Muestro un mensaje de éxito para guiar el siguiente paso
-                mostrarMensajeLogin(
-                    'Contraseña creada correctamente. Ingresa tu contraseña para continuar.',
-                    'mensaje-exito'
-                );
-            }
+        // PASO 2: abro el aviso de recuperación administrada.
+        if (paso === 'necesita_admin') {
+            document.querySelector('.enlace-olvide')?.click();
             return;
         }
-
         // PASO 3: ya tiene contraseña, la verifica
         if (paso === 'clave_existente') {
             const pwd = (inputPwd?.value || '');

@@ -104,6 +104,7 @@ con `fetch` a `/api/admin/...`.
 | `permisosModel.js` | SQL de `permisos_rol` (Promesas): crea la tabla, elimina claves obsoletas, siembra defaults, lee y guarda permisos |
 | `categoriaModel.js` | SQL de `categorias`: `asegurarTabla`, `sembrarDesdeProductos`, `renombrar` (propaga a `producto`), `eliminar` (bloquea si está en uso) |
 | `auditoriaModel.js` | SQL de `auditoria`: asegurar tabla, registrar, listar/contar con filtros |
+| `recuperacionModel.js` | SQL del teléfono público configurable para solicitudes de recuperación de contraseña |
 | `respaldoModel.js` | SQL de solo lectura sobre lista blanca (`TABLAS`): productos, apartados, clientes, usuarios. **No exporta contraseñas** |
 
 ### `controllers/` — lógica de negocio (controladores "gordos")
@@ -258,9 +259,18 @@ buscando el cliente **por nombre** (`notificacionClienteModel.buscarClientePorNo
   `{ items:[{productoId,cantidad}] }`; si no hay sesión abre login y reintenta.
 - `main.js` y `productoDetalle.js` usan el flujo **directo** `POST /api/apartar-producto`
   (sin carrito).
-- **Login cliente en 3 pasos** (`login.js`, `configurarFormLogin`): `{documento}` →
-  `requierePassword` (clave existente) o `necesitaPassword` (crear clave) → `{documento,password}`.
-  Staff: `{usuario, password}` directo → `redirect:'/admin'`.
+- **Login cliente** (`login.js`): `{documento}` → `requierePassword` (clave existente) →
+  `{documento,password}`. Si el cliente no tiene clave o la olvidó, debe solicitar ayuda al
+  Administrador. Staff: `{usuario, password}` directo → `redirect:'/admin'`.
+- **Recuperación de contraseña**: módulo `/admin/recuperacion`, gobernado por el permiso
+  `recuperacion` de la matriz `/admin/permisos`. Solo Administrador lo tiene implícitamente;
+  ningún rol delegable lo recibe por defecto.
+  Busca al cliente por documento, genera una clave temporal, guarda solo su hash y la muestra
+  una vez para que el Administrador se la entregue por un canal seguro. El cliente puede
+  iniciar sesión con esa clave y cambiarla desde su perfil. En ese módulo se configura el
+  teléfono que aparece en el aviso público de recuperación (`/api/recuperacion/contacto`);
+  se guarda en `contacto_recuperacion` y lo pueden modificar los roles con ese permiso. No hay
+  recuperación por SMS ni restablecimiento público usando solo el documento.
 - Roles en vistas: `esRolPanel`/`esRolAdmin` vienen en `res.locals` (definidos en `app.js`)
   y se usan en EJS para mostrar/ocultar secciones. No hay gating por JS.
 - Admin: `mainAdmin.js`, `pedidosAdmin.js`, `habilitarProducto.js`, `gestionOfertas.js`, `gestionClientes.js`, `carruselAdmin.js`, `historicos.js` y los módulos delegables `usuariosAdmin.js`, `categoriasAdmin.js`, `auditoriaAdmin.js` y la vista `admin/respaldo.ejs`.
@@ -281,8 +291,6 @@ Marcadas en el código:
 
 Detectadas en la revisión:
 - `package.json`: `qrcode` es dependencia **sin uso** (el manual dice que se quitó, pero sigue).
-- `main.ejs`: el enlace "¿Olvidaste tu contraseña?" **no funciona** (no carga `olvide.js`
-  ni tiene `#modalOlvide`; solo existe en `productos.ejs`).
 - **XSS potencial** por `innerHTML` sin escapar en `verApartados.js` y `mainAdmin.js`
   (notificaciones/nombres). `pedidosAdmin.js` y `gestionClientes.js` sí usan `escaparHTML()`.
 - Mucho **código duplicado**: modales y tarjetas entre `main.ejs`/`productos.ejs`;
@@ -320,8 +328,8 @@ La matriz vigente se define en `utils/permisos.js`; antes de cambiarla, verifica
 - **Administrador (`admin`)**: acceso total y único rol que puede consultar/guardar la matriz de permisos. No se puede quitar su acceso.
 - **Supervisor y Promotor**: por defecto tienen `productos, ofertas, pedidos, carrusel, clientes, analitica, categorias`. Sus permisos iniciales son iguales; si sus funciones deben diferenciarse, definir primero las responsabilidades de cada cargo.
 - **Técnico (`tecnico`)**: por defecto tiene `productos, ofertas, pedidos, carrusel`; no tiene acceso a clientes ni analítica.
-- **Usuarios, Auditoría y Respaldo**: no se otorgan por defecto. Respaldo puede incluir datos personales; otorgarlo solo a personal autorizado. La API de usuarios restringe operaciones sensibles sobre cuentas de Administrador.
-- **Permisos actuales**: `productos, ofertas, pedidos, carrusel, clientes, analitica, categorias, respaldo, usuarios, auditoria`. Configuración, Contenido y Banners ya no forman parte de la matriz ni del panel.
+- **Usuarios, Auditoría, Respaldo y Recuperación de contraseñas**: no se otorgan por defecto. Respaldo puede incluir datos personales; Recuperación permite emitir claves temporales a clientes; asignarlos solo a personal autorizado. La API de usuarios restringe operaciones sensibles sobre cuentas de Administrador.
+- **Permisos actuales**: `productos, ofertas, pedidos, carrusel, clientes, analitica, categorias, respaldo, recuperacion, usuarios, auditoria`. Configuración, Contenido y Banners ya no forman parte de la matriz ni del panel.
 - Las rutas y APIs se protegen en servidor con `verificarPermiso`; no confiar solo en ocultar tarjetas del dashboard.
 
 No se han definido módulos adicionales. Posibles divisiones futuras si el flujo lo requiere: separar catálogo de stock dentro de Productos, acciones de Pedidos, y consulta de Analítica de exportación. Mantener Usuarios y Respaldo restringidos al Administrador salvo que exista una necesidad operativa explícita.

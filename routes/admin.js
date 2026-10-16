@@ -29,6 +29,8 @@ const AuditoriaVistasController = require('../controllers/admin/auditoriaVistasC
 const AuditoriaApiController = require('../controllers/admin/auditoriaApiController');
 const RespaldoVistasController = require('../controllers/admin/respaldoVistasController');
 const RespaldoApiController = require('../controllers/admin/respaldoApiController');
+const RecuperacionVistasController = require('../controllers/admin/recuperacionVistasController');
+const RecuperacionApiController = require('../controllers/admin/recuperacionApiController');
 const verificarAdmin = require('../middleware/verificarAdmin');
 const verificarRol = require('../middleware/verificarRol');
 const verificarPermiso = require('../middleware/verificarPermiso');
@@ -57,6 +59,7 @@ router.get('/admin/carrusel', verificarPermiso('carrusel'), CarruselVistasContro
 
 // Administración de permisos: SOLO el Administrador (superadmin).
 router.get('/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosVistasController.mostrarPermisos);
+router.get('/admin/recuperacion', verificarPermiso('recuperacion'), RecuperacionVistasController.mostrarRecuperacion);
 
 // Módulos del superadmin que también se pueden delegar por permiso:
 // personal del panel, ajustes del sitio, categorías y auditoría.
@@ -151,6 +154,11 @@ router.get('/api/admin/historicos/exportar', verificarPermiso('analitica'), Hist
 // -----------------------------------------------
 router.get('/api/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosApiController.obtenerPermisos);
 router.patch('/api/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosApiController.guardarPermisos);
+router.get('/api/admin/recuperacion/contacto', verificarPermiso('recuperacion'), RecuperacionApiController.obtenerContacto);
+router.put('/api/admin/recuperacion/contacto', verificarPermiso('recuperacion'), RecuperacionApiController.guardarContacto);
+
+// Restablecer clave de cliente: operación sensible, delegable por el Administrador.
+router.post('/api/admin/recuperacion/cliente', verificarPermiso('recuperacion'), RecuperacionApiController.restablecerPasswordCliente);
 
 // -----------------------------------------------
 // API DE USUARIOS DEL PANEL (permiso 'usuarios')
