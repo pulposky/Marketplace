@@ -10,6 +10,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const inputBuscar = document.getElementById('busqueda-oferta');
     const tarjetas = document.querySelectorAll('.tarjeta-producto');
+    const paginacion = window.crearPaginacionProductos('.tarjeta-producto', '#paginacionProductos');
 
     // -----------------------------------------------
     // FILTROS: BÚSQUEDA + SOLO EN OFERTA
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const texto = (inputBuscar?.value || '').trim().toLowerCase();
         const soloOferta = filtroSoloOferta?.checked;
 
+        const coincidencias = [];
         tarjetas.forEach((tarjeta) => {
             const nombre = tarjeta.dataset.nombre || '';
             const enOferta = tarjeta.dataset.enOferta === 'true';
@@ -27,8 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (visible && soloOferta) {
                 visible = enOferta;
             }
-            tarjeta.style.display = visible ? '' : 'none';
+            if (visible) coincidencias.push(tarjeta);
+            else tarjeta.style.display = 'none';
         });
+        paginacion.aplicarFiltro(coincidencias);
     }
 
     const filtroSoloOferta = document.getElementById('filtro-solo-oferta');

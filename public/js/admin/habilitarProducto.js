@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chkAgotados = document.getElementById('filtro-agotados');
     const btnFiltrar = document.querySelector('.boton-filtrar');
     const tarjetas = document.querySelectorAll('.tarjeta-producto');
+    const paginacion = window.crearPaginacionProductos('.tarjeta-producto', '#paginacionProductos', 10);
 
     // -----------------------------------------------
     // FILTRADO LOCAL DE PRODUCTOS
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const soloDisponibles = chkDisponibles ? chkDisponibles.checked : false;
         const soloAgotados = chkAgotados ? chkAgotados.checked : false;
 
+        const coincidencias = [];
         tarjetas.forEach(tarjeta => {
             const nombre = tarjeta.dataset.nombre || '';
             const estado = tarjeta.dataset.estado; // 'activo' o 'inactivo'
@@ -47,11 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (coincideNombre && coincideEstado && coincideCantidad) {
-                tarjeta.style.display = 'block';
+                coincidencias.push(tarjeta);
             } else {
                 tarjeta.style.display = 'none';
             }
         });
+        paginacion.aplicarFiltro(coincidencias);
     }
 
     // Asigno los eventos de filtrado

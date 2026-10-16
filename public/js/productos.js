@@ -213,18 +213,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // BÚSQUEDA EN VIVO DE PRODUCTOS
     // -----------------------------------------------
     const inputBuscarProducto = document.getElementById('inputBuscar');
+    const paginacion = window.crearPaginacionProductos('.rejilla-productos .tarjeta-producto', '#paginacionProductos');
 
     if (inputBuscarProducto) {
         inputBuscarProducto.addEventListener('input', () => {
             const texto = inputBuscarProducto.value.trim().toLowerCase();
             let visibles = 0;
 
+            const coincidencias = [];
             document.querySelectorAll('.rejilla-productos .tarjeta-producto').forEach((tarjeta) => {
                 const nombre = tarjeta.querySelector('.nombre-producto');
                 const coincide = !texto || (nombre && nombre.textContent.toLowerCase().includes(texto));
-                tarjeta.style.display = coincide ? '' : 'none';
-                if (coincide) visibles++;
+                if (coincide) {
+                    coincidencias.push(tarjeta);
+                    visibles++;
+                } else tarjeta.style.display = 'none';
             });
+            paginacion.aplicarFiltro(coincidencias);
 
             const avisoVacio = document.getElementById('avisoSinResultados');
             if (avisoVacio) {
