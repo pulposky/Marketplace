@@ -2,11 +2,7 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Gestión de Ofertas - Panel Admin</title>
+    <%- include('../partials/headMeta', { titulo: 'Gestión de Ofertas' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -63,18 +59,13 @@
 
                 <% if (productos && productos.length> 0) { %>
                     <% productos.forEach(producto=> {
-                        // Evaluamos si es huevo por unidad
-                        const esHuevoUnidad = producto.nombre === "HUEVOS DE GALLINA AA UND" || producto.nombre ===
-                        "HUEVOS DE GALLINA A UND";
+                        const nombreMostrar = producto.nombre;
+                        const presentacionMostrar = producto.unidad || 'N/A';
+                        // Presentaciones de venta (el precio se edita por unidad mínima)
+                        const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
 
-                        // Nombre y presentación dinámicos
-                        const nombreMostrar = esHuevoUnidad ? producto.nombre.replace("UND", "CUBETA") :
-                        producto.nombre;
-                        const presentacionMostrar = esHuevoUnidad ? "CUBETA" : (producto.unidad || 'N/A');
-
-                        // Precio por cubeta o por unidad
-                        const precioUnitario = Number(producto.precio || 0);
-                        const precioCalculado = esHuevoUnidad ? precioUnitario * 30 : precioUnitario;
+                        // Precio por unidad mínima
+                        const precioCalculado = Number(producto.precio || 0);
 
                         // Oferta existente
                         const descuentoActual = Number(producto.descuento) || 0;
@@ -97,7 +88,6 @@
                         %>
                         <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
                             data-nombre="<%= (nombreMostrar || '').toLowerCase() %>"
-                            data-es-huevo="<%= esHuevoUnidad %>"
                             data-en-oferta="<%= hayOferta %>">
 
                             <!-- Imagen del Producto -->
@@ -129,13 +119,16 @@
                                 <% } else { %>
                                     $<%= precioCalculado.toLocaleString("es-CO") %>
                                 <% } %>
+                                <% presentaciones.forEach(p => { %>
+                                    <small class="precio-presentacion"><%= p.nombre %> (<%= p.factor %> und): $<%= (precioConDescuento * p.factor).toLocaleString("es-CO") %></small>
+                                <% }) %>
                             </div>
 
                             <!-- Editar precio rápido -->
                             <div class="grupo-precio">
                                 <div class="fila-campo">
                                     <label class="texto-control" for="precio-<%= producto.id_producto %>">
-                                        Precio<%= esHuevoUnidad ? ' (por cubeta)' : '' %> :
+                                        Precio por <%= presentacionMostrar %> :
                                     </label>
                                     <input type="number" id="precio-<%= producto.id_producto %>"
                                         class="campo-precio" min="0" step="0.01"

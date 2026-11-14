@@ -533,3 +533,61 @@ body {
     .paginacion-productos .boton-paginacion { min-width: 34px; height: 36px; padding: 0 8px; }
     .paginacion-productos .boton-paginacion-direccion { padding: 0 10px; }
 }
+
+/* Presentaciones de venta (modal de producto) */
+.ayuda-campo {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #6b7280;
+    margin: 0;
+}
+
+.lista-presentaciones {
+    display: block;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.seccion-presentaciones {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 0 0 12px;
+}
+
+.seccion-presentaciones legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    padding: 0 4px;
+}
+
+.fila-presentacion {
+    display: grid;
+    grid-template-columns: 1fr 110px 36px;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.fila-presentacion input {
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-family: inherit;
+    min-width: 0;
+}
+
+.btn-quitar-presentacion,
+.btn-agregar-presentacion {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f5132;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-agregar-presentacion {
+    margin-top: 10px;
+    padding: 8px 12px;
+}

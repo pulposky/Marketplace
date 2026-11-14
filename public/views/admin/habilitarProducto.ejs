@@ -2,11 +2,7 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Gestión de Productos - Panel Admin</title>
+    <%- include('../partials/headMeta', { titulo: 'Gestión de Productos' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -71,22 +67,12 @@
 
                 <% if (productos && productos.length> 0) { %>
                     <% productos.forEach(producto=> {
-                        // Evaluamos si es huevo por unidad
-                        const esHuevoUnidad = producto.nombre === "HUEVOS DE GALLINA AA UND" || producto.nombre ===
-                        "HUEVOS DE GALLINA A UND";
-
-                        // Nombre y presentación dinámicos
-                        const nombreMostrar = esHuevoUnidad ? producto.nombre.replace("UND", "CUBETA") :
-                        producto.nombre;
-                        const presentacionMostrar = esHuevoUnidad ? "CUBETA" : (producto.unidad || 'N/A');
-
-                        // Si son huevos y la BD maneja unidades, dividimos por 30 para mostrar cubetas
-                        const unidadesStock = producto.limite_venta || 0;
-                        const cantidadMostrar = esHuevoUnidad ? Math.floor(unidadesStock / 30) : unidadesStock;
-
-                        // Precio por cubeta o por unidad
-                        const precioCalculado = esHuevoUnidad ? Number(producto.precio || 0) * 30 :
-                        Number(producto.precio || 0);
+                        const nombreMostrar = producto.nombre;
+                        const presentacionMostrar = producto.unidad || 'N/A';
+                        // El stock y el precio siempre están en la unidad mínima
+                        const cantidadMostrar = Number(producto.limite_venta) || 0;
+                        const precioCalculado = Number(producto.precio || 0);
+                        const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
                         %>
                         <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
                             data-nombre="<%= (nombreMostrar || '').toLowerCase() %>"
@@ -96,7 +82,8 @@
                             data-categoria="<%= producto.categoria || '' %>"
                             data-lugar="<%= producto.lugar || '' %>"
                             data-precio="<%= Number(producto.precio || 0) %>"
-                            data-descripcion="<%= producto.descripcion || '' %>">
+                            data-descripcion="<%= producto.descripcion || '' %>"
+                            data-presentaciones="<%= JSON.stringify(presentaciones) %>">
 
                             <!-- Imagen del Producto -->
                             <div class="imagen-producto">
@@ -112,6 +99,9 @@
                             <!-- Datos del Producto -->
                             <div class="presentacion-producto">
                                 Presentación: <%= presentacionMostrar %>
+                                <% if (presentaciones.length) { %>
+                                    <small class="lista-presentaciones">Se vende también por: <%= presentaciones.map(p => p.nombre + ' (' + p.factor + ')').join(', ') %></small>
+                                <% } %>
                             </div>
 
                             <div class="nombre-producto">
@@ -128,11 +118,10 @@
                             <div class="panel-controles">
                                 <div class="grupo-control">
                                     <div class="texto-control">
-                                        <%= esHuevoUnidad ? 'Cubetas a vender:' : 'Cantidad a vender:' %>
+                                        Cantidad a vender (<%= presentacionMostrar %>):
                                     </div>
                                     <input type="number" class="campo-cantidad" min="0" value="<%= cantidadMostrar %>"
-                                        placeholder="0" data-id="<%= producto.id_producto %>"
-                                        data-es-huevo="<%= esHuevoUnidad %>">
+                                        placeholder="0" data-id="<%= producto.id_producto %>">
                                 </div>
 
                                 <div class="grupo-control">
@@ -176,16 +165,9 @@
                     <input type="text" id="campoCategoria" name="categoria" list="listaCategorias" placeholder="Busca o escribe una categoría">
                 </label>
                 <datalist id="listaCategorias">
-                    <option value="Abonos y Sustratos">
-                    <option value="Frutas y Hortalizas">
-                    <option value="Cereales, Granos y Forrajes">
-                    <option value="Material Vegetal y Flores">
-                    <option value="Embutidos y Cárnicos Procesados">
-                    <option value="Bebidas y Refrescos">
-                    <option value="Salsas y Conservas">
-                    <option value="Lácteos y Derivados">
-                    <option value="Repostería, Dulces y Licores">
-                    <option value="Pecuario y Acuícola">
+                    <% (typeof categorias !== 'undefined' ? categorias : []).forEach(nombreCategoria => { %>
+                        <option value="<%= nombreCategoria %>">
+                    <% }) %>
                 </datalist>
 
                 <div class="fila-campos">
@@ -203,8 +185,19 @@
                     </label>
                     <label class="campo-form">Cantidad a vender
                         <input type="number" id="campoLimiteVenta" name="limiteVenta" min="0" step="1" placeholder="0">
+                        <small class="ayuda-campo">En la unidad mínima (la del campo Unidad).</small>
                     </label>
                 </div>
+
+                <fieldset class="seccion-presentaciones">
+                    <legend>Presentaciones de venta</legend>
+                    <p class="ayuda-campo">
+                        Formas de vender el producto además de la unidad, ej. "Caja" = 12 unidades.
+                        El factor es cuántas unidades mínimas trae cada una (máximo 10).
+                    </p>
+                    <div id="listaPresentaciones" class="lista-filas-presentacion"></div>
+                    <button type="button" class="btn-agregar-presentacion" id="btnAgregarPresentacion">+ Agregar presentación</button>
+                </fieldset>
 
                 <label class="campo-form">Descripción
                     <textarea id="campoDescripcion" name="descripcion" rows="3" placeholder="Breve descripción del producto"></textarea>

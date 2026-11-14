@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputInicio = document.querySelector(`.campo-fecha[data-id="${idProducto}"][data-tipo="inicio"]`);
         const inputFin = document.querySelector(`.campo-fecha[data-id="${idProducto}"][data-tipo="fin"]`);
         const nombreProducto = tarjeta?.dataset?.nombre || 'este producto';
-        const esHuevo = tarjeta?.dataset?.esHuevo === 'true';
 
         // --- Precio ---
         const precioMostrado = parseFloat(inputPrecio?.value);
@@ -62,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
             toast('advertencia', 'Pon un precio válido.');
             return;
         }
-        // Si es huevo, el campo muestra precio por cubeta; se divide entre 30
-        const precioReal = esHuevo ? precioMostrado / 30 : precioMostrado;
+        // El precio siempre es por unidad mínima (las presentaciones lo multiplican)
+        const precioReal = precioMostrado;
 
         // --- Descuento ---
         const descuento = parseFloat(inputDescuento?.value ?? 0) || 0;

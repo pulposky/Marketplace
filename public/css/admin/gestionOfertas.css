@@ -422,3 +422,11 @@ body {
     .paginacion-productos .boton-paginacion { min-width: 34px; height: 36px; padding: 0 8px; }
     .paginacion-productos .boton-paginacion-direccion { padding: 0 10px; }
 }
+
+/* Precio por presentación (informativo) */
+.precio-presentacion {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #6b7280;
+}

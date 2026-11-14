@@ -7,6 +7,8 @@
 // =============================================
 
 const ProductoModel = require('../../models/productoModel');
+const PresentacionModel = require('../../models/presentacionModel');
+const CategoriaModel = require('../../models/categoriaModel');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const permisosService = require('../../services/permisosService');
@@ -33,10 +35,19 @@ const AdminVistasController = {
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
 
-            asociarImagenesAProductos(listaProductosRaw, (productosConImagen) => {
+            asociarImagenesAProductos(listaProductosRaw, async (productosConImagen) => {
+                // Presentaciones de cada producto y categorías de la BD para el datalist
+                let categorias = [];
+                try {
+                    await PresentacionModel.adjuntar(productosConImagen);
+                    categorias = (await CategoriaModel.listar()).map((c) => c.nombre);
+                } catch (errorDatos) {
+                    console.error('Error cargando presentaciones/categorías:', errorDatos);
+                }
                 res.render('admin/habilitarProducto', {
                     usuario: usuarioSesion,
-                    productos: productosConImagen
+                    productos: productosConImagen,
+                    categorias
                 });
             });
         });
@@ -55,10 +66,10 @@ const AdminVistasController = {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
 
             asociarImagenesAProductos(listaProductosRaw, (productosConImagen) => {
-                res.render('admin/gestionOfertas', {
+                PresentacionModel.adjuntar(productosConImagen).catch(() => {}).then(() => res.render('admin/gestionOfertas', {
                     usuario: usuarioSesion,
                     productos: productosConImagen
-                });
+                }));
             });
         });
     },

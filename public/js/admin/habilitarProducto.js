@@ -6,8 +6,9 @@
 // a vender, y habilitar/deshabilitar productos con
 // un switch. Los cambios se guardan directo en la BD.
 //
-// Maneja la conversión de cubetas de huevos (x30)
-// para que en la BD se guarden unidades reales.
+// El stock se edita siempre en la unidad mínima; las
+// presentaciones (ej. Caja = 12) se guardan aparte
+// con PUT /api/admin/productos/:id/presentaciones.
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -67,11 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
     // Cuando el admin cambia la cantidad de un producto,
     // hago PATCH a la API con la nueva cantidad.
-    // Si es huevo, multiplico por 30 antes de enviar a la BD.
     document.querySelectorAll('.campo-cantidad').forEach(input => {
         input.addEventListener('change', async (e) => {
             const idProducto = e.target.dataset.id;
-            const esHuevo = e.target.dataset.esHuevo === 'true';
             const nuevaCantidad = parseInt(e.target.value, 10);
             const tarjeta = e.target.closest('.tarjeta-producto');
             const checkbox = tarjeta.querySelector('.check-habilitar');
@@ -81,8 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Si es huevo, multiplico por 30 para enviar unidades reales a la BD
-            const cantidadEnviar = esHuevo ? nuevaCantidad * 30 : nuevaCantidad;
+            const cantidadEnviar = nuevaCantidad;
 
             const nombreProducto = tarjeta.dataset.nombre || 'este producto';
             const confirmar = confirm(`¿Deseas actualizar la cantidad de "${nombreProducto}" a ${nuevaCantidad}?`);
@@ -159,9 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkbox.addEventListener('change', (e) => {
             const idProducto = e.target.dataset.id;
             const inputCantidad = document.querySelector(`.campo-cantidad[data-id="${idProducto}"]`);
-            
-            const esHuevo = inputCantidad?.dataset.esHuevo === 'true';
-            const cantidad = Number(inputCantidad?.value || 0);
+                        const cantidad = Number(inputCantidad?.value || 0);
 
             // No permito activar un producto con cantidad 0
             if (e.target.checked && cantidad <= 0) {
@@ -173,8 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const cantidadEnviar = esHuevo ? cantidad * 30 : cantidad;
-            actualizarEstadoProducto(idProducto, e.target.checked ? 'activo' : 'inactivo', cantidadEnviar);
+            actualizarEstadoProducto(idProducto, e.target.checked ? 'activo' : 'inactivo', cantidad);
         });
     });
 
@@ -188,12 +183,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const campoIdProducto = document.getElementById('campoIdProducto');
     const campoImagen = document.getElementById('campoImagen');
     const previewImagen = document.getElementById('previewImagen');
+    const listaPresentaciones = document.getElementById('listaPresentaciones');
+    const btnAgregarPresentacion = document.getElementById('btnAgregarPresentacion');
+    const MAX_PRESENTACIONES = 10;
+
+    // -----------------------------------------------
+    // PRESENTACIONES (filas nombre + factor)
+    // -----------------------------------------------
+    function agregarFilaPresentacion(presentacion) {
+        if (!listaPresentaciones) return;
+        if (listaPresentaciones.children.length >= MAX_PRESENTACIONES) {
+            toast('advertencia', `Máximo ${MAX_PRESENTACIONES} presentaciones por producto.`);
+            return;
+        }
+        const fila = document.createElement('div');
+        fila.className = 'fila-presentacion';
+
+        const inputNombre = document.createElement('input');
+        inputNombre.type = 'text';
+        inputNombre.className = 'campo-presentacion-nombre';
+        inputNombre.maxLength = 50;
+        inputNombre.placeholder = 'Nombre (ej. Caja)';
+        inputNombre.setAttribute('aria-label', 'Nombre de la presentación');
+        inputNombre.value = presentacion ? presentacion.nombre : '';
+
+        const inputFactor = document.createElement('input');
+        inputFactor.type = 'number';
+        inputFactor.className = 'campo-presentacion-factor';
+        inputFactor.min = '1';
+        inputFactor.max = '100000';
+        inputFactor.step = '1';
+        inputFactor.placeholder = 'Unidades';
+        inputFactor.setAttribute('aria-label', 'Unidades mínimas por presentación');
+        inputFactor.value = presentacion ? presentacion.factor : '';
+
+        const btnQuitar = document.createElement('button');
+        btnQuitar.type = 'button';
+        btnQuitar.className = 'btn-quitar-presentacion';
+        btnQuitar.setAttribute('aria-label', 'Quitar presentación');
+        btnQuitar.textContent = '×';
+        btnQuitar.addEventListener('click', () => fila.remove());
+
+        fila.append(inputNombre, inputFactor, btnQuitar);
+        listaPresentaciones.appendChild(fila);
+    }
+
+    // Filas no vacías del modal como [{ nombre, factor }] (el servidor valida)
+    function leerPresentaciones() {
+        if (!listaPresentaciones) return [];
+        return Array.from(listaPresentaciones.querySelectorAll('.fila-presentacion'))
+            .map((fila) => ({
+                nombre: fila.querySelector('.campo-presentacion-nombre').value.trim(),
+                factor: Number(fila.querySelector('.campo-presentacion-factor').value)
+            }))
+            .filter((p) => p.nombre || p.factor);
+    }
+
+    if (btnAgregarPresentacion) {
+        btnAgregarPresentacion.addEventListener('click', () => agregarFilaPresentacion(null));
+    }
 
     // Abre el modal en modo crear o editar
     function abrirModalProducto(modo, tarjeta) {
         if (!modalProducto) return;
         formularioProducto.reset();
         if (previewImagen) previewImagen.innerHTML = '';
+        if (listaPresentaciones) listaPresentaciones.innerHTML = '';
 
         if (modo === 'editar' && tarjeta) {
             document.getElementById('tituloModalProducto').textContent = 'Editar Producto';
@@ -208,6 +263,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const campoLimite = document.getElementById('campoLimiteVenta');
             campoLimite.value = tarjeta.dataset.cantidad || 0;
             campoLimite.disabled = true;
+            let presentaciones = [];
+            try {
+                presentaciones = JSON.parse(tarjeta.dataset.presentaciones || '[]');
+            } catch (error) {
+                presentaciones = [];
+            }
+            (Array.isArray(presentaciones) ? presentaciones : []).forEach(agregarFilaPresentacion);
         } else {
             document.getElementById('tituloModalProducto').textContent = 'Nuevo Producto';
             campoIdProducto.value = '';
@@ -297,6 +359,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (esNuevo) idFinal = datosGuardar.id;
+
+                // Presentaciones: al editar siempre reemplazo la lista; al crear solo si hay
+                const presentaciones = leerPresentaciones();
+                if (idFinal && (!esNuevo || presentaciones.length > 0)) {
+                    const respuestaPresentaciones = await fetch(`/api/admin/productos/${idFinal}/presentaciones`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ presentaciones })
+                    });
+                    const datosPresentaciones = await respuestaPresentaciones.json();
+                    if (!respuestaPresentaciones.ok) {
+                        toast('error', datosPresentaciones.error || 'No se pudieron guardar las presentaciones.');
+                        // El producto nuevo ya quedó creado: recargo para editarlo y no duplicarlo
+                        if (esNuevo) setTimeout(() => window.location.reload(), 1800);
+                        return;
+                    }
+                }
 
                 // Si el admin eligió una imagen, la subo con el ID ya definido
                 const archivoImagen = campoImagen && campoImagen.files && campoImagen.files[0];
