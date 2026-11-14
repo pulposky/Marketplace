@@ -8,10 +8,10 @@
 <body class="pagina-error">
     <main class="error">
         <p class="error-codigo"><%= codigo %></p>
-        <h1><%= codigo === 404 ? 'Este pasillo no existe' : 'Algo salió mal' %></h1>
+        <h1><%= codigo === 404 ? 'Esta página no existe' : 'Algo salió mal' %></h1>
         <p><%= mensaje %></p>
         <div class="error-acciones">
-            <a href="/catalogo" class="btn">Ir al catálogo</a>
+            <a href="/catalogo" class="btn">Ir al <%= typeof vocab !== 'undefined' ? vocab.catalogo.toLowerCase() : 'catálogo' %></a>
             <a href="/" class="btn btn-suave">Inicio</a>
         </div>
     </main>

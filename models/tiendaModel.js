@@ -14,7 +14,7 @@ const pool = conexion.promise();
 const COLUMNAS = [
     'nombre', 'eslogan', 'descripcion', 'logo_url', 'color_primario', 'color_secundario',
     'telefono', 'whatsapp', 'correo', 'direccion', 'horario', 'moneda',
-    'minutos_expiracion_apartado', 'facebook', 'instagram', 'tiktok', 'productos_ocultos'
+    'minutos_expiracion_apartado', 'facebook', 'instagram', 'tiktok', 'productos_ocultos', 'tipo_negocio'
 ];
 
 const TiendaModel = {
@@ -43,9 +43,18 @@ const TiendaModel = {
                 instagram VARCHAR(255) NOT NULL DEFAULT '',
                 tiktok VARCHAR(255) NOT NULL DEFAULT '',
                 productos_ocultos VARCHAR(500) NOT NULL DEFAULT 'COMODIN',
+                tipo_negocio VARCHAR(20) NOT NULL DEFAULT 'supermercado',
                 actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
+        // Tablas creadas antes de existir el tipo de negocio
+        const [col] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'configuracion_tienda' AND COLUMN_NAME = 'tipo_negocio'`
+        );
+        if (!col.length) {
+            await pool.query("ALTER TABLE configuracion_tienda ADD COLUMN tipo_negocio VARCHAR(20) NOT NULL DEFAULT 'supermercado' AFTER productos_ocultos");
+        }
         await pool.query('INSERT IGNORE INTO configuracion_tienda (id) VALUES (1)');
     },
 

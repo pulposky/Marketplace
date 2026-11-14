@@ -176,6 +176,37 @@ button, input, select { font: inherit; color: inherit; }
 .portada > p { color: var(--suave); max-width: 36ch; font-size: 15px; }
 .portada-saludo { font-weight: 600; color: var(--suave); margin-bottom: 8px; }
 
+.portada > .btn { flex: none; }
+
+/* Beneficios de apartar */
+.beneficios {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie);
+}
+.beneficios li { display: grid; gap: 2px; padding: 14px 18px; border-left: 1px solid var(--borde); min-width: 0; }
+.beneficios li:first-child { border-left: 0; }
+.beneficios b { font-weight: 600; font-size: 14px; }
+.beneficios span { font-size: 13px; color: var(--suave); }
+.beneficios a { color: var(--tinta); text-underline-offset: 3px; }
+@media (max-width: 600px) {
+    .beneficios li { border-left: 0; border-top: 1px solid var(--borde); }
+    .beneficios li:first-child { border-top: 0; }
+}
+
+/* Vitrina de ofertas: banda con fondo del color secundario de la tienda */
+.vitrina-ofertas {
+    --acento: var(--secundario, #f2a33a);
+    background: color-mix(in srgb, var(--acento) 14%, var(--superficie));
+    border-radius: 14px;
+    padding: 22px;
+}
+.vitrina-ofertas h2::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--oferta); margin-right: 10px; vertical-align: middle; }
+.seccion-ver { font-weight: 600; font-size: 14px; text-underline-offset: 3px; white-space: nowrap; }
+.seccion-pasillo .seccion-cabeza { border-left: 6px solid var(--k); padding-left: 12px; }
+.seccion-pasillo h2 small { display: block; font: 700 12px/1.2 var(--f-titulo); letter-spacing: .1em; text-transform: uppercase; color: var(--k); margin-bottom: 4px; }
+.producto-ahorro { font-size: 13px; font-weight: 600; color: var(--oferta); }
+
 /* Carrusel de avisos: solo ocupa espacio si la tienda subió imágenes */
 .carrusel { display: none; }
 .carrusel:has(.carrusel-diapositiva) { display: block; }

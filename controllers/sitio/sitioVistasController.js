@@ -14,6 +14,15 @@ const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const { armarPasillos } = require('../../utils/pasillos');
 
+// Descuento porcentual vigente según sus fechas
+const estaEnOferta = (producto) => {
+    const descuento = Number(producto.descuento) || 0;
+    const ahora = new Date();
+    return descuento > 0
+        && (!producto.fecha_inicio_oferta || ahora >= new Date(producto.fecha_inicio_oferta))
+        && (!producto.fecha_fin_oferta || ahora <= new Date(producto.fecha_fin_oferta));
+};
+
 const SitioVistasController = {
 
     // Página principal del marketplace
@@ -54,14 +63,31 @@ const SitioVistasController = {
                         ProductoModel.obtenerConOfertas((errorOfertas, ofertas) => {
                             const listaOfertas = (errorOfertas || !Array.isArray(ofertas)) ? [] : ofertas;
 
+                            // Inicio estilo vitrina: ofertas con mayor descuento primero y
+                            // las categorías con más productos, cuatro de cada una
+                            const activos = todosConImagen.filter((p) => p.estado === 'activo');
+                            const pasillos = armarPasillos(todosConImagen);
+                            const vitrinaOfertas = activos.filter(estaEnOferta)
+                                .sort((a, b) => Number(b.descuento) - Number(a.descuento))
+                                .slice(0, 8);
+                            const secciones = [...pasillos].sort((a, b) => b.total - a.total).slice(0, 4)
+                                .map((pasillo) => ({
+                                    pasillo,
+                                    productos: activos.filter((p) => String(p.categoria || '').trim() === pasillo.nombre).slice(0, 4)
+                                }));
+
                             // Presentaciones de venta (si falla, las vistas muestran solo la unidad)
-                            PresentacionModel.adjuntar(destacadosConImagen).catch(() => {}).then(() => res.render('main', {
-                                destacados: destacadosConImagen,
-                                productos: todosConImagen,
-                                pasillos: armarPasillos(todosConImagen),
-                                ofertas: listaOfertas,
-                                usuario: req.session?.usuario || null
-                            }));
+                            Promise.all([PresentacionModel.adjuntar(destacadosConImagen), PresentacionModel.adjuntar(activos)])
+                                .catch(() => {})
+                                .then(() => res.render('main', {
+                                    destacados: destacadosConImagen,
+                                    productos: todosConImagen,
+                                    pasillos,
+                                    vitrinaOfertas,
+                                    secciones,
+                                    ofertas: listaOfertas,
+                                    usuario: req.session?.usuario || null
+                                }));
                         });
                     });
                 });
@@ -137,14 +163,7 @@ const SitioVistasController = {
                 ? productosActivos.filter((producto) => categoriasSeleccionadas.includes(producto.categoria))
                 : productosActivos;
 
-            // Calcular si está en oferta para el filtro y el orden
-            const calcularEnOferta = (producto) => {
-                const descuento = Number(producto.descuento) || 0;
-                const ahora = new Date();
-                return descuento > 0
-                    && (!producto.fecha_inicio_oferta || ahora >= new Date(producto.fecha_inicio_oferta))
-                    && (!producto.fecha_fin_oferta || ahora <= new Date(producto.fecha_fin_oferta));
-            };
+            const calcularEnOferta = estaEnOferta;
 
             // Filtro "solo en oferta"
             if (soloOferta) {

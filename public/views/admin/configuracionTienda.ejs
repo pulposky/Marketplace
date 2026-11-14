@@ -55,6 +55,16 @@
                     <p class="error-campo" id="error-nombre"></p>
                 </div>
                 <div class="campo">
+                    <label for="tipo_negocio">Tipo de negocio</label>
+                    <select id="tipo_negocio" name="tipo_negocio" aria-describedby="ayuda-tipo_negocio error-tipo_negocio">
+                        <% Object.entries(tiposNegocio).forEach(([clave, t]) => { %>
+                            <option value="<%= clave %>" <%= c.tipo_negocio === clave ? 'selected' : '' %>><%= t.nombre %></option>
+                        <% }) %>
+                    </select>
+                    <span class="ayuda-campo" id="ayuda-tipo_negocio">Cambia las palabras que ven los clientes: "Pasillo 3" en un supermercado, "Sección 3" en una ferretería, el menú en comida rápida.</span>
+                    <p class="error-campo" id="error-tipo_negocio"></p>
+                </div>
+                <div class="campo">
                     <label for="eslogan">Eslogan</label>
                     <input type="text" id="eslogan" name="eslogan" maxlength="200" value="<%= c.eslogan %>" aria-describedby="error-eslogan">
                     <p class="error-campo" id="error-eslogan"></p>

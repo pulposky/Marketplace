@@ -10,6 +10,7 @@
 /* ============================================= */
 
 const TiendaModel = require('../models/tiendaModel');
+const { esTipoValido } = require('../utils/tipoNegocio');
 
 const POR_DEFECTO = Object.freeze({
     nombre: 'Mi Tienda',
@@ -28,7 +29,8 @@ const POR_DEFECTO = Object.freeze({
     facebook: '',
     instagram: '',
     tiktok: '',
-    productos_ocultos: 'COMODIN'
+    productos_ocultos: 'COMODIN',
+    tipo_negocio: 'supermercado'
 });
 
 let actual = { ...POR_DEFECTO };
@@ -54,7 +56,8 @@ const REGLAS = {
     facebook: [255, (v) => v === '' || URL_RED.test(v)],
     instagram: [255, (v) => v === '' || URL_RED.test(v)],
     tiktok: [255, (v) => v === '' || URL_RED.test(v)],
-    productos_ocultos: [500, SIN_HTML]
+    productos_ocultos: [500, SIN_HTML],
+    tipo_negocio: [20, esTipoValido]
 };
 
 // Valida y normaliza lo que llega del panel. Solo devuelve los campos

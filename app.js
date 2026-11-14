@@ -19,6 +19,7 @@ const { iniciarCsrf, verificarCsrf } = require('./middleware/csrf');
 const { esRolAdmin, esRolPanel, esRolMantenimiento, puedeGestionarCarrusel, esSuperAdmin } = require('./utils/roles');
 const permisosService = require('./services/permisosService');
 const tiendaService = require('./services/tiendaService');
+const { vocabulario } = require('./utils/tipoNegocio');
 
 const app = express();
 
@@ -63,6 +64,8 @@ app.set('view engine', 'ejs');
 app.use((req, res, next) => {
     // Configuración del negocio (nombre, logo, colores, contacto...) para todas las vistas
     res.locals.tienda = tiendaService.obtener();
+    // Palabras según el tipo de negocio (Pasillo, Sección, Menú...)
+    res.locals.vocab = vocabulario(res.locals.tienda.tipo_negocio);
     res.locals.esRolAdmin = esRolAdmin;
     res.locals.esRolPanel = esRolPanel;
     res.locals.esRolMantenimiento = esRolMantenimiento;

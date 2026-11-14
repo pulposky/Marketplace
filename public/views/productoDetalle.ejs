@@ -31,13 +31,14 @@
         const etiqueta = principal ? principal.nombre : unidad;
         const stock = Number(producto.limite_venta) || 0;
         const cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
+        const etiquetaPasillo = pasillo ? (vocab.numerar ? `${vocab.seccion} ${pasillo.numero} · ${pasillo.nombre}` : pasillo.nombre) : '';
     %>
     <%- include('partials/encabezado') %>
 
     <main class="contenedor ficha"<%- pasillo ? ` style="--k:${pasillo.color}"` : '' %>>
         <nav class="migas" aria-label="Ruta">
-            <a href="/catalogo">Catálogo</a>
-            <% if (pasillo) { %><span aria-hidden="true">/</span><a href="/catalogo?categoria=<%= encodeURIComponent(pasillo.nombre) %>">Pasillo <%= pasillo.numero %> · <%= pasillo.nombre %></a><% } %>
+            <a href="/catalogo"><%= vocab.catalogo %></a>
+            <% if (pasillo) { %><span aria-hidden="true">/</span><a href="/catalogo?categoria=<%= encodeURIComponent(pasillo.nombre) %>"><%= etiquetaPasillo %></a><% } %>
         </nav>
 
         <div class="ficha-grid">
@@ -51,7 +52,7 @@
             </div>
 
             <div class="ficha-info">
-                <% if (pasillo) { %><p class="ficha-pasillo">Pasillo <%= pasillo.numero %> · <%= pasillo.nombre %></p><% } %>
+                <% if (pasillo) { %><p class="ficha-pasillo"><%= etiquetaPasillo %></p><% } %>
                 <h1><%= producto.nombre %></h1>
 
                 <p class="ficha-precio">
@@ -97,7 +98,7 @@
                                 data-unidad="<%= unidad %>"
                                 data-limite="<%= stock %>">Apartar</button>
                         </div>
-                        <p class="ficha-disponibles" id="textoDisponiblesDetalle">
+                        <p class="ficha-disponibles" id="textoDisponiblesDetalle"<%- vocab.mostrarStock ? '' : ' hidden' %>>
                             Disponibles: <span id="cantDisponiblesDetalle"><%= Math.floor(stock / factor) %></span>
                             <span id="unidadDisponiblesDetalle"><%= etiqueta %></span>
                         </p>

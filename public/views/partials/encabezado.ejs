@@ -17,11 +17,11 @@
         <form class="barra-buscar" action="/catalogo" method="get" role="search">
             <label for="<%= _buscadorId %>" class="solo-lector">Buscar productos</label>
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="search" id="<%= _buscadorId %>" name="busqueda" value="<%= _busqueda %>" placeholder="Buscar productos" autocomplete="off">
+            <input type="search" id="<%= _buscadorId %>" name="busqueda" value="<%= _busqueda %>" placeholder="<%= vocab.buscar %>" autocomplete="off">
         </form>
 
         <nav class="barra-nav" aria-label="Principal">
-            <a href="/catalogo">Catálogo</a>
+            <a href="/catalogo"><%= vocab.catalogo %></a>
             <% if (_usuario && esRolPanel(_usuario.role)) { %>
                 <a href="/admin">Panel</a>
             <% } else if (_usuario) { %>

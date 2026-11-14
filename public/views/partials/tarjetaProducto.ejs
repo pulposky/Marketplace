@@ -29,7 +29,7 @@
         <% } else { %>
             <span class="producto-sin-foto"><%= String(_p.nombre || '?').charAt(0) %></span>
         <% } %>
-        <% if (_pasillo) { %><i class="producto-pasillo">Pasillo <%= _pasillo.numero %></i><% } %>
+        <% if (_pasillo) { %><i class="producto-pasillo"><%= vocab.numerar ? `${vocab.seccion} ${_pasillo.numero}` : _pasillo.nombre %></i><% } %>
         <% if (_enOferta) { %><i class="producto-oferta">−<%= Math.round(_descuento) %>%</i><% } %>
     </a>
 
@@ -42,14 +42,19 @@
         </p>
     </div>
 
+    <% if (_enOferta) { %>
+        <p class="producto-ahorro">Ahorras <%= _cop((_precioBase - _precioUnidad) * _factor) %></p>
+    <% } %>
     <% if (_presentaciones.length > 1) { %>
         <p class="producto-presentaciones">
             <% _presentaciones.forEach((pr) => { %><span><%= pr.nombre %> · <%= pr.factor %></span><% }) %>
         </p>
     <% } %>
-    <p class="producto-stock<%= _disponibles < 1 ? ' agotado' : '' %>">
-        <%= _disponibles < 1 ? 'Agotado' : _disponibles + ' disponibles' %>
-    </p>
+    <% if (_disponibles < 1 || vocab.mostrarStock) { %>
+        <p class="producto-stock<%= _disponibles < 1 ? ' agotado' : '' %>">
+            <%= _disponibles < 1 ? 'Agotado' : _disponibles + ' disponibles' %>
+        </p>
+    <% } %>
 
     <% if (modo === 'agregar') { %>
         <button type="button" class="btn btn-ancho btn-accion-apartar" <%= _disponibles < 1 ? 'disabled' : '' %>

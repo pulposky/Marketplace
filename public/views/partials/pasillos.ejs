@@ -2,12 +2,12 @@
     opcional, activas: nombres de categorías seleccionadas en el catálogo. %>
 <% const _activas = (typeof activas !== 'undefined' && Array.isArray(activas)) ? activas : []; %>
 <% if (Array.isArray(pasillos) && pasillos.length) { %>
-<nav class="pasillos" aria-label="Pasillos de la tienda">
+<nav class="pasillos" aria-label="<%= vocab.secciones %>">
     <div class="pasillos-fila">
         <% pasillos.forEach((p) => { const _on = _activas.includes(p.nombre); %>
             <a class="pasillo<%= _on ? ' activo' : '' %>" style="--k:<%= p.color %>"
                 href="/catalogo?categoria=<%= encodeURIComponent(p.nombre) %>"<%- _on ? ' aria-current="page"' : '' %>>
-                <small>Pasillo <%= p.numero %></small>
+                <% if (vocab.numerar) { %><small><%= vocab.seccion %> <%= p.numero %></small><% } %>
                 <b><%= p.nombre %></b>
                 <span><%= p.total %> producto<%= p.total === 1 ? '' : 's' %></span>
             </a>

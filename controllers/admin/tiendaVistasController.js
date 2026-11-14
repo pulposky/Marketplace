@@ -7,11 +7,13 @@
 // =============================================
 
 const tiendaService = require('../../services/tiendaService');
+const { TIPOS } = require('../../utils/tipoNegocio');
 
 const TiendaVistasController = {
     mostrarConfiguracion: (req, res) => res.render('admin/configuracionTienda', {
         usuario: req.session.usuario,
-        configuracion: tiendaService.obtener()
+        configuracion: tiendaService.obtener(),
+        tiposNegocio: TIPOS
     })
 };
 

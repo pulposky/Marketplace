@@ -63,8 +63,8 @@
         <% if (!activos.length && !historial.length) { %>
             <div class="vacio vacio-grande">
                 <h2>Aún no has apartado nada</h2>
-                <p>Recorre los pasillos y aparta lo que necesites; te lo guardamos <%- include('partials/duracionApartado') %>.</p>
-                <a href="/catalogo" class="btn">Ir al catálogo</a>
+                <p>Recorre el <%= vocab.catalogo.toLowerCase() %> y aparta lo que necesites; te lo guardamos <%- include('partials/duracionApartado') %>.</p>
+                <a href="/catalogo" class="btn">Ir al <%= vocab.catalogo.toLowerCase() %></a>
             </div>
         <% } %>
 
