@@ -36,7 +36,6 @@ test('normalizarRol: quita espacios, mayúsculas y tildes', () => {
 test('EQUIVALENCIAS_ROL: mapea los roles de la BD a los roles de sesión', () => {
     assert.strictEqual(EQUIVALENCIAS_ROL.administrador, 'admin');
     assert.strictEqual(EQUIVALENCIAS_ROL.admin, 'admin');
-    assert.strictEqual(EQUIVALENCIAS_ROL.aprendiz, 'aprendiz');
     assert.strictEqual(EQUIVALENCIAS_ROL.supervisor, 'supervisor');
     assert.strictEqual(EQUIVALENCIAS_ROL.promotor, 'promotor');
     assert.strictEqual(EQUIVALENCIAS_ROL.tecnico, 'tecnico');
@@ -58,7 +57,6 @@ test('esRolAdmin: los roles con acceso total dan true', () => {
     assert.strictEqual(esRolAdmin('Administrador'), true);
     // El técnico ya NO tiene acceso total (es mantenimiento del sitio).
     assert.strictEqual(esRolAdmin('Técnico'), false);
-    assert.strictEqual(esRolAdmin('aprendiz'), false);
     assert.strictEqual(esRolAdmin('cliente'), false);
     assert.strictEqual(esRolAdmin(''), false);
     assert.strictEqual(esRolAdmin(undefined), false);
@@ -77,7 +75,7 @@ test('esRolMantenimiento: solo el técnico es mantenimiento del sitio', () => {
     assert.strictEqual(esRolMantenimiento('Técnico'), true);
     assert.strictEqual(esRolMantenimiento('tecnico'), true);
     assert.strictEqual(esRolMantenimiento('admin'), false);
-    assert.strictEqual(esRolMantenimiento('aprendiz'), false);
+    assert.strictEqual(esRolMantenimiento('cliente'), false);
     assert.strictEqual(esRolMantenimiento(''), false);
 });
 

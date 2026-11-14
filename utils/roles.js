@@ -68,8 +68,6 @@ const EQUIVALENCIAS_ROL = {
     admin: 'admin',
     administrator: 'admin',
     administrador: 'admin',
-    aprendiz: 'aprendiz',
-    apprentice: 'aprendiz',
     supervisor: 'supervisor',
     promotor: 'promotor',
     tecnico: 'tecnico'
