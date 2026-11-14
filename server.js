@@ -18,8 +18,14 @@ dotenv.config();
 
 // Sin estas variables la app no arranca: nada de valores por defecto
 // inseguros (secreto de sesión conocido, usuario root sin clave...).
+// BD_PASSWORD debe existir; puede ir vacía solo fuera de producción (p. ej. root de Laragon).
 const OBLIGATORIAS = ['BD_HOST', 'BD_USER', 'BD_PASSWORD', 'BD_DATABASE', 'SESSION_SECRET'];
-const faltantes = OBLIGATORIAS.filter((nombre) => !process.env[nombre] && !process.env[nombre.replace(/^BD_/, 'DB_')]);
+const valorDe = (nombre) => process.env[nombre] ?? process.env[nombre.replace(/^BD_/, 'DB_')];
+const puedeIrVacia = (nombre) => nombre === 'BD_PASSWORD' && process.env.NODE_ENV !== 'production';
+const faltantes = OBLIGATORIAS.filter((nombre) => {
+    const valor = valorDe(nombre);
+    return valor === undefined || (valor === '' && !puedeIrVacia(nombre));
+});
 if (faltantes.length > 0) {
     console.error(`Faltan variables de entorno obligatorias: ${faltantes.join(', ')}. Revisa .env (ver .env.example).`);
     process.exit(1);
