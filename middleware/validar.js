@@ -11,7 +11,7 @@ const { body, validationResult } = require('express-validator');
 
 // Reglas de validación para el LOGIN.
 // El login es especial: acepta "usuario+password"
-// (admin/aprendiz) o solo "documento" (clientes).
+// (personal) o solo "documento" (clientes).
 const validarLogin = [
   // El body puede traer documento y/o usuario
   body('usuario')
@@ -59,11 +59,6 @@ const validarRegistro = [
     .trim()
     .isLength({ max: 20 }).withMessage('Teléfono demasiado largo')
     .isNumeric().withMessage('Teléfono inválido'),
-  body('rol')
-    .trim()
-    .notEmpty().withMessage('El rol es obligatorio')
-    .isIn(['aprendiz', 'instructor', 'contratista', 'externo', 'administrativo'])
-    .withMessage('Rol no válido'),
   body('password')
     .if(body('nuevaPassword').not().exists())
     .optional({ checkFalsy: true })

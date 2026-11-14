@@ -70,12 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const documento = document.getElementById('regDocumento')?.value?.trim() || '';
             const direccion = document.getElementById('regDireccion')?.value?.trim() || '';
             const telefono = document.getElementById('regTelefono')?.value?.trim() || '';
-            const rol = document.getElementById('regRol')?.value || '';
             const password = document.getElementById('regPassword')?.value || '';
             const confirmarPassword = document.getElementById('regConfirmarPassword')?.value || '';
 
             // Validación básica
-            if (!nombre || !documento || !direccion || !telefono || !rol) {
+            if (!nombre || !documento || !direccion || !telefono) {
                 mostrarMensajeRegistro('Por favor completa todos los campos.', 'error');
                 return;
             }
@@ -99,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ nombre, documento, direccion, telefono, rol, password })
+                    body: JSON.stringify({ nombre, documento, direccion, telefono, password })
                 });
 
                 const datos = await respuesta.json();

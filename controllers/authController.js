@@ -167,10 +167,12 @@ const verificarSesion = (req, res) => {
 
 // Registro de nuevo usuario/cliente
 const registroUsuarioController = async (req, res) => {
-    const { nombre, documento, direccion, telefono, rol, password, nuevaPassword } = req.body;
+    const { nombre, documento, direccion, telefono, password, nuevaPassword } = req.body;
+    // Todo registro público es un cliente; el rol no viene del formulario.
+    const rol = 'cliente';
 
     // Validar que todos los campos vengan
-    if (!nombre || !documento || !direccion || !telefono || !rol) {
+    if (!nombre || !documento || !direccion || !telefono) {
         return res.json({ ok: false, mensaje: 'Todos los campos son obligatorios' });
     }
 
@@ -181,12 +183,6 @@ const registroUsuarioController = async (req, res) => {
     }
     if (String(contrasena).length < 6) {
         return res.json({ ok: false, mensaje: 'La contraseña debe tener al menos 6 caracteres' });
-    }
-
-    // Lista de roles válidos
-    const rolesValidos = ['aprendiz', 'instructor', 'contratista', 'externo', 'administrativo'];
-    if (!rolesValidos.includes(rol)) {
-        return res.json({ ok: false, mensaje: 'Rol no válido' });
     }
 
     try {
