@@ -1,0 +1,3 @@
+<%# Texto legible de cuánto dura un apartado según la tienda: "30 minutos", "1 hora", "2 horas". -%>
+<% const _min = Number(tienda.minutos_expiracion_apartado) || 60; -%>
+<%= _min % 60 ? _min + ' minutos' : (_min === 60 ? '1 hora' : (_min / 60) + ' horas') %>

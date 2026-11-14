@@ -4,8 +4,8 @@
         <span class="cerrar-modal" id="cerrarModalOlvide" role="button" tabindex="0" aria-label="Cerrar">&times;</span>
         <div class="contenedor-registro">
             <div class="marca">
-                <img src="/img/Logo_sena.png" alt="Logo SENA" class="marca-icono">
-                <span class="marca-texto">Marketplace</span>
+                <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>" class="marca-icono">
+                <span class="marca-texto"><%= tienda.nombre %></span>
             </div>
             <main class="registro" role="main">
                 <div class="registro-encabezado">
@@ -20,7 +20,7 @@
             </main>
             <footer class="pie-pagina">
                 <span class="pie-punto" aria-hidden="true"></span>
-                SENA · Colombia
+                <%= tienda.nombre %>
             </footer>
         </div>
     </div>

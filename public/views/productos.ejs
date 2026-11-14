@@ -3,11 +3,7 @@
 
 <head>
     <!-- Página de catálogo con la lista completa de productos y el modal de apartado -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Catálogo | SENAEMPRESA</title>
+    <%- include('partials/headMeta', { titulo: 'Catálogo' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -30,7 +26,7 @@
                 </a>
 
                 <div class="marca-catalogo">
-                    <span>SENAEMPRESA</span>
+                    <span><%= tienda.nombre %></span>
                 </div>
             </div>
         </header>
@@ -256,8 +252,8 @@
                 <span class="cerrar-modal" id="cerrarModal">&times;</span>
                 <div class="contenedor-login">
                     <div class="marca">
-                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
-                        <span class="marca-texto">Marketplace</span>
+                        <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>" class="marca-icono">
+                        <span class="marca-texto"><%= tienda.nombre %></span>
                     </div>
                     <main class="login" role="main">
                         <div class="login-encabezado">
@@ -320,7 +316,7 @@
                     </main>
                     <footer class="pie-pagina">
                         <span class="pie-punto" aria-hidden="true"></span>
-                        SENA · Colombia
+                        <%= tienda.nombre %>
                     </footer>
                 </div>
             </div>
@@ -332,8 +328,8 @@
                 <span class="cerrar-modal" id="cerrarModalRegistro">&times;</span>
                 <div class="contenedor-registro">
                     <div class="marca">
-                        <img src="/img/Logo_sena.png" alt="Logo" class="marca-icono">
-                        <span class="marca-texto">Marketplace</span>
+                        <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>" class="marca-icono">
+                        <span class="marca-texto"><%= tienda.nombre %></span>
                     </div>
                     <main class="registro" role="main">
                         <div class="registro-encabezado">
@@ -374,7 +370,7 @@
                     </main>
                     <footer class="pie-pagina">
                         <span class="pie-punto" aria-hidden="true"></span>
-                        SENA · Colombia
+                        <%= tienda.nombre %>
                     </footer>
                 </div>
             </div>
@@ -413,7 +409,7 @@
                 </div>
                 <button type="button" class="btn-confirmar-carrito" id="btnConfirmarCarrito">Confirmar apartado</button>
                 <button type="button" class="btn-vaciar-carrito" id="btnVaciarCarrito">Vaciar carrito</button>
-                <p class="carrito-nota">El pago es presencial en el punto de venta. Tus productos quedan apartados por 1 hora.</p>
+                <p class="carrito-nota">El pago es presencial en el punto de venta. Tus productos quedan apartados por <%- include('partials/duracionApartado') %>.</p>
                 <a href="/verApartados" class="carrito-link">Ver mis apartados</a>
             </div>
         </aside>
@@ -429,7 +425,7 @@
                     </svg>
                 </div>
                 <h3 class="alerta-titulo">Aviso importante</h3>
-                <p class="alerta-mensaje">Los productos estarán apartados por <strong>1 hora</strong>.</p>
+                <p class="alerta-mensaje">Los productos estarán apartados por <strong><%- include('partials/duracionApartado') %></strong>.</p>
                 <button class="alerta-boton" id="cerrarAlertaApartado">Entendido</button>
             </div>
         </div>

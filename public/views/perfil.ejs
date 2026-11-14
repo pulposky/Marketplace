@@ -2,11 +2,7 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Mi Perfil - SENAEMPRESA</title>
+    <%- include('partials/headMeta', { titulo: 'Mi Perfil' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -22,7 +18,7 @@
     <header class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>SENAEMPRESA</span>
+                <span><%= tienda.nombre %></span>
             </div>
             <div class="acciones-header">
                 <a href="/" class="btn-regresar">← Volver al inicio</a>
@@ -165,7 +161,7 @@
                 </svg>
                 <div>
                     <h3>Horario de atención</h3>
-                    <p>Lunes a viernes de 7:30 a.m. a 3:30 p.m.</p>
+                    <p><%= tienda.horario || 'Consulta el horario de atención en nuestro punto de venta.' %></p>
                 </div>
             </div>
             <div class="info-item">
@@ -188,10 +184,6 @@
                     <h3>Mantén tus datos al día</h3>
                     <p>Así te avisamos mejor sobre tus pedidos y apartados.</p>
                 </div>
-            </div>
-            <!-- Zona de banner -->
-            <div class="zona-imagen">
-                <img src="/img/Banner.jpg" alt="Banner informativo" class="banner-perfil">
             </div>
         </section>
     </main>

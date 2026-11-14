@@ -2,11 +2,7 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Mis Apartados - SENAEMPRESA</title>
+    <%- include('partials/headMeta', { titulo: 'Mis Apartados' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -22,7 +18,7 @@
     <header class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>SENAEMPRESA</span>
+                <span><%= tienda.nombre %></span>
             </div>
             <a href="/" class="btn-inicio">← Regresar al Inicio</a>
         </div>
@@ -159,7 +155,8 @@
 
                         <% if (!esConfirmado && item.fecha) { 
                             const fechaApartado = new Date(item.fecha);
-                            const expira = new Date(fechaApartado.getTime() + 60 * 60 * 1000);
+                            // Duración configurada por la tienda (minutos_expiracion_apartado)
+                            const expira = new Date(fechaApartado.getTime() + (Number(tienda.minutos_expiracion_apartado) || 60) * 60 * 1000);
                         %>
                             <div class="temporizador-apartado" data-expira="<%= expira.toISOString() %>">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

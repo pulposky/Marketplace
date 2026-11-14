@@ -2,11 +2,7 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title><%= producto.nombre %> | SENAEMPRESA</title>
+    <%- include('partials/headMeta', { titulo: producto.nombre }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -44,7 +40,7 @@
         <div class="contenedor-header">
             <a href="/catalogo" class="btn-regresar">← Volver al catálogo</a>
             <div class="marca-catalogo">
-                <span>SENAEMPRESA</span>
+                <span><%= tienda.nombre %></span>
             </div>
         </div>
     </header>
@@ -107,8 +103,8 @@
 
                 <!-- APARTAR / ACCIÓN -->
                 <% if (!usuario) { %>
-                    <a href="/catalogo?login=1" class="btn-apartar">Inicia sesión para apartar</a>
-                    <p class="ficha-nota">Al apartar, el producto queda reservado por 1 hora.</p>
+                    <a href="/catalogo?login=1&amp;desde=producto" class="btn-apartar">Inicia sesión para apartar</a>
+                    <p class="ficha-nota">Al apartar, el producto queda reservado por <%- include('partials/duracionApartado') %>.</p>
                 <% } else { %>
                     <div class="ficha-accion">
                         <div class="campo-cantidad">
@@ -127,8 +123,8 @@
                         </button>
                     </div>
                     <p class="ficha-nota">
-                        Reserva por 1 hora. El pago se realiza de forma presencial en el punto de venta
-                        del Centro Agroindustrial Hachón.
+                        Reserva por <%- include('partials/duracionApartado') %>. El pago se realiza de forma presencial
+                        <% if (tienda.direccion) { %>en <%= tienda.direccion %>.<% } else { %>en nuestro punto de venta.<% } %>
                     </p>
                 <% } %>
 

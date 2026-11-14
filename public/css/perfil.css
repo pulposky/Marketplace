@@ -4,11 +4,11 @@
     Estilos de la vista "Mi perfil".
     Sigue la misma línea visual del catálogo
     (header blanco, tarjetas con borde suave,
-    verde institucional del SENA).
+    color principal de la marca).
 ============================================= */
 
 :root {
-    --verde-sena: #39A900;
+    --color-primario: #39A900;
     --verde-oscuro: #006837;
     --amarillo: #FFD100;
     --lavanda: #71277B;
@@ -149,7 +149,7 @@ body {
     width: 92px;
     height: 92px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #0f5132 0%, var(--verde-sena) 55%, #86d72f 100%);
+    background: linear-gradient(145deg, #0f5132 0%, var(--color-primario) 55%, #86d72f 100%);
     color: #ffffff;
     font-size: 2.6rem;
     font-weight: 800;
@@ -195,10 +195,10 @@ body {
 
 .bolitas-a {
     background-image:
-        radial-gradient(circle, var(--verde-sena) 40%, transparent 45%),
+        radial-gradient(circle, var(--color-primario) 40%, transparent 45%),
         radial-gradient(circle, var(--verde-oscuro) 35%, transparent 40%),
         radial-gradient(circle, var(--amarillo) 40%, transparent 45%),
-        radial-gradient(circle, var(--verde-sena) 30%, transparent 35%),
+        radial-gradient(circle, var(--color-primario) 30%, transparent 35%),
         radial-gradient(circle, var(--verde-oscuro) 35%, transparent 40%);
     background-size: 10px 10px, 14px 14px, 8px 8px, 12px 12px, 9px 9px;
     background-position: 95% 15%, 75% 65%, 85% 40%, 60% 80%, 40% 25%;
@@ -209,9 +209,9 @@ body {
 .bolitas-b {
     background-image:
         radial-gradient(circle, var(--verde-oscuro) 35%, transparent 40%),
-        radial-gradient(circle, var(--verde-sena) 40%, transparent 45%),
+        radial-gradient(circle, var(--color-primario) 40%, transparent 45%),
         radial-gradient(circle, var(--amarillo) 30%, transparent 35%),
-        radial-gradient(circle, var(--verde-sena) 35%, transparent 40%);
+        radial-gradient(circle, var(--color-primario) 35%, transparent 40%);
     background-size: 12px 12px, 7px 7px, 11px 11px, 9px 9px;
     background-position: 90% 75%, 70% 20%, 50% 60%, 30% 85%;
     background-repeat: no-repeat;
@@ -509,24 +509,6 @@ body {
     line-height: 1.45;
 }
 
-/* ===== ZONA DE BANNER ===== */
-.zona-imagen {
-    grid-column: 1 / -1;
-    width: 100%;
-    border-radius: 12px;
-    overflow: hidden;
-    background-color: #fafbfc;
-}
-
-.zona-imagen .banner-perfil {
-    width: 100%;
-    height: auto;
-    max-height: 320px;
-    object-fit: contain;
-    object-position: center;
-    display: block;
-}
-
 /* RESPONSIVE */
 @media (max-width: 520px) {
     .tarjeta-perfil {
@@ -560,10 +542,5 @@ body {
 
     .zona-informacion {
         grid-template-columns: 1fr;
-    }
-
-    /* En móvil el banner se muestra completo ajustando al ancho */
-    .zona-imagen .banner-perfil {
-        max-height: 200px;
     }
 }

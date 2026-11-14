@@ -1,5 +1,5 @@
 :root {
-    --verde-sena: #39A900;
+    --color-primario: #39A900;
     --verde-oscuro: #006837;
     --blanco: #FFFFFF;
     --gris-claro: #F2F2F2;
@@ -32,7 +32,7 @@ body {
     width: 120px;
     height: 120px;
     margin: 0 auto 1.5rem;
-    color: var(--verde-sena);
+    color: var(--color-primario);
     opacity: 0.8;
 }
 
@@ -69,6 +69,6 @@ body {
 }
 
 .error-boton:hover {
-    background-color: var(--verde-sena);
+    background-color: var(--color-primario);
     transform: translateY(-2px);
 }

@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <title><%= codigo %> - Marketplace SENA</title>
+    <%# El error puede ocurrir antes de generar el token CSRF: se pasa vacío en ese caso %>
+    <%- include('partials/headMeta', { titulo: 'Error ' + codigo, csrfToken: typeof csrfToken !== 'undefined' ? csrfToken : '' }) %>
     <link rel="stylesheet" href="/css/error.css">
 </head>
 <body>
