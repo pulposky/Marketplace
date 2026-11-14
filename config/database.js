@@ -23,4 +23,5 @@ module.exports = {
     connectTimeout: 5000
 };
 
-module.exports.variableBD = variableBD;
+// No enumerable: así no viaja como opción al hacer { ...dbConfig } en mysql2
+Object.defineProperty(module.exports, 'variableBD', { value: variableBD, enumerable: false });

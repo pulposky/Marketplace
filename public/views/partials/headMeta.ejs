@@ -1,0 +1,13 @@
+<%# Metadatos comunes del head, tomados de la configuración de la tienda (res.locals.tienda).
+    Uso: include('partials/headMeta', { titulo: 'Catálogo' }) en vistas públicas
+    o include('../partials/headMeta', { titulo: 'Pedidos' }) en vistas admin.
+    'titulo' es opcional; el title queda "Título | Nombre de la tienda". %>
+<% const _tituloPagina = (typeof titulo !== 'undefined' && titulo) ? titulo + ' | ' + tienda.nombre : tienda.nombre; %>
+<% const _icono = tienda.logo_url || '/img/marca/logo-default.svg'; %>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="<%= csrfToken %>">
+<% if (tienda.descripcion) { %><meta name="description" content="<%= tienda.descripcion %>"><% } %>
+<meta name="theme-color" content="<%= tienda.color_primario %>">
+<link rel="icon" href="<%= _icono %>">
+<title><%= _tituloPagina %></title>
