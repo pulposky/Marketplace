@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const ProductoModel = require('../models/productoModel');
 const auditoriaService = require('../services/auditoriaService');
+const { tipoRealImagen } = require('../utils/imagenValida');
 const { normalizarCategorias, calcularPrecioOferta } = require('../utils/helpers');
 const { normalizeText } = require('../utils/imagenes');
 
@@ -108,6 +109,17 @@ const ProductoController = {
 
         const tipoImagen = coincidencia[1].toLowerCase();
         const extension = tipoImagen === 'jpeg' ? 'jpg' : tipoImagen;
+        const bytes = Buffer.from(String(imagen).split(',')[1], 'base64');
+
+        // Limito el peso de la imagen (máximo 3 MB, igual que el carrusel)
+        if (bytes.length > 3 * 1024 * 1024) {
+            return res.status(400).json({ error: 'La imagen es demasiado pesada (máximo 3 MB).' });
+        }
+
+        // El contenido real debe coincidir con el tipo declarado (no confío en el dataURL)
+        if (tipoRealImagen(bytes) !== extension) {
+            return res.status(400).json({ error: 'Imagen inválida. Debe ser JPG, PNG o WebP.' });
+        }
 
         ProductoModel.obtenerPorId(id, (err, resultados) => {
             if (err || !resultados || resultados.length === 0) {
@@ -117,9 +129,7 @@ const ProductoController = {
             const producto = resultados[0];
             const nombreArchivo = `${normalizeText(producto.nombre)}.${extension}`;
             const rutaArchivo = path.join(__dirname, '..', 'public', 'img', 'upload', nombreArchivo);
-            const base64 = String(imagen).split(',')[1];
-
-            fs.writeFile(rutaArchivo, Buffer.from(base64, 'base64'), (errorFs) => {
+            fs.writeFile(rutaArchivo, bytes, (errorFs) => {
                 if (errorFs) {
                     console.error('Error escribiendo imagen:', errorFs);
                     return res.status(500).json({ error: 'Error en el servidor al guardar la imagen.' });

@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const auditoriaService = require('../../services/auditoriaService');
+const { tipoRealImagen } = require('../../utils/imagenValida');
 
 const CARPETA_CARRUSEL = path.join(__dirname, '..', '..', 'public', 'img', 'carrusel');
 
@@ -67,6 +68,11 @@ const CarruselApiController = {
         // Limito el peso de la imagen (máximo 3 MB)
         if (bytes.length > 3 * 1024 * 1024) {
             return res.status(400).json({ error: 'La imagen es demasiado pesada (máximo 3 MB).' });
+        }
+
+        // El contenido real debe coincidir con el tipo declarado (no confío en el dataURL)
+        if (tipoRealImagen(bytes) !== extension) {
+            return res.status(400).json({ error: 'Imagen inválida. Debe ser JPG, PNG o WebP.' });
         }
 
         try {
