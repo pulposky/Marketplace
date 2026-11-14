@@ -9,6 +9,7 @@ const CategoriaModel = require('../models/categoriaModel');
 const AuditoriaModel = require('../models/auditoriaModel');
 const RecuperacionModel = require('../models/recuperacionModel');
 const ApartadoModel = require('../models/apartadoModel');
+const PresentacionModel = require('../models/presentacionModel');
 
 async function iniciar() {
     try {
@@ -21,6 +22,12 @@ async function iniciar() {
         await ApartadoModel.asegurarEsquema();
     } catch (error) {
         console.error('[Modulos] No se pudo asegurar apartados.id_cliente:', error.message);
+    }
+
+    try {
+        await PresentacionModel.asegurarTabla();
+    } catch (error) {
+        console.error('[Modulos] No se pudo preparar producto_presentacion:', error.message);
     }
 
     try {
