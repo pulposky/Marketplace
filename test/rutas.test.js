@@ -97,10 +97,11 @@ test('routes/admin.js: el guardia de cada ruta también niega a un cliente logue
     assert.deepStrictEqual(fallas, []);
 });
 
-test('routes/admin.js: las rutas de verificarAdmin son las esperadas (solo /admin y notificaciones)', () => {
+// /api/admin/dashboard filtra cada bloque por permisos dentro del controlador
+test('routes/admin.js: las rutas de verificarAdmin son las esperadas (solo /admin, notificaciones y dashboard)', () => {
     const conAdmin = rutasAdmin.filter((r) => r.handlers.includes(verificarAdmin)).map((r) => r.path);
     for (const p of conAdmin) {
-        assert.ok(p === '/admin' || p.startsWith('/api/admin/notificaciones'), `verificarAdmin en ${p}`);
+        assert.ok(p === '/admin' || p === '/api/admin/dashboard' || p.startsWith('/api/admin/notificaciones'), `verificarAdmin en ${p}`);
     }
 });
 

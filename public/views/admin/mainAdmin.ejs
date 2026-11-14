@@ -1,338 +1,201 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <%- include('../partials/headMeta', { titulo: 'Panel de administración' }) %>
+    <%- include('../partials/headMeta', { titulo: 'Panel' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="/css/admin/mainAdmin.css" />
     <link rel="stylesheet" href="/css/toast.css" />
+    <style>:root{--marca:<%= /^#[0-9a-fA-F]{6}$/.test(tienda.color_primario || '') ? tienda.color_primario : '#1F7A4D' %>}</style>
 </head>
 <body>
+    <% const puedeVer = (clave) => tienePermiso(clave); %>
 
-    <!-- TOAST DE NOTIFICACIÓN -->
-    <div class="toast-notificacion" id="toastNotificacion">
-        <div class="toast-icono">🔔</div>
+    <!-- AVISO EMERGENTE DE NOTIFICACIÓN NUEVA (lo maneja mainAdmin.js) -->
+    <div class="toast-notificacion" id="toastNotificacion" role="status" aria-live="polite">
         <div class="toast-contenido">
             <strong class="toast-titulo"></strong>
             <p class="toast-mensaje"></p>
         </div>
-        <button class="toast-cerrar">&times;</button>
+        <button type="button" class="toast-cerrar" aria-label="Cerrar">&times;</button>
     </div>
 
-    <!-- ============ NAVBAR SUPERIOR GRANDE ============ -->
     <header class="topbar">
         <div class="topbar-inner">
-            <div class="topbar-marca">
-                <div class="topbar-logo">
-                    <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>">
-                </div>
-                <div class="topbar-texto">
-                    <span class="topbar-nombre"><%= tienda.nombre %></span>
-                    <% if (tienda.direccion) { %><span class="topbar-sub"><%= tienda.direccion %></span><% } %>
-                </div>
-            </div>
-
-            <!-- INFO CENTRAL: ROL + FECHA/HORA -->
-            <div class="topbar-info">
+            <a href="/admin" class="topbar-marca">
+                <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="" class="topbar-logo">
+                <span class="topbar-nombre"><%= tienda.nombre %></span>
                 <span class="topbar-badge"><%= usuario.role %></span>
-                <span class="topbar-fecha"><%= new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %></span>
-            </div>
-
+            </a>
             <div class="topbar-derecha">
-                <!-- CAMPANA DE NOTIFICACIONES -->
+                <a href="/" class="topbar-enlace" target="_blank" rel="noopener">Ver la tienda</a>
                 <div class="campana-contenedor" id="campanaContenedor">
-                    <button class="campana-boton" id="campanaBoton" title="Notificaciones">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                        </svg>
+                    <button type="button" class="campana-boton" id="campanaBoton" aria-label="Notificaciones">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         <span class="campana-badge" id="campanaBadge">0</span>
                     </button>
                     <div class="campana-dropdown" id="campanaDropdown">
                         <div class="dropdown-header">
                             <span>Notificaciones</span>
-                            <button class="btn-marcar-todas" id="btnMarcarTodas">Marcar todo leído</button>
+                            <button type="button" class="btn-marcar-todas" id="btnMarcarTodas">Marcar todo leído</button>
                         </div>
                         <div class="dropdown-lista" id="dropdownLista">
                             <p class="dropdown-vacio">Sin notificaciones nuevas</p>
                         </div>
                     </div>
                 </div>
-
-                <form method="POST" action="/logout" style="display:inline">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="topbar-logout" title="Cerrar sesión" style="cursor:pointer;font-family:inherit">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    <span>Cerrar sesión</span>
-                </button>
+                <form method="POST" action="/logout" class="topbar-salir">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit">Salir</button>
                 </form>
             </div>
         </div>
     </header>
 
-    <!-- ============ CONTENIDO CENTRADO ============ -->
-    <main class="contenedor">
-
-        <!-- HERO / BIENVENIDA -->
-        <section class="hero">
-            <div class="hero-logo">
-                <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>">
+    <main class="tablero">
+        <div class="tablero-cabeza">
+            <div>
+                <p class="tablero-fecha"><%= new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }) %></p>
+                <h1>Hola, <%= String(usuario.nombre || usuario.usuario || 'equipo').split(' ')[0] %></h1>
             </div>
-            <span class="hero-eyebrow"><%= usuario.role %></span>
-            <h1>¡Hola, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong>!</h1>
-            <p>Gestiona tu catálogo, pedidos y estadísticas desde un solo lugar.</p>
+            <% if (puedeVer('analitica')) { %>
+            <fieldset class="periodo" id="periodo">
+                <legend class="solo-lector">Período</legend>
+                <label><input type="radio" name="dias" value="7"><span>7 días</span></label>
+                <label><input type="radio" name="dias" value="30" checked><span>30 días</span></label>
+                <label><input type="radio" name="dias" value="90"><span>90 días</span></label>
+            </fieldset>
+            <% } %>
+        </div>
+
+        <%# Lo que necesita acción ahora; se llena según los permisos del rol %>
+        <section class="atencion" id="bloqueAtencion" aria-label="Requiere atención" hidden></section>
+
+        <% if (puedeVer('analitica')) { %>
+        <section class="kpis" id="bloqueIndicadores" aria-label="Indicadores del período">
+            <% [['ventas', 'Ventas entregadas'], ['apartados', 'Apartados nuevos'], ['ticket', 'Ticket promedio'], ['cancelacion', 'Cancelados'], ['clientes', 'Clientes que compraron']].forEach(([clave, nombre]) => { %>
+                <article class="kpi" data-kpi="<%= clave %>">
+                    <h2><%= nombre %></h2>
+                    <p class="kpi-valor">–</p>
+                    <p class="kpi-cambio"></p>
+                </article>
+            <% }) %>
         </section>
 
-        <!-- MÉTRICAS EN VIVO -->
-        <section class="metrics-grid">
-            <div class="stat-card">
-                <div class="stat-icono icono-productos">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+        <div class="tablero-grid">
+            <section class="tarjeta tarjeta-ancha" aria-labelledby="tVentas">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tVentas">Ventas por día</h2>
+                    <p class="tarjeta-nota">Apartados entregados, en pesos</p>
                 </div>
-                <div class="stat-info">
-                    <span class="stat-valor" id="statProductos">–</span>
-                    <span class="stat-etiqueta">Productos activos</span>
-                </div>
-                <a href="/admin/habilitar-producto" class="stat-enlace">Gestionar →</a>
-            </div>
+                <div class="grafica"><canvas id="graficaVentas" aria-label="Ventas entregadas por día" role="img"></canvas></div>
+                <details class="tabla-datos"><summary>Ver los datos</summary><div id="tablaVentas"></div></details>
+            </section>
 
-            <% if (tienePermiso('pedidos')) { %>
-            <div class="stat-card">
-                <div class="stat-icono icono-pedidos">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <section class="tarjeta" aria-labelledby="tEstados">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tEstados">Estado de los apartados</h2>
+                    <p class="tarjeta-nota">Creados en el período</p>
                 </div>
-                <div class="stat-info">
-                    <span class="stat-valor" id="statPedidos">–</span>
-                    <span class="stat-etiqueta">Pedidos pendientes</span>
+                <ul class="medidores" id="listaEstados"></ul>
+            </section>
+
+            <section class="tarjeta" aria-labelledby="tTop">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tTop">Productos que más venden</h2>
+                    <p class="tarjeta-nota">Por ventas entregadas</p>
                 </div>
-                <a href="/admin/pedidos" class="stat-enlace">Revisar →</a>
-            </div>
+                <ul class="medidores" id="listaTop"></ul>
+            </section>
+
+            <section class="tarjeta" aria-labelledby="tCategorias">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tCategorias">Ventas por <%= vocab.seccion.toLowerCase() %></h2>
+                    <p class="tarjeta-nota">Categorías de producto</p>
+                </div>
+                <ul class="medidores" id="listaCategorias"></ul>
+            </section>
+
+            <section class="tarjeta" aria-labelledby="tHoras">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tHoras">¿A qué hora apartan?</h2>
+                    <p class="tarjeta-nota">Apartados por hora del día</p>
+                </div>
+                <div class="grafica grafica-baja"><canvas id="graficaHoras" aria-label="Apartados por hora del día" role="img"></canvas></div>
+            </section>
+
+            <section class="tarjeta tarjeta-ancha" aria-labelledby="tVisitas">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tVisitas">Visitas a la tienda</h2>
+                    <p class="tarjeta-nota">Visitantes distintos por día</p>
+                </div>
+                <div class="grafica grafica-baja"><canvas id="graficaVisitas" aria-label="Visitantes por día" role="img"></canvas></div>
+            </section>
+        <% } else { %>
+        <div class="tablero-grid">
+        <% } %>
+
+            <% if (puedeVer('productos')) { %>
+            <section class="tarjeta" aria-labelledby="tStock">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tStock">Poco stock</h2>
+                    <a class="tarjeta-enlace" href="/admin/habilitar-producto">Gestionar productos</a>
+                </div>
+                <ul class="lista-stock" id="listaStock"></ul>
+            </section>
             <% } %>
 
-            <% if (tienePermiso('ofertas')) { %>
-            <div class="stat-card">
-                <div class="stat-icono icono-ofertas">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <% if (puedeVer('pedidos')) { %>
+            <section class="tarjeta tarjeta-completa" aria-labelledby="tUltimos">
+                <div class="tarjeta-cabeza">
+                    <h2 id="tUltimos">Últimos apartados</h2>
+                    <a class="tarjeta-enlace" href="/admin/pedidos">Ver todos los pedidos</a>
                 </div>
-                <div class="stat-info">
-                    <span class="stat-valor" id="statOfertas">–</span>
-                    <span class="stat-etiqueta">Ofertas activas</span>
-                </div>
-                <a href="/admin/ofertas" class="stat-enlace">Ver →</a>
-            </div>
+                <div class="tabla-envoltura"><table class="tabla" id="tablaUltimos"></table></div>
+            </section>
             <% } %>
+        </div>
 
-            <div class="stat-card">
-                <div class="stat-icono icono-notif">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-valor" id="statNotificaciones">–</span>
-                    <span class="stat-etiqueta">Notificaciones</span>
-                </div>
-                <span class="stat-vacio">En tiempo real</span>
-            </div>
+        <%# Accesos a los módulos del panel según permisos %>
+        <section class="accesos" aria-labelledby="tAccesos">
+            <h2 id="tAccesos">Módulos</h2>
+            <nav class="accesos-grid">
+                <% const accesos = [
+                    ['productos', '/admin/habilitar-producto', 'Productos', 'Activa, edita precios y presentaciones'],
+                    ['pedidos', '/admin/pedidos', 'Pedidos', 'Confirma y entrega apartados'],
+                    ['pedidos', '/admin/historial-pedidos', 'Historial de pedidos', 'Entregados y cancelados'],
+                    ['ofertas', '/admin/ofertas', 'Ofertas', 'Descuentos y vigencias'],
+                    ['clientes', '/admin/clientes', 'Clientes', 'Datos de tus clientes'],
+                    ['categorias', '/admin/categorias', 'Categorías', 'Organiza el catálogo'],
+                    ['carrusel', '/admin/carrusel', 'Banners de la portada', 'Imágenes del inicio'],
+                    ['analitica', '/admin/historicos', 'Analítica detallada', 'Reportes y exportación'],
+                    ['recuperacion', '/admin/recuperacion', 'Recuperar contraseña', 'Clave temporal para un cliente'],
+                    ['usuarios', '/admin/usuarios', 'Usuarios del panel', 'Personal y roles'],
+                    ['auditoria', '/admin/auditoria', 'Auditoría', 'Quién hizo qué'],
+                    ['respaldo', '/admin/respaldo', 'Respaldo', 'Exporta los datos'],
+                ].filter(([permiso]) => puedeVer(permiso)); %>
+                <% if (esSuperAdmin(usuario.role)) { accesos.push(['', '/admin/configuracion', 'Configuración de la tienda', 'Nombre, logo, colores, tipo de negocio'], ['', '/admin/permisos', 'Permisos y roles', 'Qué puede hacer cada rol']); } %>
+                <% accesos.forEach(([, href, nombre, detalle]) => { %>
+                    <a href="<%= href %>"><b><%= nombre %></b><span><%= detalle %></span></a>
+                <% }) %>
+            </nav>
         </section>
-
-        <!-- TARJETAS DE NAVEGACIÓN -->
-        <section class="admin-content">
-            <% if (tienePermiso('productos')) { %>
-            <a href="/admin/habilitar-producto" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Gestión de Productos</h2>
-                    <p>Activa, deshabilita o gestiona el catálogo disponible para tus clientes.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('ofertas')) { %>
-            <a href="/admin/ofertas" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Ofertas y Descuentos</h2>
-                    <p>Configura promociones, precios y fechas de vigencia.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('pedidos')) { %>
-            <a href="/admin/pedidos" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Control de Pedidos</h2>
-                    <p>Revisa pendientes, entregas y el estado de cada compra.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('carrusel')) { %>
-            <a href="/admin/carrusel" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Carrusel de la Portada</h2>
-                    <p>Sube o elimina las imágenes que rotan en la página principal.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('pedidos')) { %>
-            <a href="/admin/historial-pedidos" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Historial de Pedidos</h2>
-                    <p>Consulta confirmados, entregados y cancelados.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('clientes')) { %>
-            <a href="/admin/clientes" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Gestión de Clientes</h2>
-                    <p>Busca, visualiza y actualiza los datos de tus clientes.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('analitica')) { %>
-            <a href="/admin/historicos" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Analítica</h2>
-                    <p>Gráficos de productos, clientes y tráfico de la página.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (esSuperAdmin(usuario.role)) { %>
-            <a href="/admin/permisos" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Permisos y Roles</h2>
-                    <p>Da o quita módulos del panel a cada rol (solo Administrador).</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-
-            <a href="/admin/configuracion" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><rect x="9" y="13" width="6" height="7"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Configuración de la tienda</h2>
-                    <p>Nombre, logo, colores, contacto, redes y ajustes de ventas del negocio.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('recuperacion')) { %>
-            <a href="/admin/recuperacion" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Recuperar contraseña de cliente</h2>
-                    <p>Emite una clave temporal para ayudar a un cliente a recuperar su cuenta.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('usuarios')) { %>
-            <a href="/admin/usuarios" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Usuarios del Panel</h2>
-                    <p>Crea, edita y desactiva al personal del panel y su rol.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('categorias')) { %>
-            <a href="/admin/categorias" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Categorías</h2>
-                    <p>Administra las categorías de productos y renómbralas en bloque.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-
-            <% if (tienePermiso('auditoria')) { %>
-            <a href="/admin/auditoria" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Auditoría</h2>
-                    <p>Registro de quién hizo qué en el panel (pedidos, precios, usuarios...).</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-            <% if (tienePermiso('respaldo')) { %>
-            <a href="/admin/respaldo" class="admin-card">
-                <div class="card-icono">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                </div>
-                <div class="card-cuerpo">
-                    <h2>Respaldo y Exportación</h2>
-                    <p>Descarga los datos del sistema en CSV o un respaldo completo en JSON.</p>
-                </div>
-                <span class="card-flecha">→</span>
-            </a>
-            <% } %>
-        </section>
-
     </main>
 
-    <!-- FOOTER -->
     <footer class="admin-footer">
         <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %> · Panel de administración</p>
     </footer>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
-    <script nonce="<%= cspNonce %>">
-        // Permisos del usuario actual: el dashboard evita consultar
-        // endpoints para los que no tiene permiso.
-        window.PERMISOS_USUARIO = <%- JSON.stringify(permisosUsuario || []) %>;
-    </script>
+    <% if (puedeVer('analitica')) { %><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><% } %>
     <script src="/js/admin/mainAdmin.js"></script>
+    <script src="/js/admin/dashboardAdmin.js"></script>
 </body>
 </html>

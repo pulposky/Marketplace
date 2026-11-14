@@ -34,6 +34,7 @@ const RecuperacionApiController = require('../controllers/admin/recuperacionApiC
 const TiendaVistasController = require('../controllers/admin/tiendaVistasController');
 const TiendaApiController = require('../controllers/admin/tiendaApiController');
 const verificarAdmin = require('../middleware/verificarAdmin');
+const DashboardApiController = require('../controllers/admin/dashboardApiController');
 const verificarRol = require('../middleware/verificarRol');
 const verificarPermiso = require('../middleware/verificarPermiso');
 const noCache = require('../middleware/noCache');
@@ -143,6 +144,8 @@ router.get('/api/admin/reportes/clientes.csv', verificarPermiso('analitica'), Re
 // GET: devuelve las notificaciones no leídas + el conteo total
 // PATCH marcar leída: marca una notificación específica como leída
 // PATCH marcar todas leídas: marca todas las no leídas como leídas
+// Dashboard del panel: cada bloque se filtra por los permisos del rol dentro del controlador
+router.get('/api/admin/dashboard', verificarAdmin, DashboardApiController.obtener);
 router.get('/api/admin/notificaciones', verificarAdmin, NotificacionesController.obtenerNotificaciones);
 router.patch('/api/admin/notificaciones/:id/leida', verificarAdmin, NotificacionesController.marcarLeida);
 router.patch('/api/admin/notificaciones/todas-leidas', verificarAdmin, NotificacionesController.marcarTodasLeidas);
