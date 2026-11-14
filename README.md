@@ -19,6 +19,7 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 
 - [✨ ¿Por qué elegir Marketplace?](#-por-qué-elegir-marketplace)
 - [🚀 Características](#-características)
+- [📸 Capturas](#-capturas)
 - [🛠️ Tecnologías](#️-tecnologías)
 - [📦 Requisitos previos](#-requisitos-previos)
 - [⚙️ Instalación](#️-instalación)
@@ -61,6 +62,14 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 | ⚡ **Gestión de stock** | Devolución automática al cancelar apartados |
 | 🏷️ **Ofertas y descuentos** | Descuentos por producto, gestión desde el panel admin y precio capturado al apartar |
 | ⏱️ **Expiración automática** | Los apartados sin confirmar se cancelan y liberan stock tras 1 hora |
+
+---
+
+## 📸 Capturas
+
+### Página de inicio
+
+![Página de inicio del Marketplace](docs/capturas/inicio.jpg)
 
 ---
 
