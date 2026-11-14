@@ -60,69 +60,12 @@
                             []; %>
                             <form method="get" action="/catalogo" class="filtros-categorias-form">
                                 <div class="lista-categorias">
+                                    <% (Array.isArray(categorias) ? categorias : []).forEach(cat => { %>
                                     <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Abonos y Sustratos" <% if
-                                            (categoriasActivas.includes('Abonos y Sustratos')) { %>checked<% } %>>
-                                            <span>Abonos y Sustratos</span>
+                                        <input type="checkbox" name="categoria" value="<%= cat %>" <%= categoriasActivas.includes(cat) ? 'checked' : '' %>>
+                                            <span><%= cat %></span>
                                     </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Frutas y Hortalizas" <% if
-                                            (categoriasActivas.includes('Frutas y Hortalizas')) { %>checked<% } %>>
-                                            <span>Frutas y Hortalizas</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Cereales, Granos y Forrajes" <%
-                                            if (categoriasActivas.includes('Cereales, Granos y Forrajes')) { %>checked<%
-                                            } %>>
-                                            <span>Cereales, Granos y Forrajes</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Material Vegetal y Flores" <% if
-                                            (categoriasActivas.includes('Material Vegetal y Flores')) { %>checked<% } %>
-                                            >
-                                            <span>Material Vegetal y Flores</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Embutidos y Cárnicos Procesados"
-                                            <% if (categoriasActivas.includes('Embutidos y Cárnicos Procesados')) {
-                                            %>checked<% } %>>
-                                            <span>Embutidos y Cárnicos</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Bebidas y Refrescos" <% if
-                                            (categoriasActivas.includes('Bebidas y Refrescos')) { %>checked<% } %>>
-                                            <span>Bebidas y Refrescos</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Salsas y Conservas" <% if
-                                            (categoriasActivas.includes('Salsas y Conservas')) { %>checked<% } %>>
-                                            <span>Salsas y Conservas</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Lácteos y Derivados" <% if
-                                            (categoriasActivas.includes('Lácteos y Derivados')) { %>checked<% } %>>
-                                            <span>Lácteos y Derivados</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Repostería, Dulces y Licores" <%
-                                            if (categoriasActivas.includes('Repostería, Dulces y Licores')) { %>checked
-                                        <% } %>>
-                                            <span>Repostería, Dulces y Licores</span>
-                                    </label>
-
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="Pecuario y Acuícola" <% if
-                                            (categoriasActivas.includes('Pecuario y Acuícola')) { %>checked<% } %>>
-                                            <span>Pecuario y Acuícola</span>
-                                    </label>
+                                    <% }) %>
                                 </div>
 
                                 <button type="submit" class="boton-filtrar">Aplicar Filtros</button>

@@ -113,6 +113,10 @@ const SitioVistasController = {
             // Solo productos activos en el catálogo público
             let productosActivos = listaProductosRaw.filter((producto) => producto.estado === 'activo');
 
+            // Categorías del filtro: las que realmente tienen productos activos (únicas y ordenadas)
+            const categorias = [...new Set(productosActivos.map((producto) => String(producto.categoria || '').trim()).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, 'es'));
+
             // Si escribió algo en el buscador, filtro por nombre
             if (busquedaLower) {
                 productosActivos = productosActivos.filter((producto) =>
@@ -157,6 +161,7 @@ const SitioVistasController = {
             asociarImagenesAProductos(productosFiltrados, (productosConImagen) => {
                 res.render("productos", {
                     productos: productosConImagen,
+                    categorias,
                     categoriasSeleccionadas,
                     busqueda,
                     soloOferta,
