@@ -10,9 +10,9 @@
 // el cliente lo crea (uno solo o en lote desde el carrito),
 // el admin lo confirma o entrega, y cualquiera puede cancelarlo.
 //
-// Maneja la conversión de cubetas de huevos
-// (cada cubeta = 30 unidades) para productos
-// que son huevo.
+// La cantidad puede venir en una presentación del
+// producto (ej. "Caja" = 12 unidades): se convierte
+// a unidades mínimas, que es como se guarda el stock.
 // =============================================
 
 const ProductoModel = require('../models/productoModel');
@@ -23,6 +23,27 @@ const auditoriaService = require('../services/auditoriaService');
 const { calcularPrecioOferta } = require('../utils/helpers');
 const { esRolPanel } = require('../utils/roles');
 const { idClienteDeSesion, esDuenoApartado } = require('../utils/apartados');
+const PresentacionModel = require('../models/presentacionModel');
+const { calcularUnidades, describir } = require('../utils/presentaciones');
+
+// Convierte la cantidad pedida a unidades mínimas según la presentación
+// (opcional). La presentación debe ser del mismo producto y estar activa.
+// Devuelve { unidades, presentacion } o { error } (siempre 400).
+const resolverCantidad = async (idProducto, cantidad, presentacionId) => {
+    const sinPresentacion = presentacionId === undefined || presentacionId === null || presentacionId === '';
+    let presentacion = null;
+    if (!sinPresentacion) {
+        const idPresentacion = Number(presentacionId);
+        if (!Number.isInteger(idPresentacion) || idPresentacion <= 0) {
+            return { error: 'Presentación inválida.' };
+        }
+        presentacion = await PresentacionModel.obtenerDeProducto(idProducto, idPresentacion);
+        if (!presentacion) return { error: 'La presentación no pertenece a este producto.' };
+    }
+    const unidades = calcularUnidades(cantidad, presentacion ? presentacion.factor : 1);
+    if (unidades === null) return { error: 'Cantidad inválida.' };
+    return { unidades, presentacion };
+};
 
 const ApartadoController = {
 
@@ -35,48 +56,54 @@ const ApartadoController = {
             return res.status(401).json({ error: 'Debe iniciar sesión para apartar un producto.' });
         }
 
-        const { productoId, cantidad } = req.body;
+        const { productoId, cantidad, presentacionId } = req.body;
 
         if (!productoId || !cantidad) {
             return res.status(400).json({ error: 'Faltan datos obligatorios para apartar.' });
         }
 
-        const cantidadIngresada = parseInt(cantidad, 10);
-        if (Number.isNaN(cantidadIngresada) || cantidadIngresada <= 0) {
+        const idProducto = Number(productoId);
+        const cantidadIngresada = Number(cantidad);
+        if (!Number.isInteger(idProducto) || idProducto <= 0
+            || !Number.isInteger(cantidadIngresada) || cantidadIngresada <= 0) {
             return res.status(400).json({ error: 'Cantidad inválida.' });
         }
 
         // 1. Busco el producto para verificar que exista y tenga stock
-        ProductoModel.obtenerPorId(productoId, (err, resultados) => {
+        ProductoModel.obtenerPorId(idProducto, async (err, resultados) => {
             if (err || !resultados || resultados.length === 0) {
                 return res.status(404).json({ error: 'Producto no encontrado.' });
             }
 
             const producto = resultados[0];
 
-            // Detecto si es huevo para convertir cubetas a unidades (x30)
-            const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
+            // Convierto la cantidad (en la presentación elegida) a unidades mínimas
+            let resuelto;
+            try {
+                resuelto = await resolverCantidad(idProducto, cantidadIngresada, presentacionId);
+            } catch (errorPresentacion) {
+                console.error('Error consultando presentación:', errorPresentacion);
+                return res.status(500).json({ error: 'Error al consultar el producto.' });
+            }
+            if (resuelto.error) {
+                return res.status(400).json({ error: resuelto.error });
+            }
+            const { unidades: unidadesARestar, presentacion } = resuelto;
 
-            // Si el cliente envió cubetas, multiplico por 30 para tener las unidades reales
-            const unidadesARestar = esHuevo ? cantidadIngresada * 30 : cantidadIngresada;
-
-            const stockDisponible = producto.limite_venta || 0;
+            const stockDisponible = Number(producto.limite_venta) || 0;
 
             // Verifico que haya suficiente stock y que el producto esté activo
             if (producto.estado !== 'activo' || stockDisponible < unidadesARestar) {
                 return res.status(400).json({
-                    error: esHuevo
-                        ? `No hay suficientes cubetas disponibles. Stock actual: ${Math.floor(stockDisponible / 30)} cubeta(s).`
-                        : 'El producto está inactivo o no tiene cupo disponible para la venta.'
+                    error: producto.estado !== 'activo'
+                        ? 'El producto está inactivo o no tiene cupo disponible para la venta.'
+                        : `No hay suficiente stock disponible. Stock actual: ${describir(stockDisponible, producto.unidad)}.`
                 });
             }
 
-            const nuevoLimite = stockDisponible - unidadesARestar;
-            const nuevoEstado = nuevoLimite > 0 ? 'activo' : 'inactivo';
-
             const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
 
-            // Calculo el precio (unitario real, sin la conversión de cubetas)
+            // Calculo el precio por unidad mínima (el total = unidades × precio)
             // aplicando el descuento si la oferta está vigente. Se guarda el
             // precio con descuento al momento de apartar para que el total no
             // cambie retroactivamente si la oferta se modifica después.
@@ -87,9 +114,11 @@ const ApartadoController = {
             const datosApartado = {
                 nombreCliente,
                 idCliente: idClienteDeSesion(req.session.usuario),
-                producto: productoId,
+                producto: idProducto,
                 cantidad: unidadesARestar,
-                precioAplicado
+                precioAplicado,
+                presentacionNombre: presentacion ? presentacion.nombre : null,
+                presentacionFactor: presentacion ? presentacion.factor : null
             };
 
             // 2. Creo el registro del apartado en la BD
@@ -100,24 +129,23 @@ const ApartadoController = {
                 }
 
                 // Creo la notificación para que el admin se entere del nuevo apartado
-                const cantidadMostrar = esHuevo ? Math.floor(unidadesARestar / 30) : unidadesARestar;
-                const unidadMostrar = esHuevo ? 'cubeta(s)' : (producto.unidad || 'unidad(es)');
+                const textoCantidad = describir(unidadesARestar, producto.unidad, presentacion);
                 NotificacionModel.crearNotificacion({
                     titulo: 'Nuevo apartado',
-                    mensaje: `${nombreCliente} apartó ${cantidadMostrar} ${unidadMostrar} de ${producto.nombre}`
+                    mensaje: `${nombreCliente} apartó ${textoCantidad} de ${producto.nombre}`
                 }, () => {});
 
                 // Notifico al cliente que su apartado quedó creado
                 NotificacionClienteModel.crear(
                     req.session.usuario.id,
                     'Apartado creado',
-                    `Tu apartado de ${producto.nombre} (${cantidadMostrar} ${unidadMostrar}) está pendiente por 1 hora.`,
+                    `Tu apartado de ${producto.nombre} (${textoCantidad}) está pendiente por 1 hora.`,
                     () => {}
                 );
 
                 // El descuento es atómico (WHERE limite_venta >= ?): si otro cliente
                 // tomó el stock, affectedRows = 0 y se cancela el apartado recién creado.
-                ProductoModel.restarLimiteVenta(productoId, unidadesARestar, (errorUpdate, resultadoUpdate) => {
+                ProductoModel.restarLimiteVenta(idProducto, unidadesARestar, (errorUpdate, resultadoUpdate) => {
                     if (errorUpdate) {
                         console.error('Error actualizando límite tras apartado:', errorUpdate);
                         return res.status(500).json({ error: 'Error al actualizar el stock del producto.' });
@@ -127,9 +155,7 @@ const ApartadoController = {
                         // No había stock: cancelo el apartado que acabé de crear
                         ApartadoModel.cancelarApartadoCliente(resultado.insertId, () => {});
                         return res.status(400).json({
-                            error: esHuevo
-                                ? `No hay suficientes cubetas disponibles. Stock actual: ${Math.floor(stockDisponible / 30)} cubeta(s).`
-                                : 'El producto ya no tiene stock disponible. Otro usuario lo tomó primero.'
+                            error: 'El producto ya no tiene stock disponible. Otro usuario lo tomó primero.'
                         });
                     }
 
@@ -137,7 +163,6 @@ const ApartadoController = {
                         mensaje: '¡Producto apartado con éxito!',
                         idInsertado: resultado.insertId,
                         unidadesRestantes: stockDisponible - unidadesARestar,
-                        cubetasRestantes: esHuevo ? Math.floor((stockDisponible - unidadesARestar) / 30) : undefined,
                         estado: (stockDisponible - unidadesARestar) > 0 ? 'activo' : 'inactivo'
                     });
                 });
@@ -176,14 +201,14 @@ const ApartadoController = {
             }
 
             const item = items[indice];
-            const idProducto = Number(item.productoId);
-            const cantidad = parseInt(item.cantidad, 10);
+            const idProducto = Number(item && item.productoId);
+            const cantidad = Number(item && item.cantidad);
 
             if (!Number.isInteger(idProducto) || !Number.isInteger(cantidad) || cantidad <= 0) {
                 return cbFinal({ mensaje: 'Cantidad inválida en el carrito.', estado: 400 });
             }
 
-            ProductoModel.obtenerPorId(idProducto, (err, resultados) => {
+            ProductoModel.obtenerPorId(idProducto, async (err, resultados) => {
                 if (err) {
                     return cbFinal({ mensaje: 'Error al consultar los productos.', estado: 500 });
                 }
@@ -192,8 +217,17 @@ const ApartadoController = {
                 }
 
                 const producto = resultados[0];
-                const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
-                const unidadesARestar = esHuevo ? cantidad * 30 : cantidad;
+                let resuelto;
+                try {
+                    resuelto = await resolverCantidad(idProducto, cantidad, item.presentacionId);
+                } catch (errorPresentacion) {
+                    console.error('Error consultando presentación del lote:', errorPresentacion);
+                    return cbFinal({ mensaje: 'Error al consultar los productos.', estado: 500 });
+                }
+                if (resuelto.error) {
+                    return cbFinal({ mensaje: `"${producto.nombre}": ${resuelto.error}`, estado: 400 });
+                }
+                const { unidades: unidadesARestar, presentacion } = resuelto;
                 const stockDisponible = Number(producto.limite_venta) || 0;
 
                 if (producto.estado !== 'activo' || stockDisponible < unidadesARestar) {
@@ -210,7 +244,10 @@ const ApartadoController = {
                     idCliente: idClienteDeSesion(req.session.usuario),
                     producto: idProducto,
                     cantidad: unidadesARestar,
-                    precioAplicado
+                    precioAplicado,
+                    presentacionNombre: presentacion ? presentacion.nombre : null,
+                    presentacionFactor: presentacion ? presentacion.factor : null,
+                    nombreProducto: producto.nombre
                 });
 
                 indice += 1;
@@ -297,7 +334,7 @@ const ApartadoController = {
                                 }
                             });
                             return res.status(400).json({
-                                error: `Sin stock suficiente para "${detalle.producto}". Otro usuario tomó el stock primero.`
+                                error: `Sin stock suficiente para "${detalle.nombreProducto}". Otro usuario tomó el stock primero.`
                             });
                         }
 

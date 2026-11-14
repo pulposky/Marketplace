@@ -18,6 +18,7 @@ const ApartadoModel = {
     // solo al crearla, la rellena para nombres de cliente que no se repiten.
     // Los apartados viejos con nombre ambiguo quedan con id_cliente NULL.
     asegurarEsquema: async () => {
+        await ApartadoModel.asegurarColumnasPresentacion();
         const [columnas] = await pool.query(
             `SELECT COLUMN_NAME FROM information_schema.COLUMNS
              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'apartados' AND COLUMN_NAME = 'id_cliente'`
@@ -33,24 +34,43 @@ const ApartadoModel = {
         `);
     },
 
+    // Copia de la presentación elegida al apartar (nombre y factor), para que
+    // el historial conserve su significado aunque el admin la cambie después.
+    asegurarColumnasPresentacion: async () => {
+        const [columnas] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'apartados'
+               AND COLUMN_NAME IN ('presentacion_nombre', 'presentacion_factor')`
+        );
+        const existentes = new Set(columnas.map((c) => c.COLUMN_NAME));
+        const faltan = [];
+        if (!existentes.has('presentacion_nombre')) faltan.push('ADD COLUMN presentacion_nombre VARCHAR(50) NULL');
+        if (!existentes.has('presentacion_factor')) faltan.push('ADD COLUMN presentacion_factor INT NULL');
+        if (faltan.length) await pool.query(`ALTER TABLE apartados ${faltan.join(', ')}`);
+    },
+
     // ------------------------------------------------
     // CREACIÓN
     // ------------------------------------------------
 
     // Crea un apartado nuevo cuando un cliente reserva un producto.
-    // Recibe un objeto con nombreCliente, producto, cantidad y precioAplicado.
+    // Recibe un objeto con nombreCliente, producto, cantidad (unidades mínimas),
+    // precioAplicado (por unidad mínima) y opcionalmente presentacionNombre/Factor.
     // Devuelve el insert con el id_apartado generado.
     crearApartado: (datosApartado, callback) => {
         const sql = `
-            INSERT INTO apartados (nombre_cliente, id_cliente, producto, cantidad, precio_aplicado)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO apartados (nombre_cliente, id_cliente, producto, cantidad, precio_aplicado,
+                presentacion_nombre, presentacion_factor)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
         const valores = [
             datosApartado.nombreCliente,
             datosApartado.idCliente || null,
             datosApartado.producto,
             datosApartado.cantidad,
-            Number(datosApartado.precioAplicado) || 0
+            Number(datosApartado.precioAplicado) || 0,
+            datosApartado.presentacionNombre || null,
+            datosApartado.presentacionFactor || null
         ];
 
         conexion.query(sql, valores, callback);
@@ -70,6 +90,8 @@ const ApartadoModel = {
                 a.nombre_cliente,
                 a.cantidad,
                 a.precio_aplicado,
+                a.presentacion_nombre,
+                a.presentacion_factor,
                 a.estado AS estado_apartado,
                 a.cancelado_por,
                 a.fecha,
@@ -131,6 +153,8 @@ const ApartadoModel = {
                 c.direccion AS cliente_direccion,
                 a.cantidad,
                 a.precio_aplicado,
+                a.presentacion_nombre,
+                a.presentacion_factor,
                 a.fecha,
                 a.estado,
                 a.cancelado_por,
