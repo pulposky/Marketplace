@@ -74,6 +74,52 @@
             <% } %>
         </div>
 
+        <%# Accesos a los módulos, arriba para llegar en un clic (según permisos) %>
+        <%
+            // Ícono de cada módulo: trazos SVG de 24x24
+            const ICONOS = {
+                productos: '<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/>',
+                pedidos: '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>',
+                historial: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+                ofertas: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><path d="M7 7h.01"/>',
+                clientes: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+                categorias: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+                carrusel: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+                analitica: '<path d="M18 20V10M12 20V4M6 20v-6"/>',
+                recuperacion: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+                usuarios: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>',
+                auditoria: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h6"/>',
+                respaldo: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+                configuracion: '<path d="M3 9l1-5h16l1 5M4 9v11h16V9M3 9h18"/><path d="M9 20v-7h6v7"/>',
+                permisos: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+            };
+            const accesos = [
+                ['productos', 'productos', '/admin/habilitar-producto', 'Productos'],
+                ['pedidos', 'pedidos', '/admin/pedidos', 'Pedidos'],
+                ['pedidos', 'historial', '/admin/historial-pedidos', 'Historial'],
+                ['ofertas', 'ofertas', '/admin/ofertas', 'Ofertas'],
+                ['clientes', 'clientes', '/admin/clientes', 'Clientes'],
+                ['categorias', 'categorias', '/admin/categorias', 'Categorías'],
+                ['carrusel', 'carrusel', '/admin/carrusel', 'Banners'],
+                ['analitica', 'analitica', '/admin/historicos', 'Analítica'],
+                ['recuperacion', 'recuperacion', '/admin/recuperacion', 'Recuperar clave'],
+                ['usuarios', 'usuarios', '/admin/usuarios', 'Usuarios'],
+                ['auditoria', 'auditoria', '/admin/auditoria', 'Auditoría'],
+                ['respaldo', 'respaldo', '/admin/respaldo', 'Respaldo'],
+            ].filter(([permiso]) => puedeVer(permiso));
+            if (esSuperAdmin(usuario.role)) {
+                accesos.push(['', 'configuracion', '/admin/configuracion', 'Configuración'], ['', 'permisos', '/admin/permisos', 'Permisos']);
+            }
+        %>
+        <nav class="accesos" aria-label="Módulos del panel">
+            <% accesos.forEach(([, icono, href, nombre]) => { %>
+                <a href="<%= href %>">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><%- ICONOS[icono] %></svg>
+                    <span><%= nombre %></span>
+                </a>
+            <% }) %>
+        </nav>
+
         <%# Lo que necesita acción ahora; se llena según los permisos del rol %>
         <section class="atencion" id="bloqueAtencion" aria-label="Requiere atención" hidden></section>
 
@@ -162,30 +208,6 @@
             <% } %>
         </div>
 
-        <%# Accesos a los módulos del panel según permisos %>
-        <section class="accesos" aria-labelledby="tAccesos">
-            <h2 id="tAccesos">Módulos</h2>
-            <nav class="accesos-grid">
-                <% const accesos = [
-                    ['productos', '/admin/habilitar-producto', 'Productos', 'Activa, edita precios y presentaciones'],
-                    ['pedidos', '/admin/pedidos', 'Pedidos', 'Confirma y entrega apartados'],
-                    ['pedidos', '/admin/historial-pedidos', 'Historial de pedidos', 'Entregados y cancelados'],
-                    ['ofertas', '/admin/ofertas', 'Ofertas', 'Descuentos y vigencias'],
-                    ['clientes', '/admin/clientes', 'Clientes', 'Datos de tus clientes'],
-                    ['categorias', '/admin/categorias', 'Categorías', 'Organiza el catálogo'],
-                    ['carrusel', '/admin/carrusel', 'Banners de la portada', 'Imágenes del inicio'],
-                    ['analitica', '/admin/historicos', 'Analítica detallada', 'Reportes y exportación'],
-                    ['recuperacion', '/admin/recuperacion', 'Recuperar contraseña', 'Clave temporal para un cliente'],
-                    ['usuarios', '/admin/usuarios', 'Usuarios del panel', 'Personal y roles'],
-                    ['auditoria', '/admin/auditoria', 'Auditoría', 'Quién hizo qué'],
-                    ['respaldo', '/admin/respaldo', 'Respaldo', 'Exporta los datos'],
-                ].filter(([permiso]) => puedeVer(permiso)); %>
-                <% if (esSuperAdmin(usuario.role)) { accesos.push(['', '/admin/configuracion', 'Configuración de la tienda', 'Nombre, logo, colores, tipo de negocio'], ['', '/admin/permisos', 'Permisos y roles', 'Qué puede hacer cada rol']); } %>
-                <% accesos.forEach(([, href, nombre, detalle]) => { %>
-                    <a href="<%= href %>"><b><%= nombre %></b><span><%= detalle %></span></a>
-                <% }) %>
-            </nav>
-        </section>
     </main>
 
     <footer class="admin-footer">
