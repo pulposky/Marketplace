@@ -22,6 +22,7 @@ const NotificacionClienteModel = require('../models/notificacionClienteModel');
 const auditoriaService = require('../services/auditoriaService');
 const { calcularPrecioOferta } = require('../utils/helpers');
 const { esRolPanel } = require('../utils/roles');
+const { idClienteDeSesion, esDuenoApartado } = require('../utils/apartados');
 
 const ApartadoController = {
 
@@ -85,6 +86,7 @@ const ApartadoController = {
             // Preparo los datos para insertar en la tabla de apartados
             const datosApartado = {
                 nombreCliente,
+                idCliente: idClienteDeSesion(req.session.usuario),
                 producto: productoId,
                 cantidad: unidadesARestar,
                 precioAplicado
@@ -205,6 +207,7 @@ const ApartadoController = {
 
                 detalles.push({
                     nombreCliente,
+                    idCliente: idClienteDeSesion(req.session.usuario),
                     producto: idProducto,
                     cantidad: unidadesARestar,
                     precioAplicado
@@ -316,7 +319,12 @@ const ApartadoController = {
                 return;
             }
 
-            NotificacionClienteModel.buscarClientePorNombre(resultados[0].nombre_cliente, (errCli, registros) => {
+            const apartado = resultados[0];
+            if (apartado.id_cliente) {
+                return NotificacionClienteModel.crear(apartado.id_cliente, titulo, mensaje, () => {});
+            }
+            // Apartados antiguos sin id_cliente: se ubica al cliente por nombre
+            NotificacionClienteModel.buscarClientePorNombre(apartado.nombre_cliente, (errCli, registros) => {
                 if (errCli || !registros || registros.length === 0) {
                     return;
                 }
@@ -489,7 +497,7 @@ const ApartadoController = {
             // (o que sea del panel admin). Evita cancelar apartados ajenos.
             const usuarioSesion = req.session.usuario;
             const rolSesion = String(usuarioSesion.role || '').trim().toLowerCase();
-            const esPropietario = apartado.nombre_cliente === (usuarioSesion.nombre || usuarioSesion.documento);
+            const esPropietario = esDuenoApartado(apartado, usuarioSesion);
             const esStaff = esRolPanel(rolSesion);
 
             if (!esPropietario && !esStaff) {

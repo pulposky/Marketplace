@@ -9,7 +9,28 @@
 
 const conexion = require('../database/conexion');
 
+const pool = conexion.promise();
+
 const ApartadoModel = {
+
+    // Agrega apartados.id_cliente (dueño real del apartado) si falta y,
+    // solo al crearla, la rellena para nombres de cliente que no se repiten.
+    // Los apartados viejos con nombre ambiguo quedan con id_cliente NULL.
+    asegurarEsquema: async () => {
+        const [columnas] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'apartados' AND COLUMN_NAME = 'id_cliente'`
+        );
+        if (columnas.length > 0) return;
+        await pool.query('ALTER TABLE apartados ADD COLUMN id_cliente INT NULL, ADD INDEX idx_apartados_id_cliente (id_cliente)');
+        await pool.query(`
+            UPDATE apartados a
+            JOIN (SELECT nombre, MIN(id_cliente) AS id FROM clientes GROUP BY nombre HAVING COUNT(*) = 1) c
+              ON a.nombre_cliente = c.nombre
+            SET a.id_cliente = c.id
+            WHERE a.id_cliente IS NULL
+        `);
+    },
 
     // ------------------------------------------------
     // CREACIÓN
@@ -20,11 +41,12 @@ const ApartadoModel = {
     // Devuelve el insert con el id_apartado generado.
     crearApartado: (datosApartado, callback) => {
         const sql = `
-            INSERT INTO apartados (nombre_cliente, producto, cantidad, precio_aplicado)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO apartados (nombre_cliente, id_cliente, producto, cantidad, precio_aplicado)
+            VALUES (?, ?, ?, ?, ?)
         `;
         const valores = [
             datosApartado.nombreCliente,
+            datosApartado.idCliente || null,
             datosApartado.producto,
             datosApartado.cantidad,
             Number(datosApartado.precioAplicado) || 0
@@ -40,7 +62,7 @@ const ApartadoModel = {
     // Trae todos los apartados de un cliente específico, con info del producto asociado.
     // Se usa en la vista "Mis Apartados" del cliente.
     // Devuelve el listado ordenado por id_apartado descendente (más recientes primero).
-    obtenerApartadosPorCliente: (nombreCliente, callback) => {
+    obtenerApartadosPorCliente: (idCliente, callback) => {
         const query = `
             SELECT 
                 a.id_apartado,
@@ -60,10 +82,10 @@ const ApartadoModel = {
                 p.estado AS estado
             FROM apartados a
             JOIN producto p ON a.producto = p.id_producto
-            WHERE a.nombre_cliente = ?
+            WHERE a.id_cliente = ?
             ORDER BY a.id_apartado DESC
         `;
-        conexion.query(query, [nombreCliente], callback);
+        conexion.query(query, [idCliente], callback);
     },
 
     // Busca un apartado por su ID.
@@ -121,7 +143,8 @@ const ApartadoModel = {
                 p.unidad
             FROM apartados a
             JOIN producto p ON a.producto = p.id_producto
-            LEFT JOIN clientes c ON a.nombre_cliente = c.nombre
+            LEFT JOIN clientes c ON (c.id_cliente = a.id_cliente
+                OR (a.id_cliente IS NULL AND c.nombre = a.nombre_cliente))
             ${filtro}
             ORDER BY a.id_apartado DESC
         `;
@@ -178,7 +201,7 @@ const ApartadoModel = {
     // Devuelve id, producto, cantidad y nombre_cliente para liberar stock después.
     obtenerApartadosExpirados: (callback) => {
         const sql = `
-            SELECT a.id_apartado, a.producto, a.cantidad, a.nombre_cliente
+            SELECT a.id_apartado, a.producto, a.cantidad, a.nombre_cliente, a.id_cliente
             FROM apartados a
             WHERE a.estado = 'pendiente'
               AND DATE_ADD(a.fecha, INTERVAL 1 HOUR) < NOW()

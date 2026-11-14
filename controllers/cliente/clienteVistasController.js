@@ -9,6 +9,7 @@ const ApartadoModel = require('../../models/apartadoModel');
 const UsuarioModel = require('../../models/usuarioModel');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
+const { idClienteDeSesion } = require('../../utils/apartados');
 
 const ClienteVistasController = {
 
@@ -19,9 +20,10 @@ const ClienteVistasController = {
             return res.redirect('/catalogo?login=1');
         }
 
-        const nombreCliente = req.session.usuario.nombre || req.session.usuario.documento || 'Cliente';
+        // Solo los apartados cuyo id_cliente es el de la sesión (staff: ninguno)
+        const idCliente = idClienteDeSesion(req.session.usuario);
 
-        ApartadoModel.obtenerApartadosPorCliente(nombreCliente, (error, apartados) => {
+        ApartadoModel.obtenerApartadosPorCliente(idCliente, (error, apartados) => {
             if (error) {
                 console.error('Error al consultar apartados:', error);
                 return res.status(500).send('Error en el servidor');

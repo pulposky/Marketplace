@@ -36,17 +36,19 @@ function cancelarApartadosExpirados() {
                 if (!resultado || resultado.affectedRows === 0) return;
 
                 // Aviso al cliente que su apartado se canceló por vencimiento
-                NotificacionClienteModel.buscarClientePorNombre(apartado.nombre_cliente, (errCli, registros) => {
-                    if (errCli || !registros || registros.length === 0) {
-                        return;
-                    }
-                    NotificacionClienteModel.crear(
-                        registros[0].id_cliente,
-                        'Apartado vencido',
-                        `Tu apartado #${apartado.id_apartado} se canceló por vencer el tiempo de reserva (1 hora).`,
-                        () => {}
-                    );
-                });
+                const avisar = (idCliente) => NotificacionClienteModel.crear(
+                    idCliente,
+                    'Apartado vencido',
+                    `Tu apartado #${apartado.id_apartado} se canceló por vencer el tiempo de reserva (1 hora).`,
+                    () => {}
+                );
+                if (apartado.id_cliente) {
+                    avisar(apartado.id_cliente);
+                } else {
+                    NotificacionClienteModel.buscarClientePorNombre(apartado.nombre_cliente, (errCli, registros) => {
+                        if (!errCli && registros && registros.length > 0) avisar(registros[0].id_cliente);
+                    });
+                }
 
                 // Devolver stock al producto
                 ProductoModel.devolverStockProducto(apartado.producto, apartado.cantidad, (errStock) => {

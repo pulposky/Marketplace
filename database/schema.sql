@@ -307,6 +307,11 @@ CREATE TABLE IF NOT EXISTS `apartados` (
 CREATE INDEX `idx_apartados_estado` ON `apartados`(`estado`);
 CREATE INDEX `idx_apartados_cliente` ON `apartados`(`nombre_cliente`);
 
+-- Dueño real del apartado (el nombre no es único ni fijo).
+-- La app la crea y la rellena al arrancar si falta (apartadoModel.asegurarEsquema).
+ALTER TABLE `apartados`
+  ADD COLUMN IF NOT EXISTS `id_cliente` INT NULL;
+
 -- Columna para rastrear qué admin confirmó cada apartado
 ALTER TABLE `apartados`
   ADD COLUMN IF NOT EXISTS `confirmado_por` VARCHAR(100) DEFAULT NULL;

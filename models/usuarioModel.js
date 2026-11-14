@@ -170,8 +170,8 @@ const UsuarioModel = {
                         }
 
                         conexion.query(
-                            'UPDATE apartados SET nombre_cliente = ? WHERE nombre_cliente = ?',
-                            [datos.nombre, anterior.nombre],
+                            'UPDATE apartados SET nombre_cliente = ? WHERE id_cliente = ?',
+                            [datos.nombre, id],
                             (errorApartados) => {
                                 if (errorApartados) {
                                     return rechazada(errorApartados);
@@ -214,7 +214,8 @@ const UsuarioModel = {
                 COUNT(a.id_apartado) AS total_pedidos,
                 SUM(CASE WHEN a.estado IN ('confirmado', 'entregado') THEN 1 ELSE 0 END) AS total_compras
             FROM clientes c
-            LEFT JOIN apartados a ON a.nombre_cliente = c.nombre
+            LEFT JOIN apartados a ON (a.id_cliente = c.id_cliente
+                OR (a.id_cliente IS NULL AND a.nombre_cliente = c.nombre))
             ${filtro}
             GROUP BY c.id_cliente, c.nombre, c.documento, c.direccion, c.telefono, c.rol
             ORDER BY c.nombre ASC
