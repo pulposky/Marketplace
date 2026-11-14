@@ -1,22 +1,26 @@
 /* ============================================= */
 /* DATABASE.JS - CONFIGURACIÓN DE BASE DE DATOS  */
 /* ============================================= */
-/* Devuelve las opciones de conexión a MySQL       */
-/* desde el .env con valores por defecto. Se usa  */
-/* en database/conexion.js para crear la conexión. */
+/* Opciones de conexión a MySQL desde el .env.    */
+/* Se usa en database/conexion.js.                */
 /*                                                */
-/* Nota de convención: el .env usa la convención  */
-/* BD_* (BD_HOST, BD_USER...). Por compatibilidad */
-/* también se aceptan las variables DB_*.         */
+/* Variables: DB_HOST, DB_PORT, DB_USER,          */
+/* DB_PASSWORD y DB_DATABASE. Los nombres viejos  */
+/* BD_* se aceptan como alias (obsoletos).        */
 /* ============================================= */
+
+// DB_* manda; BD_* queda como alias para .env antiguos.
+const variableBD = (nombre) => process.env[`DB_${nombre}`] ?? process.env[`BD_${nombre}`];
 
 module.exports = {
     // Sin valores por defecto: server.js exige estas variables al arrancar
-    host: process.env.BD_HOST || process.env.DB_HOST,
-    user: process.env.BD_USER || process.env.DB_USER,
-    password: process.env.BD_PASSWORD || process.env.DB_PASSWORD,
-    database: process.env.BD_DATABASE || process.env.DB_DATABASE,
-    port: Number(process.env.BD_PORT || process.env.DB_PORT) || 3306,
+    host: variableBD('HOST'),
+    user: variableBD('USER'),
+    password: variableBD('PASSWORD'),
+    database: variableBD('DATABASE'),
+    port: Number(variableBD('PORT')) || 3306,
     // Timeout de espera de conexión (no quedarse colgado)
-    connectTimeout: 1000
+    connectTimeout: 5000
 };
+
+module.exports.variableBD = variableBD;

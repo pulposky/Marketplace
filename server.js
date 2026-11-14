@@ -18,10 +18,12 @@ dotenv.config();
 
 // Sin estas variables la app no arranca: nada de valores por defecto
 // inseguros (secreto de sesión conocido, usuario root sin clave...).
-// BD_PASSWORD debe existir; puede ir vacía solo fuera de producción (p. ej. root de Laragon).
-const OBLIGATORIAS = ['BD_HOST', 'BD_USER', 'BD_PASSWORD', 'BD_DATABASE', 'SESSION_SECRET'];
-const valorDe = (nombre) => process.env[nombre] ?? process.env[nombre.replace(/^BD_/, 'DB_')];
-const puedeIrVacia = (nombre) => nombre === 'BD_PASSWORD' && process.env.NODE_ENV !== 'production';
+// DB_PASSWORD debe existir; puede ir vacía solo fuera de producción (p. ej. root de Laragon).
+// Los nombres viejos BD_* se aceptan como alias (ver config/database.js).
+const { variableBD } = require('./config/database');
+const OBLIGATORIAS = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_DATABASE', 'SESSION_SECRET'];
+const valorDe = (nombre) => (nombre.startsWith('DB_') ? variableBD(nombre.slice(3)) : process.env[nombre]);
+const puedeIrVacia = (nombre) => nombre === 'DB_PASSWORD' && process.env.NODE_ENV !== 'production';
 const faltantes = OBLIGATORIAS.filter((nombre) => {
     const valor = valorDe(nombre);
     return valor === undefined || (valor === '' && !puedeIrVacia(nombre));
