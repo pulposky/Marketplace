@@ -12,12 +12,14 @@
 
 const ApartadoModel = require('../models/apartadoModel');
 const UsuarioModel = require('../models/usuarioModel');
+const auditoriaService = require('../services/auditoriaService');
+const { escaparCeldaCSV: escapar } = require('../utils/csv');
 
 // Convierte un arreglo de objetos a texto CSV.
 // Los valores van entre comillas y las comillas
 // internas se duplican ("") para no romper el formato.
+// escapar también neutraliza fórmulas (inyección CSV).
 const aCSV = (encabezados, filas) => {
-    const escapar = (valor) => `"${String(valor ?? '').replace(/"/g, '""')}"`;
     const lineas = [encabezados.map(escapar).join(';')];
     filas.forEach((fila) => lineas.push(fila.map(escapar).join(';')));
     return '\uFEFF' + lineas.join('\r\n');
@@ -71,6 +73,7 @@ const ReportesController = {
             );
 
             const fechaHoy = new Date().toISOString().slice(0, 10);
+            auditoriaService.registrar(req, 'reporte_exportar', `Exportó el reporte de pedidos en CSV (${filas.length} filas).`);
             descargarCSV(res, `reporte-pedidos-${fechaHoy}.csv`, csv);
         });
     },
@@ -102,6 +105,7 @@ const ReportesController = {
             );
 
             const fechaHoy = new Date().toISOString().slice(0, 10);
+            auditoriaService.registrar(req, 'reporte_exportar', `Exportó el reporte de clientes en CSV (${filas.length} filas).`);
             descargarCSV(res, `reporte-clientes-${fechaHoy}.csv`, csv);
         });
     }

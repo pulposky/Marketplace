@@ -10,6 +10,7 @@
 
 const HistoricosModel = require('../../models/historicosModel');
 const PDFDocument = require('pdfkit');
+const auditoriaService = require('../../services/auditoriaService');
 
 // Paleta de colores usada en el PDF (coincide con la del panel)
 const COLOR_VERDE_OSCURO = '#0F5132';
@@ -278,6 +279,7 @@ const HistoricosApiController = {
                 res.setHeader('Content-Type', 'application/pdf');
                 res.setHeader('Content-Disposition', `attachment; filename="analitica-${fechaHoy}.pdf"`);
                 generarPdfHistoricos(res, resultados);
+                auditoriaService.registrar(req, 'analitica_exportar', 'Exportó la analítica en PDF.');
             } catch (error) {
                 console.error('Error generando PDF:', error);
                 if (!res.headersSent) {

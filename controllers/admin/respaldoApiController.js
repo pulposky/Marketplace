@@ -12,12 +12,12 @@
 
 const RespaldoModel = require('../../models/respaldoModel');
 const auditoriaService = require('../../services/auditoriaService');
+const { escaparCeldaCSV: escapar } = require('../../utils/csv');
 
 // Convierte un arreglo de objetos a texto CSV.
 const aCSV = (filas) => {
     if (!filas || filas.length === 0) return '\uFEFF';
     const encabezados = Object.keys(filas[0]);
-    const escapar = (valor) => `"${String(valor ?? '').replace(/"/g, '""')}"`;
     const lineas = [encabezados.map(escapar).join(';')];
     filas.forEach((fila) => lineas.push(encabezados.map((col) => escapar(fila[col])).join(';')));
     return '\uFEFF' + lineas.join('\r\n');
