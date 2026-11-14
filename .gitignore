@@ -28,3 +28,7 @@ public/img/banners/*
 *.sql
 *.sql.gz
 database/backups/
+# Logs
+*.log
+logs/
+npm-debug.log*

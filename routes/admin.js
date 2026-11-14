@@ -183,15 +183,6 @@ router.delete('/api/admin/categorias/:id', verificarPermiso('categorias'), Categ
 router.get('/api/admin/auditoria', verificarPermiso('auditoria'), AuditoriaApiController.listar);
 
 // -----------------------------------------------
-// API DE CONTENIDO DEL SITIO / MINI-CMS (permiso 'contenido')
-// -----------------------------------------------
-
-// -----------------------------------------------
-// API DE BANNERS / PROMOCIONES (permiso 'banners')
-// -----------------------------------------------
-// La ruta de :id/activo va ANTES de :id para que Express la matchee primero
-
-// -----------------------------------------------
 // API DE RESPALDO Y EXPORTACIÓN (permiso 'respaldo')
 // -----------------------------------------------
 router.get('/api/admin/respaldo/completo', verificarPermiso('respaldo'), RespaldoApiController.exportarCompleto);

@@ -186,7 +186,6 @@ Marketplace/
 │   ├── sitio/
 │   │   ├── sitioVistasController.js   # Páginas públicas (inicio, catálogo, detalle)
 │   │   ├── sitioApiController.js      # API del carrusel (imágenes JSON)
-│   │   └── informacionVistasController.js # Páginas públicas /informacion (mini-CMS)
 │   ├── cliente/
 │   │   ├── clienteVistasController.js # Perfil y "mis apartados"
 │   │   └── clienteApiController.js    # API de edición de perfil
@@ -201,10 +200,6 @@ Marketplace/
 │   │   ├── categoriasApiController.js       # APIs CRUD de categorías
 │   │   ├── auditoriaVistasController.js     # Página de auditoría (admin)
 │   │   ├── auditoriaApiController.js        # API del registro de acciones
-│   │   ├── contenidoVistasController.js     # Página del contenido editable (mini-CMS)
-│   │   ├── contenidoApiController.js        # APIs CRUD de bloques de contenido
-│   │   ├── bannersVistasController.js       # Página de banners/promociones
-│   │   ├── bannersApiController.js          # APIs CRUD de banners (imagen base64)
 │   │   ├── respaldoVistasController.js      # Página de respaldo/exportación
 │   │   └── respaldoApiController.js         # Descargas CSV por tabla + JSON completo
 │   ├── carrusel/
@@ -228,8 +223,6 @@ Marketplace/
 │   ├── permisosModel.js           # SQL de permisos por rol (tabla permisos_rol)
 │   ├── categoriaModel.js          # SQL de categorías de productos (tabla categorias)
 │   ├── auditoriaModel.js          # SQL del registro de acciones (tabla auditoria)
-│   ├── contenidoModel.js          # SQL del contenido editable (tabla contenido_sitio)
-│   ├── bannerModel.js             # SQL de banners/promociones (tabla banners)
 │   └── respaldoModel.js           # Lecturas de solo lectura para exportar (sin contraseñas)
 ├── routes/
 │   ├── index.js                   # Une los routers de cada área
@@ -280,100 +273,108 @@ Marketplace/
 
 ## 🔌 Endpoints API
 
+> Generada a partir de `routes/`. Toda petición que cambia datos exige el token CSRF (cabecera `x-csrf-token` o campo `_csrf`).
+> "permiso `x`" = `verificarPermiso('x')` (el Administrador siempre pasa).
+
 ### 🌐 Públicos
 
-| Método | Ruta | Descripción |
+| Método | Ruta | Protección / descripción |
 | :---: | --- | --- |
 | `GET` | `/` | Página principal |
 | `GET` | `/catalogo` | Catálogo con filtros |
-| `GET` | `/informacion` | Índice del contenido del sitio (mini-CMS) |
-| `GET` | `/informacion/:clave` | Bloque de contenido publicado (mini-CMS) |
-| `GET` | `/api/productos` | Productos en JSON |
-| `GET` | `/api/carrusel-imagenes` | Imágenes del carousel |
-| `GET` | `/api/verificar-sesion` | Verificar sesión activa |
+| `GET` | `/producto/:id` | Ficha de producto |
+| `GET` | `/api/productos` | Productos en JSON (solo columnas públicas) |
+| `GET` | `/api/carrusel-imagenes` | Imágenes del carrusel |
+| `GET` | `/api/verificar-sesion` | Indica si hay sesión activa |
+| `GET` | `/api/recuperacion/contacto` | Teléfono público de recuperación |
 
 ### 🔐 Autenticación
 
-| Método | Ruta | Descripción |
+| Método | Ruta | Protección / descripción |
 | :---: | --- | --- |
-| `POST` | `/login` | Iniciar sesión |
-| `GET` | `/logout` | Cerrar sesión |
-| `POST` | `/registro` | Registrar cliente |
+| `POST` | `/login` | Iniciar sesión (rate limit: 10 / 15 min por IP) |
+| `POST` | `/logout` | Cerrar sesión (destruye la sesión) |
+| `POST` | `/registro` | Registrar cliente (rate limit) |
 
-### 📦 Apartados (Cliente)
+### 📦 Cliente (requiere sesión)
 
-| Método | Ruta | Descripción |
+| Método | Ruta | Protección / descripción |
 | :---: | --- | --- |
-| `POST` | `/api/apartar-producto` | Crear apartado |
-| `GET` | `/verApartados` | Ver mis apartados |
-| `POST` | `/api/apartados/cancelar/:id` | Cancelar apartado |
 | `GET` | `/perfil` | Mi perfil |
-| `PATCH` | `/api/perfil` | Editar mis datos |
+| `PATCH` | `/api/perfil` | Editar mis datos (pide la contraseña actual) |
+| `GET` | `/verApartados` | Mis apartados (por id_cliente) |
+| `POST` | `/api/apartar-producto` | Crear apartado (rate limit: 20 / 10 min) |
+| `POST` | `/api/apartar-lote` | Apartar el carrito (rate limit) |
+| `POST` | `/api/apartados/cancelar/:idApartado` | Cancelar un apartado propio y activo |
+| `GET` | `/api/mis-notificaciones` | Mis notificaciones |
+| `PATCH` | `/api/mis-notificaciones/:id/leida` | Marcar una como leída |
+| `PATCH` | `/api/mis-notificaciones/todas-leidas` | Marcar todas como leídas |
 
-### 🛡️ Administración
+### 🛡️ Panel de administración — páginas
 
-| Método | Ruta | Descripción |
+| Método | Ruta | Protección / descripción |
 | :---: | --- | --- |
-| `GET` | `/admin` | Panel admin |
-| `GET` | `/admin/habilitar-producto` | Gestionar productos |
-| `GET` | `/admin/ofertas` | Ofertas y descuentos |
-| `GET` | `/admin/pedidos` | Historial de pedidos |
-| `GET` | `/admin/clientes` | Gestión de clientes |
-| `GET` | `/admin/historicos` | Dashboard estadísticas |
-| `GET` | `/admin/carrusel` | Imágenes del carrusel |
-| `GET` | `/admin/permisos` | Permisos y roles (solo Administrador) |
-| `GET` | `/admin/usuarios` | Personal del panel (permiso `usuarios`) |
-| `GET` | `/admin/categorias` | Categorías de productos (permiso `categorias`) |
-| `GET` | `/admin/auditoria` | Registro de acciones (permiso `auditoria`) |
-| `GET` | `/admin/contenido` | Contenido editable del sitio (permiso `contenido`) |
-| `GET` | `/admin/banners` | Banners y promociones (permiso `banners`) |
-| `GET` | `/admin/respaldo` | Respaldo y exportación (permiso `respaldo`) |
-| `GET` | `/admin/recuperacion` | Restablecimiento asistido de contraseñas de clientes (permiso `recuperacion`) |
-| `PATCH` | `/api/admin/productos/limite-venta/:id` | Actualizar stock |
-| `PATCH` | `/api/admin/productos/estado/:id` | Cambiar estado |
-| `GET` | `/api/admin/ofertas` | Listar ofertas activas |
-| `PATCH` | `/api/admin/ofertas/:id` | Guardar oferta de producto |
-| `PATCH` | `/api/admin/apartados/confirmar/:id` | Confirmar apartado |
-| `PATCH` | `/api/admin/apartados/entregado/:id` | Marcar como entregado |
-| `PATCH` | `/api/admin/apartados/cancelar/:id` | Cancelar (devuelve stock) |
-| `GET` | `/api/admin/apartados` | Apartados (filtro ?estado=) |
-| `PATCH` | `/api/admin/clientes/:id` | Editar cliente |
-| `GET` | `/api/admin/reportes/pedidos.csv` | Exportar pedidos CSV |
-| `GET` | `/api/admin/reportes/clientes.csv` | Exportar clientes CSV |
-| `GET` | `/api/admin/notificaciones` | Notificaciones |
-| `PATCH` | `/api/admin/notificaciones/:id/leida` | Marcar leída |
-| `PATCH` | `/api/admin/notificaciones/todas-leidas` | Marcar todas |
-| `GET` | `/api/admin/permisos` | Leer permisos por rol (solo Administrador) |
-| `PATCH` | `/api/admin/permisos` | Guardar permisos por rol (solo Administrador) |
-| `GET` | `/api/admin/usuarios` | Listar personal del panel (permiso `usuarios`) |
-| `POST` | `/api/admin/usuarios` | Crear usuario del panel (permiso `usuarios`) |
-| `PATCH` | `/api/admin/usuarios/:id` | Editar usuario del panel (permiso `usuarios`) |
-| `PATCH` | `/api/admin/usuarios/:id/password` | Cambiar contraseña (permiso `usuarios`) |
-| `PATCH` | `/api/admin/usuarios/:id/activo` | Activar/desactivar (permiso `usuarios`) |
-| `GET` | `/api/admin/categorias` | Listar categorías (permiso `categorias`) |
-| `POST` | `/api/admin/categorias` | Crear categoría (permiso `categorias`) |
-| `PATCH` | `/api/admin/categorias/:id` | Renombrar categoría (permiso `categorias`) |
-| `DELETE` | `/api/admin/categorias/:id` | Eliminar categoría (permiso `categorias`) |
-| `GET` | `/api/admin/auditoria` | Registro de acciones (permiso `auditoria`) |
-| `GET` | `/api/admin/contenido` | Listar bloques de contenido (permiso `contenido`) |
-| `POST` | `/api/admin/contenido` | Crear bloque de contenido (permiso `contenido`) |
-| `PATCH` | `/api/admin/contenido/:id` | Editar bloque de contenido (permiso `contenido`) |
-| `DELETE` | `/api/admin/contenido/:id` | Eliminar bloque de contenido (permiso `contenido`) |
-| `GET` | `/api/admin/banners` | Listar banners (permiso `banners`) |
-| `POST` | `/api/admin/banners` | Crear banner (permiso `banners`) |
-| `PATCH` | `/api/admin/banners/:id` | Editar banner (permiso `banners`) |
-| `PATCH` | `/api/admin/banners/:id/activo` | Activar/desactivar banner (permiso `banners`) |
-| `DELETE` | `/api/admin/banners/:id` | Eliminar banner (permiso `banners`) |
-| `POST` | `/api/admin/recuperacion/cliente` | Generar contraseña temporal de cliente (permiso `recuperacion`) |
-| `GET` | `/api/admin/recuperacion/contacto` | Consultar el teléfono público de recuperación (permiso `recuperacion`) |
-| `PUT` | `/api/admin/recuperacion/contacto` | Configurar el teléfono público de recuperación (permiso `recuperacion`) |
-| `GET` | `/api/recuperacion/contacto` | Consultar el teléfono mostrado en el aviso de recuperación |
-| `GET` | `/api/admin/respaldo/completo` | Descargar respaldo completo JSON (permiso `respaldo`) |
-| `GET` | `/api/admin/respaldo/tabla/:clave` | Descargar tabla en CSV (permiso `respaldo`) |
+| `GET` | `/admin` | Panel (cualquier rol del panel: `verificarAdmin`) |
+| `GET` | `/admin/habilitar-producto` | permiso `productos` |
+| `GET` | `/admin/pedidos` | permiso `pedidos` |
+| `GET` | `/admin/historial-pedidos` | permiso `pedidos` |
+| `GET` | `/admin/ofertas` | permiso `ofertas` |
+| `GET` | `/admin/historicos` | permiso `analitica` |
+| `GET` | `/admin/clientes` | permiso `clientes` |
+| `GET` | `/admin/carrusel` | permiso `carrusel` |
+| `GET` | `/admin/permisos` | solo Administrador |
+| `GET` | `/admin/recuperacion` | permiso `recuperacion` |
+| `GET` | `/admin/usuarios` | permiso `usuarios` |
+| `GET` | `/admin/categorias` | permiso `categorias` |
+| `GET` | `/admin/auditoria` | permiso `auditoria` |
+| `GET` | `/admin/respaldo` | permiso `respaldo` |
 
-### 📈 Estadísticas
+### 🛡️ Panel de administración — API
 
-| Método | Ruta | Descripción |
+| Método | Ruta | Protección / descripción |
+| :---: | --- | --- |
+| `POST` | `/api/admin/productos` | Crear producto — permiso `productos` |
+| `PATCH` | `/api/admin/productos/:id/datos` | Editar datos — permiso `productos` |
+| `POST` | `/api/admin/productos/:id/imagen` | Subir imagen JPG/PNG/WebP ≤ 3 MB — permiso `productos` |
+| `PATCH` | `/api/admin/productos/limite-venta/:id` | Stock online — permiso `productos` |
+| `PATCH` | `/api/admin/productos/estado/:id` | Activar/desactivar — permiso `productos` |
+| `GET` | `/api/admin/ofertas` | Ofertas vigentes — permiso `ofertas` |
+| `PATCH` | `/api/admin/ofertas/precio/:id` | Cambiar precio — permiso `ofertas` |
+| `PATCH` | `/api/admin/ofertas/:id` | Guardar oferta — permiso `ofertas` |
+| `GET` | `/api/admin/apartados` | Apartados (?estado=, máx. 2000) — permiso `pedidos` |
+| `PATCH` | `/api/admin/apartados/confirmar/:id` | Confirmar pendiente — permiso `pedidos` |
+| `PATCH` | `/api/admin/apartados/entregado/:id` | Marcar entregado — permiso `pedidos` |
+| `PATCH` | `/api/admin/apartados/cancelar/:id` | Cancelar activo y devolver stock — permiso `pedidos` |
+| `GET` | `/api/admin/clientes` | Listar clientes (?busqueda=, máx. 2000) — permiso `clientes` |
+| `PATCH` | `/api/admin/clientes/:id` | Editar cliente — permiso `clientes` |
+| `POST` | `/api/admin/carrusel/subir` | Subir imagen — permiso `carrusel` |
+| `POST` | `/api/admin/carrusel/eliminar` | Eliminar imagen — permiso `carrusel` |
+| `GET` | `/api/admin/reportes/pedidos.csv` | Exportar pedidos (auditado) — permiso `analitica` |
+| `GET` | `/api/admin/reportes/clientes.csv` | Exportar clientes (auditado) — permiso `analitica` |
+| `GET` | `/api/admin/notificaciones` | Notificaciones — `verificarAdmin` |
+| `PATCH` | `/api/admin/notificaciones/:id/leida` | Marcar leída — `verificarAdmin` |
+| `PATCH` | `/api/admin/notificaciones/todas-leidas` | Marcar todas — `verificarAdmin` |
+| `GET` | `/api/admin/permisos` | Leer matriz — solo Administrador |
+| `PATCH` | `/api/admin/permisos` | Guardar matriz — solo Administrador |
+| `GET` | `/api/admin/recuperacion/contacto` | permiso `recuperacion` |
+| `PUT` | `/api/admin/recuperacion/contacto` | permiso `recuperacion` |
+| `POST` | `/api/admin/recuperacion/cliente` | Clave temporal de cliente (auditado) — permiso `recuperacion` |
+| `GET` | `/api/admin/usuarios` | permiso `usuarios` |
+| `POST` | `/api/admin/usuarios` | permiso `usuarios` (crear Administrador: solo Administrador) |
+| `PATCH` | `/api/admin/usuarios/:id` | permiso `usuarios` |
+| `PATCH` | `/api/admin/usuarios/:id/password` | permiso `usuarios` |
+| `PATCH` | `/api/admin/usuarios/:id/activo` | permiso `usuarios` |
+| `GET` | `/api/admin/categorias` | permiso `categorias` |
+| `POST` | `/api/admin/categorias` | permiso `categorias` |
+| `PATCH` | `/api/admin/categorias/:id` | permiso `categorias` |
+| `DELETE` | `/api/admin/categorias/:id` | permiso `categorias` |
+| `GET` | `/api/admin/auditoria` | permiso `auditoria` |
+| `GET` | `/api/admin/respaldo/completo` | Respaldo JSON sin contraseñas (auditado) — permiso `respaldo` |
+| `GET` | `/api/admin/respaldo/tabla/:clave` | Tabla en CSV (auditado) — permiso `respaldo` |
+
+### 📈 Estadísticas (permiso `analitica`)
+
+| Método | Ruta | Protección / descripción |
 | :---: | --- | --- |
 | `GET` | `/api/admin/historicos/productos` | Más vendidos |
 | `GET` | `/api/admin/historicos/clientes` | Mejores clientes |
@@ -381,6 +382,7 @@ Marketplace/
 | `GET` | `/api/admin/historicos/ventas-dia` | Ventas diarias |
 | `GET` | `/api/admin/historicos/visitas-dia` | Visitas diarias |
 | `GET` | `/api/admin/historicos/rutas` | Visitas por ruta |
+| `GET` | `/api/admin/historicos/exportar` | PDF de analítica (auditado) |
 
 ---
 
