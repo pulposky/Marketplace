@@ -147,7 +147,9 @@ const ApartadoModel = {
                 OR (a.id_cliente IS NULL AND c.nombre = a.nombre_cliente))
             ${filtro}
             ORDER BY a.id_apartado DESC
+            LIMIT 2000
         `;
+        // shortcut: tope fijo sin paginación en UI; paginar si crece
         conexion.query(sql, parametros, callback);
     },
 

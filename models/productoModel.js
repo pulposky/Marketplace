@@ -9,11 +9,16 @@
 
 const conexion = require('../database/conexion');
 
+// Columnas que necesita el sitio público (y el panel en habilitar/ofertas).
+// No incluir codigo ni stock: son datos internos del POS.
+const COLUMNAS_PUBLICAS = 'id_producto, nombre, unidad, lugar, precio, categoria, limite_venta, estado, descripcion, descuento, fecha_inicio_oferta, fecha_fin_oferta';
+
 const ProductoModel = {
 
-    // Trae todos los productos excepto el comodín y los sin precio
+    // Trae todos los productos excepto el comodín y los sin precio.
+    // Alimenta vistas y API públicas: solo columnas públicas (sin codigo ni stock del POS).
     obtenerTodos: (callback) => {
-        conexion.query("SELECT * FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC", callback);
+        conexion.query(`SELECT ${COLUMNAS_PUBLICAS} FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC`, callback);
     },
 
     // Crea un producto nuevo (lo usa el admin). El código se genera
@@ -102,7 +107,7 @@ const ProductoModel = {
     // y dentro del rango de fechas). Lo usa la tarjeta "Ofertas activas".
     obtenerConOfertas: (callback) => {
         const sql = `
-            SELECT * FROM producto
+            SELECT ${COLUMNAS_PUBLICAS} FROM producto
             WHERE nombre != 'COMODIN'
               AND precio > 0
               AND descuento > 0

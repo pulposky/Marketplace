@@ -219,7 +219,9 @@ const UsuarioModel = {
             ${filtro}
             GROUP BY c.id_cliente, c.nombre, c.documento, c.direccion, c.telefono, c.rol
             ORDER BY c.nombre ASC
+            LIMIT 2000
         `;
+        // shortcut: tope fijo sin paginación en UI; paginar si crece
         conexion.query(sql, valores, callback);
     },
 
