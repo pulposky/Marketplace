@@ -30,9 +30,13 @@ if (faltantes.length > 0) {
     console.error(`Faltan variables de entorno obligatorias: ${faltantes.join(', ')}. Revisa .env (ver .env.example).`);
     process.exit(1);
 }
+// Secreto corto: en producción no arranca; en desarrollo solo avisa.
 if (String(process.env.SESSION_SECRET).length < 32) {
-    console.error('SESSION_SECRET debe tener al menos 32 caracteres aleatorios.');
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production') {
+        console.error('SESSION_SECRET debe tener al menos 32 caracteres aleatorios.');
+        process.exit(1);
+    }
+    console.warn('Aviso: SESSION_SECRET tiene menos de 32 caracteres. Cámbialo antes de pasar a producción.');
 }
 
 // Instancia principal de Express configurada con rutas y middlewares
