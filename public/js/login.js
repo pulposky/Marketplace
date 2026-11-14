@@ -5,19 +5,14 @@
 // Se usa tanto en main.ejs como en productos.ejs.
 //
 // Soporta dos tipos de payload:
-//   - { documento } → login de cliente
+//   - { documento, password } → login de cliente
 //   - { usuario, password } → login del staff del panel
 //
 // Muestra mensajes de error o éxito en el
 // elemento #mensaje del modal.
 //
 // Además expone configurarFormLogin(formulario, opciones),
-// que cablea todo el flujo de login del cliente en varios
-// pasos:
-//   1. Documento → si el cliente no tiene contraseña, pide
-//      crearla; si ya tiene, pide digitarla.
-//   2. Creada la contraseña, vuelve a pedir documento y
-//      contraseña para iniciar sesión.
+// que cablea el formulario del modal.
 // =============================================
 
 // Variable global para guardar el último resultado del login
@@ -97,14 +92,10 @@ async function procesarLogin(payload) {
                     etiquetaMensaje.className = 'mensaje-error mensaje-rojo';
                 }
             }
-            // Limpio los campos de entrada (solo los de admin/verificación)
-            const docInput = document.getElementById('doc');
+            // Solo borro las contraseñas; el documento o usuario se conservan para reintentar
             const pwdInput = document.getElementById('pwd');
-            const userInput = document.getElementById('user');
             const pwdClienteInput = document.getElementById('pwdCliente');
-            if (docInput) docInput.value = '';
             if (pwdInput) pwdInput.value = '';
-            if (userInput) userInput.value = '';
             if (pwdClienteInput) pwdClienteInput.value = '';
             return datos;
         }
@@ -121,173 +112,62 @@ async function procesarLogin(payload) {
 }
 
 // =============================================
-// CONFIGURAR FORMULARIO DE LOGIN (multi-paso cliente)
+// CONFIGURAR FORMULARIO DE LOGIN
 // =============================================
+// Cliente: documento y contraseña en un solo envío.
+// Personal de la tienda: usuario y contraseña.
 // opciones.alLoginExitoso: función opcional que se llama al
-//   loguearse correctamente (para redirigir a /verApartados).
+//   loguearse un cliente (p. ej. para ir a /verApartados).
 //   Si no se provee, recarga la página.
 function configurarFormLogin(formulario, opciones) {
     if (!formulario) return;
 
-    // Callback opcional que se ejecuta si el login cliente termina bien
     const alLoginExitoso = (opciones && opciones.alLoginExitoso) || null;
-
-    // Obtener referencias de los campos del formulario de login
-    const tipoCliente = document.getElementById('tipo_cliente');
-    const tipoUsuario = document.getElementById('tipo_usuario');
     const clienteFields = document.getElementById('clienteFields');
     const usuarioFields = document.getElementById('usuarioFields');
-
-    const campoDoc = document.getElementById('campoDoc');
-    const campoPwd = document.getElementById('campoPwd');
-    const campoNuevaPwd = document.getElementById('campoNuevaPwd');
-    const campoConfirmPwd = document.getElementById('campoConfirmPwd');
-
-    const inputDoc = document.getElementById('doc');
-    const inputPwd = document.getElementById('pwdCliente');
-    const inputNueva = document.getElementById('nuevaPwd');
-    const inputConfirm = document.getElementById('confirmPwd');
     const boton = document.getElementById('btnLoginSubmit');
-    const enlaceOlvideLogin = document.getElementById('enlaceOlvideLogin');
 
-    // Muestra u oculta el enlace "Olvidé mi contraseña"
-    // (solo debe verse cuando se ingresa la contraseña existente)
-    function mostrarEnlaceOlvide(visible) {
-        if (enlaceOlvideLogin) {
-            enlaceOlvideLogin.style.display = visible ? 'block' : 'none';
-        }
-    }
-
-    // Estado del flujo del cliente
-    // 'documento' | 'clave_existente' | 'necesita_admin'
-    let paso = 'documento';
-    let documentoActual = '';
-
-    // Muestra los campos base del cliente (solo documento)
-    function estadoDocumento() {
-        paso = 'documento';
-        documentoActual = '';
-        if (campoDoc) campoDoc.style.display = 'block';
-        if (campoPwd) campoPwd.style.display = 'none';
-        if (campoNuevaPwd) campoNuevaPwd.style.display = 'none';
-        if (campoConfirmPwd) campoConfirmPwd.style.display = 'none';
-        if (boton) boton.textContent = 'Iniciar sesión';
-        if (inputDoc) inputDoc.value = '';
-        if (inputPwd) inputPwd.value = '';
-        if (inputNueva) inputNueva.value = '';
-        if (inputConfirm) inputConfirm.value = '';
-        mostrarEnlaceOlvide(false);
-    }
-
-    function mostrarCliente() {
-        if (clienteFields) clienteFields.style.display = 'block';
-        if (usuarioFields) usuarioFields.style.display = 'none';
-        estadoDocumento();
-    }
-
-    function mostrarUsuario() {
-        if (usuarioFields) usuarioFields.style.display = 'block';
-        if (clienteFields) clienteFields.style.display = 'none';
-        if (boton) boton.textContent = 'Iniciar sesión';
-    }
-
+    // Muestra los campos del tipo de cuenta elegido
     function actualizarCampos() {
-        const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
-        if (tipo === 'cliente') {
-            mostrarCliente();
-        } else {
-            mostrarUsuario();
-        }
+        const esCliente = (document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente') === 'cliente';
+        if (clienteFields) clienteFields.style.display = esCliente ? 'block' : 'none';
+        if (usuarioFields) usuarioFields.style.display = esCliente ? 'none' : 'block';
+        limpiarMensajeLogin();
     }
-
-    if (tipoCliente) tipoCliente.addEventListener('change', actualizarCampos);
-    if (tipoUsuario) tipoUsuario.addEventListener('change', actualizarCampos);
+    document.querySelectorAll('input[name="tipoLogin"]').forEach((radio) => radio.addEventListener('change', actualizarCampos));
     actualizarCampos();
 
-    // Envío del formulario
     formulario.addEventListener('submit', async (evento) => {
         evento.preventDefault();
-        const tipo = document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente';
+        const esCliente = (document.querySelector('input[name="tipoLogin"]:checked')?.value || 'cliente') === 'cliente';
 
-        // ----- LOGIN DEL STAFF DEL PANEL -----
-        if (tipo === 'usuario') {
-            const payload = {
+        let payload;
+        if (esCliente) {
+            const documento = (document.getElementById('doc')?.value || '').trim();
+            const password = document.getElementById('pwdCliente')?.value || '';
+            if (!documento || !password) {
+                mostrarMensajeLogin('Escribe tu documento y tu contraseña.', 'mensaje-naranja');
+                return;
+            }
+            payload = { documento, password };
+        } else {
+            payload = {
                 usuario: document.getElementById('user')?.value || '',
                 password: document.getElementById('pwd')?.value || ''
             };
-            const resultado = await procesarLogin(payload);
-            if (resultado && resultado.ok) {
-                if (resultado.redirect) {
-                    window.location.href = resultado.redirect;
-                    return;
-                }
-                window.location.reload();
-            }
-            return;
         }
 
-        // ----- LOGIN CLIENTE -----
+        if (boton) boton.disabled = true;
+        const resultado = await procesarLogin(payload);
+        if (boton) boton.disabled = false;
+        if (!resultado || !resultado.ok) return;
 
-        // PASO 1: ingresa el documento
-        if (paso === 'documento') {
-            const doc = (inputDoc?.value || '').trim();
-            if (!doc) {
-                mostrarMensajeLogin('El campo documento no puede estar vacío', 'mensaje-naranja');
-                return;
-            }
-            documentoActual = doc;
-            const resultado = await procesarLogin({ documento: doc });
-            if (!resultado || resultado.ok) return;
-
-            if (resultado.necesitaPassword) {
-                // Sin clave previa, exijo verificar el celular antes de crearla.
-                paso = 'necesita_admin';
-                if (campoDoc) campoDoc.style.display = 'block';
-                if (campoPwd) campoPwd.style.display = 'none';
-                if (campoNuevaPwd) campoNuevaPwd.style.display = 'none';
-                if (campoConfirmPwd) campoConfirmPwd.style.display = 'none';
-                if (boton) boton.textContent = 'Solicitar ayuda';
-                limpiarMensajeLogin();
-                mostrarEnlaceOlvide(true);
-                mostrarMensajeLogin('Solicita una clave temporal al Administrador para crear tu contraseña.', 'mensaje-naranja');
-            } else if (resultado.requierePassword) {
-                // Ya tiene contraseña: muestro el campo de contraseña
-                paso = 'clave_existente';
-                if (campoDoc) campoDoc.style.display = 'none';
-                if (campoPwd) campoPwd.style.display = 'block';
-                if (campoNuevaPwd) campoNuevaPwd.style.display = 'none';
-                if (campoConfirmPwd) campoConfirmPwd.style.display = 'none';
-                if (boton) boton.textContent = 'Iniciar sesión';
-                limpiarMensajeLogin();
-                mostrarEnlaceOlvide(true);
-            }
-            return;
-        }
-
-        // PASO 2: abro el aviso de recuperación administrada.
-        if (paso === 'necesita_admin') {
-            document.querySelector('.enlace-olvide')?.click();
-            return;
-        }
-        // PASO 3: ya tiene contraseña, la verifica
-        if (paso === 'clave_existente') {
-            const pwd = (inputPwd?.value || '');
-            if (!pwd) {
-                mostrarMensajeLogin('El campo contraseña no puede estar vacío', 'mensaje-naranja');
-                return;
-            }
-            const resultado = await procesarLogin({ documento: documentoActual, password: pwd });
-            if (resultado && resultado.ok) {
-                if (resultado.redirect) {
-                    window.location.href = resultado.redirect;
-                    return;
-                }
-                if (alLoginExitoso) {
-                    alLoginExitoso();
-                    return;
-                }
-                window.location.reload();
-            }
+        if (resultado.redirect) {
+            window.location.href = resultado.redirect;
+        } else if (esCliente && alLoginExitoso) {
+            alLoginExitoso();
+        } else {
+            window.location.reload();
         }
     });
 }

@@ -18,17 +18,9 @@
                     <label for="doc">Documento</label>
                     <input type="text" id="doc" name="documento" inputmode="numeric" autocomplete="username">
                 </div>
-                <div class="campo" id="campoPwd" style="display:none;">
+                <div class="campo" id="campoPwd">
                     <label for="pwdCliente">Contraseña</label>
                     <input type="password" id="pwdCliente" name="password" autocomplete="current-password">
-                </div>
-                <div class="campo" id="campoNuevaPwd" style="display:none;">
-                    <label for="nuevaPwd">Crea tu contraseña</label>
-                    <input type="password" id="nuevaPwd" name="nuevaPassword" autocomplete="new-password">
-                </div>
-                <div class="campo" id="campoConfirmPwd" style="display:none;">
-                    <label for="confirmPwd">Repite la contraseña</label>
-                    <input type="password" id="confirmPwd" autocomplete="new-password">
                 </div>
             </div>
 
@@ -46,7 +38,7 @@
             <button type="submit" id="btnLoginSubmit" class="btn btn-ancho">Entrar</button>
         </form>
         <p class="modal-pie">¿No tienes cuenta? <a href="#" class="enlace-registro">Regístrate</a></p>
-        <p class="modal-pie" id="enlaceOlvideLogin" style="display:none;">¿Olvidaste tu contraseña? <a href="#" class="enlace-olvide">Recupérala</a></p>
+        <p class="modal-pie" id="enlaceOlvideLogin">¿Olvidaste tu contraseña? <a href="#" class="enlace-olvide">Recupérala</a></p>
         <p id="mensaje" class="mensaje-error" role="alert"></p>
     </div>
 </div>
