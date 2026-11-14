@@ -16,9 +16,10 @@
 
     <% 
     // ---- Preparación de datos para la ficha (misma lógica que el catálogo) ----
-    const esHuevo = producto.es_huevo || (producto.nombre && producto.nombre.toLowerCase().includes('huevo'));
-    const nombreMostrar = esHuevo && producto.nombre ? producto.nombre.replace(/UND/gi, 'CUBETA') : producto.nombre;
-    const unidadMostrar = esHuevo ? 'Cubeta(s)' : (producto.unidad || 'Unidad(es)');
+    const nombreMostrar = producto.nombre;
+    const unidadMostrar = producto.unidad || 'Unidad(es)';
+    // Presentaciones de venta (ej. Caja = 12 unidades); el stock está en la unidad mínima
+    const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
 
     const precioUnitarioReal = Number(producto.precio);
     const descuentoProd = Number(producto.descuento) || 0;
@@ -28,11 +29,10 @@
         && (!producto.fecha_fin_oferta || ahoraOferta <= new Date(producto.fecha_fin_oferta));
     const precioUnitarioOferta = enOferta ? precioUnitarioReal * (1 - descuentoProd / 100) : precioUnitarioReal;
 
-    const precioMostrar = esHuevo ? precioUnitarioOferta * 30 : precioUnitarioOferta;
-    const precioOriginalMostrar = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+    const precioMostrar = precioUnitarioOferta;
+    const precioOriginalMostrar = precioUnitarioReal;
 
-    const limiteStockRaw = producto.limite_venta !== undefined && producto.limite_venta !== null ? producto.limite_venta : 0;
-    const stockDisponible = esHuevo ? Math.floor(limiteStockRaw / 30) : limiteStockRaw;
+    const stockDisponible = Number(producto.limite_venta) || 0;
     %>
 
     <!-- HEADER -->
@@ -80,8 +80,8 @@
                     <span class="chip-stock">
                         Disponibles: <strong><%= stockDisponible %></strong> <%= unidadMostrar %>
                     </span>
-                    <% if (esHuevo) { %>
-                        <span class="stock-detalle">(<%= limiteStockRaw %> huevos en total)</span>
+                    <% if (presentaciones.length) { %>
+                        <span class="stock-detalle">(<%= presentaciones.map(p => Math.floor(stockDisponible / p.factor) + ' ' + p.nombre + '(s)').join(', ') %>)</span>
                     <% } %>
                 </p>
 
@@ -90,15 +90,13 @@
                         <span class="precio-original">$<%= precioOriginalMostrar.toLocaleString("es-CO") %></span>
                         <span class="precio-oferta">$<%= precioMostrar.toLocaleString("es-CO") %></span>
                         <span class="badge-oferta">-<%= descuentoProd %>% OFERTA</span>
-                        <% if (esHuevo) { %>
-                            <span class="precio-unidad">($<%= precioUnitarioOferta.toLocaleString("es-CO") %> / huevo)</span>
-                        <% } %>
                     <% } else { %>
                         <span class="precio">$<%= precioMostrar.toLocaleString("es-CO") %></span>
-                        <% if (esHuevo) { %>
-                            <span class="precio-unidad">($<%= precioUnitarioOferta.toLocaleString("es-CO") %> / huevo)</span>
-                        <% } %>
                     <% } %>
+                    <span class="precio-unidad">/ <%= unidadMostrar %></span>
+                    <% presentaciones.forEach(p => { %>
+                        <span class="precio-unidad">· <%= p.nombre %> (<%= p.factor %> und): $<%= (precioUnitarioOferta * p.factor).toLocaleString("es-CO") %></span>
+                    <% }) %>
                 </div>
 
                 <!-- APARTAR / ACCIÓN -->
@@ -107,17 +105,30 @@
                     <p class="ficha-nota">Al apartar, el producto queda reservado por <%- include('partials/duracionApartado') %>.</p>
                 <% } else { %>
                     <div class="ficha-accion">
+                        <% if (presentaciones.length) { %>
+                            <div class="campo-cantidad">
+                                <label for="presentacionDetalle">Presentación</label>
+                                <select id="presentacionDetalle">
+                                    <option value="" data-factor="1" data-nombre="<%= unidadMostrar %>"><%= unidadMostrar %></option>
+                                    <% presentaciones.forEach(p => { %>
+                                        <option value="<%= p.id %>" data-factor="<%= p.factor %>" data-nombre="<%= p.nombre %>"><%= p.nombre %> (<%= p.factor %> und)</option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        <% } %>
                         <div class="campo-cantidad">
                             <label for="cantidadDetalle">Cantidad</label>
                             <input type="number" id="cantidadDetalle" value="1" min="1" max="<%= stockDisponible %>" required>
                             <small id="textoDisponiblesDetalle">
                                 Disponibles: <span id="cantDisponiblesDetalle"><%= stockDisponible %></span>
-                                <%= unidadMostrar %>
+                                <span id="unidadDisponiblesDetalle"><%= unidadMostrar %></span>
+                                <span id="precioPresentacionDetalle"></span>
                             </small>
                         </div>
                         <button type="button" class="btn-apartar" id="btnApartarDetalle"
                             data-id="<%= producto.id_producto %>"
-                            data-es-huevo="<%= esHuevo ? 'true' : 'false' %>"
+                            data-precio-unitario="<%= precioUnitarioOferta %>"
+                            data-unidad="<%= unidadMostrar %>"
                             data-limite="<%= stockDisponible %>">
                             Apartar
                         </button>

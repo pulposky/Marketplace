@@ -8,6 +8,7 @@
 // =============================================
 
 const ProductoModel = require('../../models/productoModel');
+const PresentacionModel = require('../../models/presentacionModel');
 const { normalizarCategorias } = require('../../utils/helpers');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
@@ -52,12 +53,13 @@ const SitioVistasController = {
                         ProductoModel.obtenerConOfertas((errorOfertas, ofertas) => {
                             const listaOfertas = (errorOfertas || !Array.isArray(ofertas)) ? [] : ofertas;
 
-                            res.render('main', {
+                            // Presentaciones de venta (si falla, las vistas muestran solo la unidad)
+                            PresentacionModel.adjuntar(destacadosConImagen).catch(() => {}).then(() => res.render('main', {
                                 destacados: destacadosConImagen,
                                 productos: todosConImagen,
                                 ofertas: listaOfertas,
                                 usuario: req.session?.usuario || null
-                            });
+                            }));
                         });
                     });
                 });
@@ -89,10 +91,10 @@ const SitioVistasController = {
             }
 
             asociarImagenesAProductos([producto], (productoConImagen) => {
-                res.render('productoDetalle', {
+                PresentacionModel.adjuntar(productoConImagen).catch(() => {}).then(() => res.render('productoDetalle', {
                     producto: productoConImagen[0],
                     usuario: req.session?.usuario || null
-                });
+                }));
             });
         });
     },
@@ -159,7 +161,7 @@ const SitioVistasController = {
             }
 
             asociarImagenesAProductos(productosFiltrados, (productosConImagen) => {
-                res.render("productos", {
+                PresentacionModel.adjuntar(productosConImagen).catch(() => {}).then(() => res.render("productos", {
                     productos: productosConImagen,
                     categorias,
                     categoriasSeleccionadas,
@@ -167,7 +169,7 @@ const SitioVistasController = {
                     soloOferta,
                     orden,
                     usuario: req.session?.usuario || null
-                });
+                }));
             });
         });
     }

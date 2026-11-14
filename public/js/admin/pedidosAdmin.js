@@ -59,6 +59,17 @@
             return isNaN(d.getTime()) ? String(fecha) : d.toLocaleString('es-CO');
         }
 
+        // Cantidad con la presentación guardada al apartar ("2 Caja(s) (24 ud)")
+        // o en la unidad mínima si se apartó sin presentación.
+        function textoCantidad(item) {
+            const unidad = item.unidad || 'ud';
+            const factor = Number(item.presentacion_factor) || 0;
+            if (item.presentacion_nombre && factor > 0) {
+                return `${Math.floor(Number(item.cantidad) / factor)} ${item.presentacion_nombre}(s) (${item.cantidad} ${unidad})`;
+            }
+            return `${item.cantidad} ${unidad}`;
+        }
+
         // Mensaje vacío según el filtro activo
         function renderizarVacio() {
             const mensajes = {
@@ -209,7 +220,7 @@
                         <span class="pedido-badge ${estado}">${TEXTO_ESTADO[estado] || estado}</span>
                     </div>
                     <div class="fila-detalles">
-                        <span>Cant: <strong>${escaparHTML(item.cantidad)} ${escaparHTML(item.unidad || 'ud')}</strong></span>
+                        <span>Cant: <strong>${escaparHTML(textoCantidad(item))}</strong></span>
                         <span>$${Number(item.precio || 0).toLocaleString('es-CO')} c/u</span>
                         <span class="campo-fecha">${formatearFecha(item.fecha)}</span>
                         ${infoCancelacion}

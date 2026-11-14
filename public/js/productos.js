@@ -9,7 +9,9 @@
 //   - Animación del carrito cuando se agrega un producto.
 //   - Filtro de categorías desde la URL.
 //   - Indicador de cantidad disponible en el modal.
-//   - Conversión de cubetas de huevos (x30).
+//   - Presentaciones de venta (ej. Caja = 12 und):
+//     el stock está en unidades mínimas y el servidor
+//     convierte y recalcula el precio al apartar.
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,6 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inputs para cantidad
     const inputCantidadApartar = document.getElementById('cantidadApartar');
     const textoCantDisponiblesModal = document.getElementById('cantDisponiblesModal');
+    const textoUnidadDisponiblesModal = document.getElementById('unidadDisponiblesModal');
+    const campoPresentacionModal = document.getElementById('campoPresentacionModal');
+    const selectPresentacion = document.getElementById('presentacionApartar');
 
     // Carrito (drawer lateral)
     const carritoAnimado = document.getElementById('carritoAnimado');
@@ -62,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bandera: pendiente confirmar el carrito tras iniciar sesión
     let confirmarCarritoPendiente = false;
 
-    const CLAVE_CARRITO = 'carritoMarketplace_v1';
+    // v2: cada ítem lleva su presentación; se descartan carritos del formato anterior
+    const CLAVE_CARRITO = 'carritoMarketplace_v2';
 
     // -----------------------------------------------
     // UTILIDADES DEL CARRITO (localStorage)
@@ -125,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         carrito.forEach((item) => {
             const li = document.createElement('li');
             li.className = 'carrito-item';
-            li.dataset.id = item.id;
+            li.dataset.id = item.clave;
 
             const imagenHtml = item.imagen
                 ? `<img src="${escaparHTML(item.imagen)}" alt="${escaparHTML(item.nombre)}">`
@@ -151,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const totalUnidadesTexto = document.getElementById('carritoTotalUnidades');
         const totalPrecioTexto = document.getElementById('carritoTotalPrecio');
-        if (totalUnidadesTexto) totalUnidadesTexto.textContent = `${totalCantidadCarrito(carrito)} unidades`;
+        if (totalUnidadesTexto) totalUnidadesTexto.textContent = `${totalCantidadCarrito(carrito)} artículo(s)`;
         if (totalPrecioTexto) totalPrecioTexto.textContent = formatearCOP(totalPrecioCarrito(carrito));
     }
 
@@ -394,16 +400,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const limiteMax = Number(datosProducto.limite) || 0;
-
-        if (inputCantidadApartar) {
-            inputCantidadApartar.max = limiteMax;
-            inputCantidadApartar.value = limiteMax > 0 ? 1 : 0;
+        // Selector de presentación: la unidad mínima + las del producto
+        const presentaciones = datosProducto.presentaciones || [];
+        if (selectPresentacion) {
+            selectPresentacion.innerHTML = '';
+            const opciones = [{ id: '', nombre: datosProducto.unidad, factor: 1 }].concat(presentaciones);
+            opciones.forEach((p) => {
+                const opcion = document.createElement('option');
+                opcion.value = p.id;
+                opcion.textContent = p.id ? `${p.nombre} (${p.factor} und)` : p.nombre;
+                selectPresentacion.appendChild(opcion);
+            });
         }
+        if (campoPresentacionModal) campoPresentacionModal.style.display = presentaciones.length ? '' : 'none';
 
-        if (textoCantDisponiblesModal) {
-            textoCantDisponiblesModal.textContent = limiteMax;
-        }
+        actualizarPresentacionModal(datosProducto);
 
         if (imagenApartar) {
             if (datosProducto.imagen) {
@@ -418,6 +429,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (ventanaApartar) ventanaApartar.style.display = 'flex';
+    }
+
+    // Presentación elegida en el modal (null = unidad mínima)
+    function presentacionElegida(datosProducto) {
+        const id = selectPresentacion ? selectPresentacion.value : '';
+        return (datosProducto.presentaciones || []).find((p) => String(p.id) === id) || null;
+    }
+
+    // Ajusta máximo, disponibles y precio del modal a la presentación elegida.
+    // El precio es solo informativo: el servidor lo recalcula al apartar.
+    function actualizarPresentacionModal(datosProducto) {
+        const presentacion = presentacionElegida(datosProducto);
+        const factor = presentacion ? presentacion.factor : 1;
+        const stock = Number(datosProducto.limite) || 0;
+        const limiteMax = Math.floor(stock / factor);
+
+        if (inputCantidadApartar) {
+            inputCantidadApartar.max = limiteMax;
+            inputCantidadApartar.value = limiteMax > 0 ? 1 : 0;
+        }
+        if (textoCantDisponiblesModal) textoCantDisponiblesModal.textContent = limiteMax;
+        if (textoUnidadDisponiblesModal) {
+            textoUnidadDisponiblesModal.textContent = presentacion
+                ? `${presentacion.nombre}(s) (${stock} ${datosProducto.unidad})`
+                : datosProducto.unidad;
+        }
+        if (textoPrecioProducto) {
+            textoPrecioProducto.textContent = `${formatearCOP(datosProducto.precioNum * factor)} / ${presentacion ? presentacion.nombre : datosProducto.unidad}`;
+        }
+    }
+
+    if (selectPresentacion) {
+        selectPresentacion.addEventListener('change', () => {
+            if (botonOrigenActual) actualizarPresentacionModal(leerInfoBoton(botonOrigenActual));
+        });
+    }
+
+    // Datos del producto guardados en el botón de la tarjeta
+    function leerInfoBoton(boton) {
+        let presentaciones = [];
+        try {
+            presentaciones = JSON.parse(boton.dataset.presentaciones || '[]');
+        } catch (error) {
+            presentaciones = [];
+        }
+        return {
+            id: boton.dataset.id,
+            nombre: boton.dataset.nombre,
+            precio: boton.dataset.precio,
+            precioNum: Number(boton.dataset.precioNum) || 0,
+            imagen: boton.dataset.imagen || '',
+            descripcion: boton.dataset.descripcion || '',
+            limite: Number(boton.dataset.limite) || 0,
+            unidad: boton.dataset.unidad || 'Unidad(es)',
+            presentaciones: Array.isArray(presentaciones) ? presentaciones : []
+        };
     }
 
     // -----------------------------------------------
@@ -436,9 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
     // AGREGAR PRODUCTO AL CARRITO
     // -----------------------------------------------
+    // infoProducto.limite y precioNum ya vienen en la presentación elegida;
+    // cada producto+presentación es una línea distinta del carrito.
     function agregarAlCarrito(infoProducto, cantidad) {
         const carrito = leerCarrito();
-        const existente = carrito.find((item) => String(item.id) === String(infoProducto.id));
+        const clave = `${infoProducto.id}:${infoProducto.presentacionId || ''}`;
+        const existente = carrito.find((item) => item.clave === clave);
 
         const limite = Number(infoProducto.limite) || 0;
 
@@ -449,10 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             carrito.push({
+                clave,
                 id: String(infoProducto.id),
+                presentacionId: infoProducto.presentacionId || null,
                 nombre: infoProducto.nombre,
                 precioNum: Number(infoProducto.precioNum) || 0,
-                esHuevo: infoProducto.esHuevo,
                 unidad: infoProducto.unidad,
                 imagen: infoProducto.imagen || '',
                 limite,
@@ -504,7 +575,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const items = carrito.map((item) => ({
             productoId: Number(item.id),
-            cantidad: Number(item.cantidad)
+            cantidad: Number(item.cantidad),
+            presentacionId: item.presentacionId ? Number(item.presentacionId) : undefined
         }));
 
         try {
@@ -566,11 +638,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const idItem = itemLi.dataset.id;
             const accion = botonPulsado.dataset.accion;
             const carrito = leerCarrito();
-            const item = carrito.find((i) => String(i.id) === idItem);
+            const item = carrito.find((i) => i.clave === idItem);
             if (!item) return;
 
             if (accion === 'quitar') {
-                const nuevoCarrito = carrito.filter((i) => String(i.id) !== idItem);
+                const nuevoCarrito = carrito.filter((i) => i.clave !== idItem);
                 guardarCarrito(nuevoCarrito);
                 renderizarCarrito();
                 return;
@@ -611,23 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
         botonApartar.addEventListener('click', () => {
             botonOrigenActual = botonApartar; // Guardo para la animación
 
-            const infoProducto = {
-                id: botonApartar.dataset.id,
-                nombre: botonApartar.dataset.nombre,
-                precio: botonApartar.dataset.precio,
-                precioNum: Number(botonApartar.dataset.precioNum) || 0,
-                imagen: botonApartar.dataset.imagen || '',
-                descripcion: botonApartar.dataset.descripcion || '',
-                limite: Number(botonApartar.dataset.limite) || 0,
-                esHuevo: botonApartar.dataset.esHuevo === 'true',
-                unidad: botonApartar.dataset.unidad || 'Unidad(es)'
-            };
-
-            if (formularioApartado) {
-                formularioApartado.dataset.esHuevo = infoProducto.esHuevo;
-            }
-
-            mostrarVentanaApartado(infoProducto);
+            mostrarVentanaApartado(leerInfoBoton(botonApartar));
         });
     });
 
@@ -662,14 +718,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Convierto a la presentación elegida (precio y límite por presentación)
+            const datosBoton = leerInfoBoton(botonOrigenActual);
+            const presentacion = presentacionElegida(datosBoton);
+            const factor = presentacion ? presentacion.factor : 1;
             const infoProducto = {
-                id: botonOrigenActual.dataset.id,
-                nombre: botonOrigenActual.dataset.nombre,
-                precioNum: Number(botonOrigenActual.dataset.precioNum) || 0,
-                esHuevo: botonOrigenActual.dataset.esHuevo === 'true',
-                unidad: botonOrigenActual.dataset.unidad || 'Unidad(es)',
-                imagen: botonOrigenActual.dataset.imagen || '',
-                limite: Number(botonOrigenActual.dataset.limite) || 0
+                id: datosBoton.id,
+                presentacionId: presentacion ? presentacion.id : null,
+                nombre: presentacion ? `${datosBoton.nombre} (${presentacion.nombre})` : datosBoton.nombre,
+                precioNum: datosBoton.precioNum * factor,
+                unidad: presentacion ? presentacion.nombre : datosBoton.unidad,
+                imagen: datosBoton.imagen,
+                limite: Math.floor(datosBoton.limite / factor)
             };
 
             agregarAlCarrito(infoProducto, cantidadVal);

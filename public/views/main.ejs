@@ -139,13 +139,10 @@
                 </div>
                 <div class="cuadricula-productos">
                     <% destacados.forEach(producto=> {
-                        // Detectamos si es un producto de huevos por bandera o por nombre
-                        const esHuevo = producto.es_huevo || (producto.nombre &&
-                        producto.nombre.toLowerCase().includes('huevo'));
-
-                        // Reemplazamos 'UND' por 'CUBETA' en el nombre si aplica
-                        const nombreMostrar = esHuevo ? producto.nombre.replace(/UND/gi, "CUBETA") : producto.nombre;
-                        const unidadMostrar = esHuevo ? "Cubeta(s)" : (producto.unidad || "Unidad(es)");
+                        const nombreMostrar = producto.nombre;
+                        const unidadMostrar = producto.unidad || "Unidad(es)";
+                        // Presentaciones de venta (ej. Caja = 12 und); el stock está en la unidad mínima
+                        const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
 
                         // Precios (con oferta si aplica)
                         const precioUnitarioReal = Number(producto.precio);
@@ -160,14 +157,12 @@
                             ? precioUnitarioReal * (1 - descuentoProd / 100)
                             : precioUnitarioReal;
 
-                        // Precio que se muestra (por cubeta si es huevo, sino por unidad)
-                        const precioCalculado = esHuevo ? precioUnitarioOferta * 30 : precioUnitarioOferta;
-                        const precioOriginalCalculado = esHuevo ? precioUnitarioReal * 30 : precioUnitarioReal;
+                        // Precio por unidad mínima
+                        const precioCalculado = precioUnitarioOferta;
+                        const precioOriginalCalculado = precioUnitarioReal;
 
-                        // Límite de stock
-                        const limiteStockRaw = producto.limite_venta !== undefined && producto.limite_venta !== null ?
-                        producto.limite_venta : 0;
-                        const stockDisponible = esHuevo ? Math.floor(limiteStockRaw / 30) : limiteStockRaw;
+                        // Límite de stock (unidades mínimas)
+                        const stockDisponible = Number(producto.limite_venta) || 0;
                         %>
                         <div class="tarjeta-producto">
                             <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
@@ -211,6 +206,11 @@
                                         </strong>
                                         <%= unidadMostrar %>
                                     </span>
+                                    <% if (presentaciones.length) { %>
+                                        <span class="stock-detalle">
+                                            (<%= presentaciones.map(p => Math.floor(stockDisponible / p.factor) + ' ' + p.nombre + '(s)').join(', ') %>)
+                                        </span>
+                                    <% } %>
                                 </p>
 
                                 <!-- Muestra del precio con desglose -->
@@ -237,7 +237,6 @@
                                     data-precio="$<%= precioCalculado.toLocaleString('es-CO') %>"
                                     data-imagen="<%= producto.imagenUpload || '' %>"
                                     data-descripcion="<%= (producto.descripcion || '').replace(/"/g, '&quot;') %>"
-                                    data-es-huevo="<%= esHuevo ? 'true' : 'false' %>"
                                     data-limite="<%= stockDisponible %>">
                                     <%= usuario ? 'Apartar' : 'Ver' %>
                                 </button>
