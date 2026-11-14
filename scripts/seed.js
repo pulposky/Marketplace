@@ -38,17 +38,17 @@ const CATEGORIAS = ['Abarrotes', 'Lácteos y huevos', 'Bebidas', 'Frutas y verdu
 
 // [nombre, unidad, precio, stock, categoría, descripción, imagen, extras]
 const PRODUCTOS = [
-    ['Arroz blanco 1 kg', 'KG', 4200, 120, 'Abarrotes', 'Arroz blanco de grano largo, ideal para el diario.', 'arroz-blanco-1-kg', { presentaciones: [['Bulto 25 kg', 25]] }],
+    ['Arroz blanco 1 kg', 'KG', 4200, 120, 'Abarrotes', 'Arroz blanco de grano largo, ideal para el diario.', 'arroz-blanco-1-kg', { presentaciones: [['Kilo', 1], ['Bulto 25 kg', 25]] }],
     ['Aceite vegetal 1 L', 'UND', 9800, 40, 'Abarrotes', 'Aceite vegetal para freír y cocinar.', 'aceite-vegetal-1-l'],
     ['Azúcar refinada 1 kg', 'KG', 4500, 80, 'Abarrotes', 'Azúcar blanca refinada.', 'azucar-refinada-1-kg'],
     ['Pasta spaghetti 500 g', 'UND', 3200, 60, 'Abarrotes', 'Pasta larga de trigo.', 'pasta-spaghetti-500-g'],
     ['Café molido 250 g', 'UND', 8900, 30, 'Abarrotes', 'Café tostado y molido, tueste medio.', 'cafe-molido-250-g', { descuento: 15 }],
-    ['Huevos AA', 'UND', 650, 300, 'Lácteos y huevos', 'Huevo rojo AA, se vende por unidad o por cubeta.', 'huevos-aa', { presentaciones: [['Cubeta', 30]] }],
-    ['Leche entera 1 L', 'UND', 4300, 48, 'Lácteos y huevos', 'Leche entera pasteurizada.', 'leche-entera-1-l', { presentaciones: [['Paca x6', 6]] }],
+    ['Huevos AA', 'UND', 650, 300, 'Lácteos y huevos', 'Huevo rojo AA, por cubeta o media cubeta.', 'huevos-aa', { presentaciones: [['Cubeta', 30], ['Media cubeta', 15]] }],
+    ['Leche entera 1 L', 'UND', 4300, 48, 'Lácteos y huevos', 'Leche entera pasteurizada.', 'leche-entera-1-l', { presentaciones: [['Unidad', 1], ['Paca x6', 6]] }],
     ['Queso campesino 500 g', 'UND', 11500, 15, 'Lácteos y huevos', 'Queso fresco campesino.', 'queso-campesino-500-g'],
     ['Yogur de fresa 1 L', 'UND', 7900, 20, 'Lácteos y huevos', 'Yogur bebible sabor a fresa.', 'yogur-de-fresa-1-l', { descuento: 10 }],
-    ['Gaseosa cola 400 ml', 'UND', 2500, 96, 'Bebidas', 'Bebida gaseosa sabor cola, botella personal.', 'gaseosa-cola-400-ml', { presentaciones: [['Paca', 12]] }],
-    ['Agua sin gas 600 ml', 'UND', 1800, 72, 'Bebidas', 'Agua potable sin gas.', 'agua-sin-gas-600-ml', { presentaciones: [['Paca', 24]] }],
+    ['Gaseosa cola 400 ml', 'UND', 2500, 96, 'Bebidas', 'Bebida gaseosa sabor cola, botella personal.', 'gaseosa-cola-400-ml', { presentaciones: [['Unidad', 1], ['Paca', 12]] }],
+    ['Agua sin gas 600 ml', 'UND', 1800, 72, 'Bebidas', 'Agua potable sin gas.', 'agua-sin-gas-600-ml', { presentaciones: [['Unidad', 1], ['Paca', 24]] }],
     ['Jugo de naranja 1 L', 'UND', 6500, 0, 'Bebidas', 'Jugo de naranja listo para tomar.', 'jugo-de-naranja-1-l'], // agotado
     ['Banano', 'KG', 3000, 40, 'Frutas y verduras', 'Banano maduro, precio por kilo.', 'banano', { descuento: 20 }],
     ['Tomate chonto', 'KG', 4800, 35, 'Frutas y verduras', 'Tomate chonto fresco, precio por kilo.', 'tomate-chonto'],
@@ -59,7 +59,7 @@ const PRODUCTOS = [
     ['Lavaloza en crema 500 g', 'UND', 5200, 30, 'Aseo del hogar', 'Lavaloza en crema con aroma a limón.', 'lavaloza-en-crema-500-g'],
     ['Papel higiénico x4', 'UND', 7400, 40, 'Aseo del hogar', 'Paquete de 4 rollos doble hoja.', 'papel-higienico-x4'],
     ['Papas fritas 110 g', 'UND', 4900, 50, 'Snacks y dulces', 'Papas fritas clásicas con sal.', 'papas-fritas-110-g'],
-    ['Chocolatina 30 g', 'UND', 1500, 100, 'Snacks y dulces', 'Chocolatina de leche.', 'chocolatina-30-g', { presentaciones: [['Caja', 24]] }],
+    ['Chocolatina 30 g', 'UND', 1500, 100, 'Snacks y dulces', 'Chocolatina de leche.', 'chocolatina-30-g', { presentaciones: [['Unidad', 1], ['Caja', 24]] }],
     ['Crema dental 100 ml', 'UND', 6200, 35, 'Cuidado personal', 'Crema dental con flúor.', 'crema-dental-100-ml'],
     ['Champú 400 ml', 'UND', 14900, 12, 'Cuidado personal', 'Champú para todo tipo de cabello.', 'champu-400-ml', { inactivo: true }],
 ];
@@ -207,7 +207,7 @@ async function main() {
         ])]);
 
         await db.query('INSERT INTO notificaciones (titulo, mensaje, leido, fecha) VALUES ?', [[
-            ['Nuevo apartado', `${cli[0].nombre} apartó 30 x Huevos AA.`, 0, diasAtras(0, 9)],
+            ['Nuevo apartado', `${cli[0].nombre} apartó 1 Cubeta de Huevos AA.`, 0, diasAtras(0, 9)],
             ['Nuevo apartado', `${cli[1].nombre} apartó 12 x Gaseosa cola 400 ml.`, 0, diasAtras(0, 11)],
             ['Apartado cancelado', `${cli[2].nombre} canceló su apartado de Chocolatina 30 g.`, 1, diasAtras(5, 15)],
         ]]);

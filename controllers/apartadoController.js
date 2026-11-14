@@ -32,7 +32,11 @@ const { calcularUnidades, describir } = require('../utils/presentaciones');
 const resolverCantidad = async (idProducto, cantidad, presentacionId) => {
     const sinPresentacion = presentacionId === undefined || presentacionId === null || presentacionId === '';
     let presentacion = null;
-    if (!sinPresentacion) {
+    if (sinPresentacion) {
+        // Con presentaciones definidas el producto solo se vende en ellas
+        const mapa = await PresentacionModel.listarPorProductos([idProducto]);
+        if ((mapa.get(Number(idProducto)) || []).length) return { error: 'Elige una presentación para este producto.' };
+    } else {
         const idPresentacion = Number(presentacionId);
         if (!Number.isInteger(idPresentacion) || idPresentacion <= 0) {
             return { error: 'Presentación inválida.' };

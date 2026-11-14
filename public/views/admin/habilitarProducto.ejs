@@ -100,7 +100,7 @@
                             <div class="presentacion-producto">
                                 Presentación: <%= presentacionMostrar %>
                                 <% if (presentaciones.length) { %>
-                                    <small class="lista-presentaciones">Se vende también por: <%= presentaciones.map(p => p.nombre + ' (' + p.factor + ')').join(', ') %></small>
+                                    <small class="lista-presentaciones">Se vende por: <%= presentaciones.map(p => p.nombre + ' (' + p.factor + ')').join(', ') %></small>
                                 <% } %>
                             </div>
 
@@ -192,8 +192,8 @@
                 <fieldset class="seccion-presentaciones">
                     <legend>Presentaciones de venta</legend>
                     <p class="ayuda-campo">
-                        Formas de vender el producto además de la unidad, ej. "Caja" = 12 unidades.
-                        El factor es cuántas unidades mínimas trae cada una (máximo 10).
+                        Si agregas presentaciones, el producto se vende <strong>solo</strong> en ellas, ej. "Cubeta" = 30 y "Media cubeta" = 15.
+                        Para vender también suelto, agrega "Unidad" con factor 1. El factor es cuántas unidades mínimas trae cada una (máximo 10).
                     </p>
                     <div id="listaPresentaciones" class="lista-filas-presentacion"></div>
                     <button type="button" class="btn-agregar-presentacion" id="btnAgregarPresentacion">+ Agregar presentación</button>

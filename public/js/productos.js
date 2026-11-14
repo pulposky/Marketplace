@@ -400,11 +400,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Selector de presentación: la unidad mínima + las del producto
+        // Selector de presentación: si el producto tiene presentaciones solo se
+        // vende en ellas; si no, en la unidad mínima
         const presentaciones = datosProducto.presentaciones || [];
         if (selectPresentacion) {
             selectPresentacion.innerHTML = '';
-            const opciones = [{ id: '', nombre: datosProducto.unidad, factor: 1 }].concat(presentaciones);
+            const opciones = presentaciones.length ? presentaciones : [{ id: '', nombre: datosProducto.unidad, factor: 1 }];
             opciones.forEach((p) => {
                 const opcion = document.createElement('option');
                 opcion.value = p.id;

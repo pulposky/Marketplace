@@ -109,7 +109,6 @@
                             <div class="campo-cantidad">
                                 <label for="presentacionDetalle">Presentación</label>
                                 <select id="presentacionDetalle">
-                                    <option value="" data-factor="1" data-nombre="<%= unidadMostrar %>"><%= unidadMostrar %></option>
                                     <% presentaciones.forEach(p => { %>
                                         <option value="<%= p.id %>" data-factor="<%= p.factor %>" data-nombre="<%= p.nombre %>"><%= p.nombre %> (<%= p.factor %> und)</option>
                                     <% }) %>
