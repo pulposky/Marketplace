@@ -10,8 +10,19 @@
 // =============================================
 
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const UsuarioModel = require('../models/usuarioModel');
 const { EQUIVALENCIAS_ROL, normalizarRol, esRolPanel } = require('../utils/roles');
+
+// Nueva sesión al autenticar (evita fijación de sesión) con token CSRF nuevo.
+const iniciarSesion = (req, datosUsuario) => new Promise((resuelta, rechazada) => {
+    req.session.regenerate((error) => {
+        if (error) return rechazada(error);
+        req.session.usuario = datosUsuario;
+        req.session.csrf = crypto.randomBytes(24).toString('hex');
+        resuelta();
+    });
+});
 
 const loginUsuarioController = async (req, res) => {
     // Extraigo los campos del body, puede venir usuario+password o solo documento
@@ -55,12 +66,12 @@ const loginUsuarioController = async (req, res) => {
 
             // Guardo los datos del usuario en la sesión
             // (en la BD la llave es id_usuario; uso ?? por si cambia el nombre)
-            req.session.usuario = {
+            await iniciarSesion(req, {
                 id: usuarioBD.id_usuario ?? usuarioBD.id,
                 usuario: usuarioBD.usuario,
                 nombre: usuarioBD.nombre || usuarioBD.usuario,
                 role
-            };
+            });
 
             // Si es del panel admin (admin, supervisor, promotor o técnico),
             // le digo al frontend que redirija al panel
@@ -136,12 +147,12 @@ const loginUsuarioController = async (req, res) => {
 
         // Guardo los datos del cliente en la sesión con rol de cliente
         // (en la BD la llave es id_cliente; uso ?? por si cambia el nombre)
-        req.session.usuario = {
+        await iniciarSesion(req, {
             id: clienteBD.id_cliente ?? clienteBD.id,
             documento: clienteBD.documento,
             nombre: clienteBD.nombre,
             role: 'cliente'
-        };
+        });
 
         return res.json({ ok: true, mensaje: 'Login correcto' });
     } catch (error) {

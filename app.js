@@ -9,6 +9,8 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+const conexion = require('./database/conexion');
 const helmet = require('helmet');
 const compression = require('compression');
 const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
@@ -67,7 +69,12 @@ app.use(express.json({ limit: '4mb' }));
 app.use(limiteGeneral);
 
 // La sesión va ANTES de las rutas, sino no funciona
-app.use(session(require('./config/session')));
+// Sesiones guardadas en la BD (tabla 'sessions', la crea el store):
+// no se pierden al reiniciar y no llenan la memoria del proceso.
+app.use(session({
+    ...require('./config/session'),
+    store: new MySQLStore({ clearExpired: true, checkExpirationInterval: 15 * 60 * 1000 }, conexion)
+}));
 
 // Permisos por rol: expongo a las vistas si el usuario puede hacer algo.
 // Va DESPUÉS de la sesión porque necesita el rol guardado en ella.

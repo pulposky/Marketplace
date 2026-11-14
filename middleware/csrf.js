@@ -39,7 +39,10 @@ function verificarCsrf(req, res, next) {
     const campo = req.body && req.body._csrf ? String(req.body._csrf) : '';
     const tokenRecibido = String(cabecera || campo || '');
 
-    if (!tokenRecibido || tokenRecibido !== req.session.csrf) {
+    const esperado = String(req.session.csrf || '');
+    const iguales = tokenRecibido.length === esperado.length && esperado.length > 0
+        && crypto.timingSafeEqual(Buffer.from(tokenRecibido), Buffer.from(esperado));
+    if (!iguales) {
         return res.status(403).json({ error: 'Token de seguridad inválido o ausente.' });
     }
 
