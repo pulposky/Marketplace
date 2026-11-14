@@ -1,0 +1,190 @@
+/* ============================================= */
+/* CONFIGURACIÓN DE LA TIENDA (panel admin)      */
+/* ============================================= */
+/* Complementa gestionesAdmin.css: secciones del  */
+/* formulario, vista previa de logo y colores.    */
+/* ============================================= */
+
+.config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 720px;
+}
+
+.config-seccion h2 {
+    color: #0f5132;
+    font-size: 1.1rem;
+    margin: 0 0 16px 0;
+}
+
+.config-seccion > .ayuda-campo {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: -8px 0 14px 0;
+}
+
+/* Dos columnas en pantallas anchas, una en móvil */
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0 16px;
+}
+
+.etiqueta-campo {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #374151;
+}
+
+.etiqueta-secundaria {
+    display: block;
+    margin-top: 8px;
+    font-weight: 500 !important;
+    font-size: 0.8rem !important;
+}
+
+.error-campo {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #b91c1c;
+    font-weight: 600;
+}
+
+.error-campo:empty {
+    display: none;
+}
+
+.campo [aria-invalid="true"] {
+    border-color: #b91c1c;
+}
+
+/* Foco visible en todos los controles */
+.config-form input:focus-visible,
+.config-form select:focus-visible,
+.config-form textarea:focus-visible,
+.config-form .btn:focus-visible,
+.btn-regresar:focus-visible {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+}
+
+/* LOGO */
+.logo-fila {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.logo-preview {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafb;
+    padding: 6px;
+}
+
+.logo-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.logo-acciones .btn {
+    align-self: flex-start;
+    cursor: pointer;
+}
+
+/* El input de archivo queda oculto visualmente pero sigue siendo enfocable */
+.campo input.input-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.input-oculto:focus-visible + label {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+}
+
+.logo-acciones .btn[aria-disabled="true"] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* COLORES */
+.color-fila {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.campo .color-fila .input-color {
+    width: 52px;
+    min-width: 52px;
+    height: 44px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.muestra-colores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border: 1px dashed #d1d5db;
+    border-radius: 12px;
+}
+
+.muestra-barra,
+.muestra-boton {
+    padding: 10px 16px;
+    border-radius: 10px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.muestra-barra {
+    flex: 1 1 160px;
+}
+
+/* MENSAJES Y ACCIONES */
+.mensaje-config {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.mensaje-config.ok {
+    color: #15803d;
+}
+
+.mensaje-config.error {
+    color: #b91c1c;
+}
+
+.config-acciones {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+    .tarjeta-form {
+        padding: 18px;
+    }
+
+    .logo-acciones .btn {
+        align-self: stretch;
+    }
+}

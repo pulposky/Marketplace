@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <%- include('../partials/headMeta', { titulo: 'Configuración de la tienda' }) %>
+    <script nonce="<%= cspNonce %>">
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) window.location.reload();
+        });
+    </script>
+    <link rel="stylesheet" href="/css/admin/gestionesAdmin.css">
+    <link rel="stylesheet" href="/css/admin/configuracionTienda.css">
+    <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+<%
+    const c = configuracion;
+    const MONEDAS = ['COP', 'USD', 'MXN', 'PEN', 'EUR'];
+    const monedaOtra = !MONEDAS.includes(c.moneda);
+%>
+
+    <!-- HEADER -->
+    <div class="header-catalogo">
+        <div class="contenedor-header">
+            <div class="marca-catalogo">
+                <span>Configuración</span> - Panel Admin
+            </div>
+            <div class="header-derecha">
+                <a href="/admin" class="btn-regresar">
+                    ← Regresar al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+
+        <div class="titulo-catalogo">Configuración de la tienda</div>
+        <p class="texto-ayuda">
+            Estos datos identifican a tu negocio en la tienda web y en el panel:
+            nombre, logo, colores, contacto, redes y ajustes de ventas.
+        </p>
+
+        <!-- Región para lectores de pantalla: anuncia el resultado de guardar/subir -->
+        <p id="mensajeConfig" class="mensaje-config" role="status" aria-live="polite"></p>
+
+        <form id="formConfiguracion" class="config-form" novalidate>
+
+            <!-- IDENTIDAD -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloIdentidad">
+                <h2 id="tituloIdentidad">Identidad</h2>
+                <div class="campo">
+                    <label for="nombre">Nombre de la tienda *</label>
+                    <input type="text" id="nombre" name="nombre" maxlength="100" required value="<%= c.nombre %>" aria-describedby="error-nombre">
+                    <p class="error-campo" id="error-nombre"></p>
+                </div>
+                <div class="campo">
+                    <label for="eslogan">Eslogan</label>
+                    <input type="text" id="eslogan" name="eslogan" maxlength="200" value="<%= c.eslogan %>" aria-describedby="error-eslogan">
+                    <p class="error-campo" id="error-eslogan"></p>
+                </div>
+                <div class="campo">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" maxlength="500" aria-describedby="ayuda-descripcion error-descripcion"><%= c.descripcion %></textarea>
+                    <span class="ayuda-campo" id="ayuda-descripcion">Se usa como descripción de la página para buscadores (máx. 500 caracteres).</span>
+                    <p class="error-campo" id="error-descripcion"></p>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta-campo" id="etiquetaLogo">Logo</span>
+                    <div class="logo-fila">
+                        <img id="logoPreview" class="logo-preview" src="<%= c.logo_url || '/img/marca/logo-default.svg' %>" alt="Logo actual de <%= c.nombre %>">
+                        <div class="logo-acciones">
+                            <%# El input va antes del label para mostrar el foco en el botón con "+" %>
+                            <input type="file" id="inputLogo" class="input-oculto" accept="image/png,image/jpeg,image/webp" aria-describedby="ayuda-logo">
+                            <label for="inputLogo" class="btn btn-secundario" id="btnLogo">Subir nuevo logo</label>
+                            <span class="ayuda-campo" id="ayuda-logo">PNG, JPG o WebP de máximo 2 MB. Se guarda al elegir el archivo.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLORES -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloColores">
+                <h2 id="tituloColores">Colores</h2>
+                <div class="config-grid">
+                    <div class="campo">
+                        <label for="color_primario">Color primario</label>
+                        <div class="color-fila">
+                            <input type="color" id="picker_primario" class="input-color" value="<%= c.color_primario %>" aria-label="Selector del color primario">
+                            <input type="text" id="color_primario" name="color_primario" maxlength="7" value="<%= c.color_primario %>" aria-describedby="error-color_primario">
+                        </div>
+                        <p class="error-campo" id="error-color_primario"></p>
+                    </div>
+                    <div class="campo">
+                        <label for="color_secundario">Color secundario</label>
+                        <div class="color-fila">
+                            <input type="color" id="picker_secundario" class="input-color" value="<%= c.color_secundario %>" aria-label="Selector del color secundario">
+                            <input type="text" id="color_secundario" name="color_secundario" maxlength="7" value="<%= c.color_secundario %>" aria-describedby="error-color_secundario">
+                        </div>
+                        <p class="error-campo" id="error-color_secundario"></p>
+                    </div>
+                </div>
+                <div class="muestra-colores" id="muestraColores" aria-hidden="true">
+                    <span class="muestra-barra" id="muestraPrimario">Encabezado</span>
+                    <span class="muestra-boton" id="muestraSecundario">Botón destacado</span>
+                </div>
+            </section>
+
+            <!-- CONTACTO -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloContacto">
+                <h2 id="tituloContacto">Contacto</h2>
+                <div class="config-grid">
+                    <div class="campo">
+                        <label for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" name="telefono" maxlength="30" placeholder="Ej. +57 300 000 0000" value="<%= c.telefono %>" autocomplete="tel" aria-describedby="error-telefono">
+                        <p class="error-campo" id="error-telefono"></p>
+                    </div>
+                    <div class="campo">
+                        <label for="whatsapp">WhatsApp</label>
+                        <input type="tel" id="whatsapp" name="whatsapp" maxlength="30" placeholder="Ej. +57 300 000 0000" value="<%= c.whatsapp %>" aria-describedby="error-whatsapp">
+                        <p class="error-campo" id="error-whatsapp"></p>
+                    </div>
+                </div>
+                <div class="campo">
+                    <label for="correo">Correo</label>
+                    <input type="email" id="correo" name="correo" maxlength="120" placeholder="contacto@mitienda.com" value="<%= c.correo %>" autocomplete="email" aria-describedby="error-correo">
+                    <p class="error-campo" id="error-correo"></p>
+                </div>
+                <div class="campo">
+                    <label for="direccion">Dirección</label>
+                    <input type="text" id="direccion" name="direccion" maxlength="200" value="<%= c.direccion %>" aria-describedby="error-direccion">
+                    <p class="error-campo" id="error-direccion"></p>
+                </div>
+                <div class="campo">
+                    <label for="horario">Horario de atención</label>
+                    <input type="text" id="horario" name="horario" maxlength="200" placeholder="Ej. Lunes a sábado, 8:00 a. m. - 6:00 p. m." value="<%= c.horario %>" aria-describedby="error-horario">
+                    <p class="error-campo" id="error-horario"></p>
+                </div>
+            </section>
+
+            <!-- REDES -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloRedes">
+                <h2 id="tituloRedes">Redes sociales</h2>
+                <p class="ayuda-campo">Enlaces completos que empiecen por https://. Déjalos vacíos para ocultarlos.</p>
+                <div class="campo">
+                    <label for="facebook">Facebook</label>
+                    <input type="url" id="facebook" name="facebook" maxlength="255" placeholder="https://facebook.com/mitienda" value="<%= c.facebook %>" aria-describedby="error-facebook">
+                    <p class="error-campo" id="error-facebook"></p>
+                </div>
+                <div class="campo">
+                    <label for="instagram">Instagram</label>
+                    <input type="url" id="instagram" name="instagram" maxlength="255" placeholder="https://instagram.com/mitienda" value="<%= c.instagram %>" aria-describedby="error-instagram">
+                    <p class="error-campo" id="error-instagram"></p>
+                </div>
+                <div class="campo">
+                    <label for="tiktok">TikTok</label>
+                    <input type="url" id="tiktok" name="tiktok" maxlength="255" placeholder="https://tiktok.com/@mitienda" value="<%= c.tiktok %>" aria-describedby="error-tiktok">
+                    <p class="error-campo" id="error-tiktok"></p>
+                </div>
+            </section>
+
+            <!-- VENTAS -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloVentas">
+                <h2 id="tituloVentas">Ventas</h2>
+                <div class="config-grid">
+                    <div class="campo">
+                        <label for="monedaSelect">Moneda</label>
+                        <select id="monedaSelect">
+                            <% MONEDAS.forEach(function (m) { %>
+                            <option value="<%= m %>" <%= c.moneda === m ? 'selected' : '' %>><%= m %></option>
+                            <% }) %>
+                            <option value="OTRA" <%= monedaOtra ? 'selected' : '' %>>Otra…</option>
+                        </select>
+                        <div id="monedaOtraCampo" <%= monedaOtra ? '' : 'hidden' %>>
+                            <label for="monedaOtra" class="etiqueta-secundaria">Código de 3 letras (ISO 4217)</label>
+                            <input type="text" id="monedaOtra" maxlength="3" value="<%= monedaOtra ? c.moneda : '' %>" aria-describedby="error-moneda">
+                        </div>
+                        <p class="error-campo" id="error-moneda"></p>
+                    </div>
+                    <div class="campo">
+                        <label for="minutos_expiracion_apartado">Expiración de apartados (minutos)</label>
+                        <input type="number" id="minutos_expiracion_apartado" name="minutos_expiracion_apartado" min="5" max="10080" step="1" value="<%= c.minutos_expiracion_apartado %>" aria-describedby="ayuda-minutos error-minutos_expiracion_apartado">
+                        <span class="ayuda-campo" id="ayuda-minutos">Tiempo que se guarda un apartado antes de cancelarse (entre 5 y 10080 minutos).</span>
+                        <p class="error-campo" id="error-minutos_expiracion_apartado"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AVANZADO -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloAvanzado">
+                <h2 id="tituloAvanzado">Avanzado</h2>
+                <div class="campo">
+                    <label for="productos_ocultos">Productos ocultos en la web</label>
+                    <input type="text" id="productos_ocultos" name="productos_ocultos" maxlength="500" value="<%= c.productos_ocultos %>" aria-describedby="ayuda-ocultos error-productos_ocultos">
+                    <span class="ayuda-campo" id="ayuda-ocultos">Nombres de productos separados por comas que no se muestran en la tienda web. Sirve para productos internos del punto de venta, como COMODIN.</span>
+                    <p class="error-campo" id="error-productos_ocultos"></p>
+                </div>
+            </section>
+
+            <div class="config-acciones">
+                <button type="submit" class="btn btn-primario" id="btnGuardarConfig">Guardar cambios</button>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %> · Panel de administración</p>
+    </footer>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/admin/configuracionTienda.js"></script>
+</body>
+</html>
