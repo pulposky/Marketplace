@@ -12,6 +12,7 @@
 
 const RespaldoModel = require('../../models/respaldoModel');
 const auditoriaService = require('../../services/auditoriaService');
+const tiendaService = require('../../services/tiendaService');
 const { escaparCeldaCSV: escapar } = require('../../utils/csv');
 
 // Convierte un arreglo de objetos a texto CSV.
@@ -60,7 +61,7 @@ const RespaldoApiController = {
             const datos = await RespaldoModel.obtenerTodo();
             const paquete = {
                 generado_en: new Date().toISOString(),
-                sistema: 'Marketplace SENA - Centro Agroindustrial Hachón',
+                sistema: `${tiendaService.obtener().nombre} - Marketplace`,
                 nota: 'Respaldo sin contraseñas (solo datos).',
                 tablas: datos
             };
