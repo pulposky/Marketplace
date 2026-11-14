@@ -291,3 +291,14 @@ function configurarFormLogin(formulario, opciones) {
         }
     });
 }
+
+// Enlaces como "Inicia sesión para apartar" (ficha de producto) llegan con
+// ?login=1&desde=producto: abro el login aquí y limpio la URL antes de que
+// productos.js lo tome como redirección desde /verApartados (aviso + ir a apartados).
+(function abrirLoginSinAvisoApartados() {
+    const parametros = new URLSearchParams(window.location.search);
+    if (parametros.get('login') !== '1' || !parametros.get('desde')) return;
+    const ventanaLogin = document.getElementById('modalLogin');
+    if (ventanaLogin) ventanaLogin.style.display = 'flex';
+    window.history.replaceState({}, '', window.location.pathname);
+})();
