@@ -24,6 +24,10 @@ public/img/upload/*
 public/img/banners/*
 !public/img/banners/.gitkeep
 
+# Logos subidos desde /admin/configuracion (el logo por defecto sí se versiona)
+public/img/marca/logo-*
+!public/img/marca/logo-default.svg
+
 # Backups de base de datos
 *.sql
 *.sql.gz
