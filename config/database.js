@@ -11,9 +11,10 @@
 /* ============================================= */
 
 module.exports = {
-    host: process.env.BD_HOST || process.env.DB_HOST || 'localhost',
-    user: process.env.BD_USER || process.env.DB_USER || 'root',
-    password: process.env.BD_PASSWORD || process.env.DB_PASSWORD || '',
+    // Sin valores por defecto: server.js exige estas variables al arrancar
+    host: process.env.BD_HOST || process.env.DB_HOST,
+    user: process.env.BD_USER || process.env.DB_USER,
+    password: process.env.BD_PASSWORD || process.env.DB_PASSWORD,
     database: process.env.BD_DATABASE || process.env.DB_DATABASE,
     port: Number(process.env.BD_PORT || process.env.DB_PORT) || 3306,
     // Timeout de espera de conexión (no quedarse colgado)

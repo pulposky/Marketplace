@@ -8,7 +8,8 @@
 const esProduccion = process.env.NODE_ENV === 'production';
 
 module.exports = {
-    secret: process.env.SESSION_SECRET || 'mi_clave_secreta',
+    // server.js no arranca si falta (ni si es corto): sin valor por defecto
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {

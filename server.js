@@ -16,6 +16,19 @@ const dotenv = require('dotenv');
 // Cargo las variables de entorno del archivo .env (DB_HOST, PORT, etc.)
 dotenv.config();
 
+// Sin estas variables la app no arranca: nada de valores por defecto
+// inseguros (secreto de sesión conocido, usuario root sin clave...).
+const OBLIGATORIAS = ['BD_HOST', 'BD_USER', 'BD_PASSWORD', 'BD_DATABASE', 'SESSION_SECRET'];
+const faltantes = OBLIGATORIAS.filter((nombre) => !process.env[nombre] && !process.env[nombre.replace(/^BD_/, 'DB_')]);
+if (faltantes.length > 0) {
+    console.error(`Faltan variables de entorno obligatorias: ${faltantes.join(', ')}. Revisa .env (ver .env.example).`);
+    process.exit(1);
+}
+if (String(process.env.SESSION_SECRET).length < 32) {
+    console.error('SESSION_SECRET debe tener al menos 32 caracteres aleatorios.');
+    process.exit(1);
+}
+
 // Instancia principal de Express configurada con rutas y middlewares
 const app = require('./app');
 
