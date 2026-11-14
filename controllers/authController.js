@@ -24,6 +24,12 @@ const iniciarSesion = (req, datosUsuario) => new Promise((resuelta, rechazada) =
     });
 });
 
+// Mismo mensaje para documento inexistente, sin clave o clave errada:
+// así el login no revela qué documentos están registrados.
+const MENSAJE_LOGIN_CLIENTE = 'Documento o contraseña incorrectos. Si no tienes contraseña, solicita una clave temporal al Administrador.';
+// Hash de relleno para que comparar tarde lo mismo exista o no el cliente.
+const HASH_RELLENO = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
+
 const loginUsuarioController = async (req, res) => {
     // Extraigo los campos del body, puede venir usuario+password o solo documento
     const { documento, usuario, password, nuevaPassword } = req.body;
@@ -92,16 +98,6 @@ const loginUsuarioController = async (req, res) => {
     }
 
     try {
-        // Busco el cliente por su documento (incluye la columna password)
-        const resultado = await UsuarioModel.login(documento);
-
-        if (resultado.length === 0) {
-            return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'El cliente no existe' });
-        }
-
-        const clienteBD = resultado[0];
-        const tienePassword = !!clienteBD.password && String(clienteBD.password).trim() !== '';
-
         // ----- PASO 0: CREAR CONTRASEÑA -----
         // No permito crear ni cambiar claves solo conociendo el documento.
         if (nuevaPassword) {
@@ -112,19 +108,8 @@ const loginUsuarioController = async (req, res) => {
         }
 
         // ----- PASO 1: SOLO DOCUMENTO -----
-        // El cliente aún no envió contraseña: verifico si ya tiene una.
+        // Siempre pido la contraseña, exista o no el documento (no se revela).
         if (password === undefined || password === null || password === '') {
-            if (!tienePassword) {
-                // No tiene contraseña: le pido que cree una
-                return res.json({
-                    ok: false,
-                    tipo: 'naranja',
-                    necesitaPassword: true,
-                    documento,
-                    mensaje: 'Tu usuario no tiene contraseña. Crea una para continuar.'
-                });
-            }
-            // Ya tiene contraseña: le pido que la ingrese
             return res.json({
                 ok: false,
                 tipo: 'naranja',
@@ -135,14 +120,13 @@ const loginUsuarioController = async (req, res) => {
         }
 
         // ----- PASO 2: DOCUMENTO + CONTRASEÑA -----
-        // El cliente ya tiene contraseña y la está comprobando.
-        if (!tienePassword) {
-            return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Este cliente no tiene contraseña creada' });
-        }
+        const resultado = await UsuarioModel.login(documento);
+        const clienteBD = resultado[0];
+        const tienePassword = !!clienteBD && !!clienteBD.password && String(clienteBD.password).trim() !== '';
 
-        const coincide = await bcrypt.compare(String(password), clienteBD.password);
-        if (!coincide) {
-            return res.json({ ok: false, tipo: 'incorrecto', mensaje: 'Documento o contraseña incorrectos' });
+        const coincide = await bcrypt.compare(String(password), tienePassword ? clienteBD.password : HASH_RELLENO);
+        if (!tienePassword || !coincide) {
+            return res.json({ ok: false, tipo: 'incorrecto', mensaje: MENSAJE_LOGIN_CLIENTE });
         }
 
         // Guardo los datos del cliente en la sesión con rol de cliente

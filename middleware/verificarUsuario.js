@@ -15,7 +15,8 @@ const protegerRuta = (req, res, next) => {
 
     // Si la petición viene de fetch (AJAX), devuelvo JSON con error 401
     // El optional chaining (?.) evita que explote si 'accept' es undefined
-    if (req.xhr || req.headers.accept?.includes("application/json")) {
+    if (req.xhr || String(req.originalUrl || req.path || '').startsWith('/api/')
+        || req.headers.accept?.includes("application/json")) {
         return res.status(401).json({
             ok: false,
             login: false,

@@ -14,6 +14,7 @@ const ApartadoController = require('../controllers/apartadoController');
 const NotificacionesClienteController = require('../controllers/notificacionesClienteController');
 const protegerRuta = require('../middleware/verificarUsuario');
 const noCache = require('../middleware/noCache');
+const { limiteApartar } = require('../config/rateLimit');
 
 router.use(noCache);
 
@@ -32,13 +33,13 @@ router.get('/verApartados', (req, res, next) => {
 }, ClienteVistasController.mostrarVerApartados);
 
 // API: crear un apartado nuevo (descuenta stock y avisa al admin)
-router.post('/api/apartar-producto', protegerRuta, ApartadoController.apartarProducto);
+router.post('/api/apartar-producto', protegerRuta, limiteApartar, ApartadoController.apartarProducto);
 
 // API: cancelar un apartado propio (el cliente cancela desde su vista)
 router.post('/api/apartados/cancelar/:idApartado', protegerRuta, ApartadoController.cancelarApartado);
 
 // API: apartar varios productos de una vez (carrito del cliente)
-router.post('/api/apartar-lote', protegerRuta, ApartadoController.apartarLote);
+router.post('/api/apartar-lote', protegerRuta, limiteApartar, ApartadoController.apartarLote);
 
 // --------------------------------------------------
 // API DE NOTIFICACIONES DEL CLIENTE
