@@ -118,7 +118,7 @@ body {
 /* ============================
     BOTONES NAVBAR (MISMO TAMAÑO)
 ============================ */
-.item-menu a.btn-cerrar,
+.item-menu .btn-cerrar,
 .item-menu a.btn-perfil-nav,
 .btn-iniciar-sesion {
     display: inline-flex;
@@ -156,13 +156,13 @@ body {
 }
 
 /* Cerrar Sesión */
-.item-menu a.btn-cerrar {
+.item-menu .btn-cerrar {
     background-color: rgba(0, 0, 0, 0.25);
     color: var(--blanco);
     border-color: rgba(255, 255, 255, 0.3);
 }
 
-.item-menu a.btn-cerrar:hover {
+.item-menu .btn-cerrar:hover {
     background-color: #c0392b;
     color: var(--blanco);
     border-color: #c0392b;
@@ -1069,7 +1069,7 @@ body {
         gap: 8px;
     }
 
-    .item-menu a.btn-cerrar,
+    .item-menu .btn-cerrar,
     .item-menu a.btn-perfil-nav,
     .btn-iniciar-sesion {
         white-space: nowrap;
@@ -1133,7 +1133,7 @@ body {
         align-items: stretch;
     }
 
-    .item-menu a.btn-cerrar,
+    .item-menu .btn-cerrar,
     .item-menu a.btn-perfil-nav {
         width: 100%;
         text-align: center;

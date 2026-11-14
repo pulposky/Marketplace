@@ -19,6 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const listaNotif = document.getElementById('listaNotificaciones');
     const btnMarcarTodas = document.getElementById('btnMarcarTodasNotif');
 
+    function escaparHTML(texto) {
+        return String(texto ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
     function cargarNotificaciones() {
         if (!seccionNotif || !listaNotif) return;
 
@@ -45,9 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     fila.innerHTML = `
                         <div class="notif-contenido">
-                            <strong class="notif-titulo">${item.titulo}</strong>
-                            <p class="notif-mensaje">${item.mensaje}</p>
-                            ${fecha ? `<span class="notif-fecha">${fecha}</span>` : ''}
+                            <strong class="notif-titulo">${escaparHTML(item.titulo)}</strong>
+                            <p class="notif-mensaje">${escaparHTML(item.mensaje)}</p>
+                            ${fecha ? `<span class="notif-fecha">${escaparHTML(fecha)}</span>` : ''}
                         </div>
                         <button type="button" class="notif-marcar" title="Marcar como leída"></button>
                     `;

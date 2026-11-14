@@ -29,11 +29,21 @@ const ClienteApiController = {
 
         const { nombre, direccion, telefono, password } = req.body;
 
-        if (!nombre || !nombre.trim()) {
+        if (!nombre || !String(nombre).trim()) {
             return res.json({ ok: false, mensaje: 'El nombre no puede estar vacío' });
+        }
+        // Evito que el nombre/dirección lleven HTML (se muestran en notificaciones)
+        if (String(nombre).trim().length > 100 || /[<>"'`]/.test(String(nombre))) {
+            return res.json({ ok: false, mensaje: 'El nombre debe tener máximo 100 caracteres y no puede contener caracteres especiales (< > comillas).' });
         }
         if (!telefono || !String(telefono).trim()) {
             return res.json({ ok: false, mensaje: 'El teléfono no puede estar vacío' });
+        }
+        if (!/^\d{1,20}$/.test(String(telefono).trim())) {
+            return res.json({ ok: false, mensaje: 'El teléfono solo puede tener números (máximo 20).' });
+        }
+        if (String(direccion || '').trim().length > 200 || /[<>]/.test(String(direccion || ''))) {
+            return res.json({ ok: false, mensaje: 'La dirección debe tener máximo 200 caracteres y no puede contener < >' });
         }
         if (!password || !String(password).trim()) {
             return res.json({ ok: false, mensaje: 'Debes ingresar tu contraseña para guardar los cambios' });

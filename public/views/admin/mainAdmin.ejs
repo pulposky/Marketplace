@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="/img/Logo_sena.png" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
     <title>Panel de administración</title>
-    <script>
+    <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
@@ -66,10 +66,13 @@
                     </div>
                 </div>
 
-                <a href="/logout" class="topbar-logout" title="Cerrar sesión">
+                <form method="POST" action="/logout" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="topbar-logout" title="Cerrar sesión" style="cursor:pointer;font-family:inherit">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     <span>Cerrar sesión</span>
-                </a>
+                </button>
+                </form>
             </div>
         </div>
     </header>
@@ -318,7 +321,7 @@
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
-    <script>
+    <script nonce="<%= cspNonce %>">
         // Permisos del usuario actual: el dashboard evita consultar
         // endpoints para los que no tiene permiso.
         window.PERMISOS_USUARIO = <%- JSON.stringify(permisosUsuario || []) %>;

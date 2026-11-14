@@ -13,6 +13,15 @@
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    function escaparHTML(texto) {
+        return String(texto ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
     // Referencias a los modales y elementos
     const ventanaApartar = document.getElementById('modalApartarProducto');
     const ventanaLogin = document.getElementById('modalLogin');
@@ -119,19 +128,19 @@ document.addEventListener('DOMContentLoaded', () => {
             li.dataset.id = item.id;
 
             const imagenHtml = item.imagen
-                ? `<img src="${item.imagen}" alt="${item.nombre}">`
-                : `<span class="carrito-item-sin-imagen">${item.nombre.charAt(0)}</span>`;
+                ? `<img src="${escaparHTML(item.imagen)}" alt="${escaparHTML(item.nombre)}">`
+                : `<span class="carrito-item-sin-imagen">${escaparHTML(String(item.nombre ?? '').charAt(0))}</span>`;
 
             li.innerHTML = `
                 <div class="carrito-item-imagen">${imagenHtml}</div>
                 <div class="carrito-item-info">
-                    <div class="carrito-item-nombre">${item.nombre}</div>
-                    <div class="carrito-item-precio">${formatearCOP(item.precioNum)} / ${item.unidad || 'unidad'}</div>
+                    <div class="carrito-item-nombre">${escaparHTML(item.nombre)}</div>
+                    <div class="carrito-item-precio">${escaparHTML(formatearCOP(item.precioNum))} / ${escaparHTML(item.unidad || 'unidad')}</div>
                 </div>
                 <div class="carrito-item-controles">
                     <div class="carrito-cantidad">
                         <button type="button" class="carrito-stepper" data-accion="menos" aria-label="Quitar uno">&minus;</button>
-                        <span class="carrito-valor">${item.cantidad}</span>
+                        <span class="carrito-valor">${escaparHTML(item.cantidad)}</span>
                         <button type="button" class="carrito-stepper" data-accion="mas" aria-label="Agregar uno">&plus;</button>
                     </div>
                     <button type="button" class="carrito-quitar" data-accion="quitar" aria-label="Quitar producto">&times;</button>

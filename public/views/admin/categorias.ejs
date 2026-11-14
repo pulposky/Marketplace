@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="/img/Logo_sena.png">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Categorías - Panel Admin</title>
-    <script>
+    <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });

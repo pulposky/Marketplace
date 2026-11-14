@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="/img/Logo_sena.png">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>SENAEMPRESA Marketplace</title>
-    <script>
+    <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
@@ -44,7 +44,7 @@
                                 </li>
                                 <% } %>
                                     <li class="item-menu requiere-login">
-                                        <a href="/logout" class="btn-cerrar">Cerrar Sesión</a>
+                                        <form method="POST" action="/logout" style="display:inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="btn-cerrar" style="font-family:inherit">Cerrar Sesión</button></form>
                                     </li>
                     </ul>
                 </nav>

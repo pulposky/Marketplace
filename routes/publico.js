@@ -31,7 +31,8 @@ router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
 router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);
-router.get('/logout', noCache, AuthController.logoutUsuarioController);
+// POST (con token CSRF) para que un enlace externo no pueda cerrar la sesión
+router.post('/logout', noCache, AuthController.logoutUsuarioController);
 router.post('/registro', limiteAuth, validarRegistro, AuthController.registroUsuarioController);
 
 // API: lista de productos en JSON (la usa el catálogo)

@@ -102,6 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
     // RENDERIZAR LISTA DE NOTIFICACIONES EN EL DROPDOWN
     // -----------------------------------------------
+    function escaparHTML(texto) {
+        return String(texto ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
     function renderizarNotificaciones(notificaciones) {
         if (!notificaciones || notificaciones.length === 0) {
             dropdownLista.innerHTML = '<p class="dropdown-vacio">Sin notificaciones nuevas</p>';
@@ -114,10 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const hora = fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
             const fechaStr = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
             html += `
-                <div class="notificacion-item" data-id="${n.id}">
-                    <div class="notif-titulo">${n.titulo}</div>
-                    <p class="notif-mensaje">${n.mensaje}</p>
-                    <div class="notif-hora">${fechaStr} ${hora}</div>
+                <div class="notificacion-item" data-id="${escaparHTML(n.id)}">
+                    <div class="notif-titulo">${escaparHTML(n.titulo)}</div>
+                    <p class="notif-mensaje">${escaparHTML(n.mensaje)}</p>
+                    <div class="notif-hora">${escaparHTML(fechaStr)} ${escaparHTML(hora)}</div>
                 </div>
             `;
         });

@@ -13,6 +13,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const conexion = require('./database/conexion');
 const helmet = require('helmet');
 const compression = require('compression');
+const crypto = require('crypto');
 const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
 const { iniciarCsrf, verificarCsrf } = require('./middleware/csrf');
 const { esRolAdmin, esRolPanel, esRolMantenimiento, puedeGestionarCarrusel, esSuperAdmin } = require('./utils/roles');
@@ -25,12 +26,19 @@ if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
 }
 
+// Nonce por petición: solo los <script> inline con este nonce se ejecutan
+// (las vistas lo ponen con nonce="<%= cspNonce %>"). Reemplaza 'unsafe-inline'.
+app.use((req, res, next) => {
+    res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+    next();
+});
+
 // Headers de seguridad (CSP, X-Frame-Options, etc.)
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+            scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, 'https://cdn.jsdelivr.net'],
             styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'blob:'],
@@ -61,9 +69,11 @@ app.use((req, res, next) => {
 });
 
 // Esto me permite leer formularios HTML y también JSON que mande el frontend con fetch
-// (el límite grande es para subir imágenes de producto en base64)
-app.use(express.urlencoded({ extended: true, limit: '4mb' }));
-app.use(express.json({ limit: '4mb' }));
+// Límite grande SOLO en las rutas que suben imágenes en base64;
+// el resto acepta 100 kb (si el primer parser ya leyó el body, el segundo lo salta).
+app.use(['/api/admin/productos', '/api/admin/carrusel'], express.json({ limit: '4mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+app.use(express.json({ limit: '100kb' }));
 
 // Límite de peticiones genérico por IP (previene abuso / fuerza bruta)
 app.use(limiteGeneral);
@@ -110,6 +120,11 @@ app.use((err, req, res, next) => {
     // El límite de peticiones de rate-limit tiene su propio estado
     if (err && (err.statusCode === 429 || err.status === 429)) {
         return res.status(429).json({ error: 'Demasiadas solicitudes, intenta más tarde' });
+    }
+    // Errores del cliente (body muy grande, JSON mal formado): su código 4xx, mensaje genérico
+    const estado = Number(err && (err.status || err.statusCode));
+    if (estado >= 400 && estado < 500) {
+        return res.status(estado).json({ error: 'Solicitud inválida' });
     }
     console.error('Error:', err);
     if (res.headersSent) {

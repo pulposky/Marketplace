@@ -37,11 +37,21 @@ const AdminApiController = {
         const { id } = req.params;
         const { nombre, direccion, telefono } = req.body;
 
-        if (!id) {
-            return res.status(400).json({ ok: false, mensaje: 'Falta el ID del cliente.' });
+        if (!/^[1-9]\d*$/.test(String(id || ''))) {
+            return res.status(400).json({ ok: false, mensaje: 'ID de cliente inválido.' });
         }
-        if (!nombre || !nombre.trim()) {
+        if (!nombre || !String(nombre).trim()) {
             return res.json({ ok: false, mensaje: 'El nombre no puede estar vacío' });
+        }
+        // Evito que el nombre/dirección lleven HTML (se muestran en notificaciones)
+        if (String(nombre).trim().length > 100 || /[<>"'`]/.test(String(nombre))) {
+            return res.json({ ok: false, mensaje: 'El nombre debe tener máximo 100 caracteres y no puede contener caracteres especiales (< > comillas).' });
+        }
+        if (telefono && !/^\d{0,20}$/.test(String(telefono).trim())) {
+            return res.json({ ok: false, mensaje: 'El teléfono solo puede tener números (máximo 20).' });
+        }
+        if (String(direccion || '').trim().length > 200 || /[<>]/.test(String(direccion || ''))) {
+            return res.json({ ok: false, mensaje: 'La dirección debe tener máximo 200 caracteres y no puede contener < >' });
         }
 
         try {

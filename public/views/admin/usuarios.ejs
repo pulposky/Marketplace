@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="/img/Logo_sena.png">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Usuarios del Panel - Panel Admin</title>
-    <script>
+    <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
@@ -126,7 +126,7 @@
         <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
     </footer>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
         // Opciones de rol y usuario actual para el JS.
         window.USUARIO_ACTUAL = {
             id: <%- JSON.stringify(usuario.id || null) %>,
