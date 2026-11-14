@@ -86,6 +86,10 @@ router.post('/api/admin/productos', verificarPermiso('productos'), ProductoContr
 router.patch('/api/admin/productos/:id/datos', verificarPermiso('productos'), ProductoController.actualizarDatosProducto);
 router.post('/api/admin/productos/:id/imagen', verificarPermiso('productos'), ProductoController.subirImagenProducto);
 
+// Presentaciones de venta (ej. "Caja" = 12 unidades): listar y reemplazar
+router.get('/api/admin/productos/:id/presentaciones', verificarPermiso('productos'), ProductoController.listarPresentaciones);
+router.put('/api/admin/productos/:id/presentaciones', verificarPermiso('productos'), ProductoController.guardarPresentaciones);
+
 // -----------------------------------------------
 // API DE OFERTAS
 // -----------------------------------------------

@@ -13,6 +13,14 @@ const auditoriaService = require('../services/auditoriaService');
 const { tipoRealImagen } = require('../utils/imagenValida');
 const { normalizarCategorias, calcularPrecioOferta } = require('../utils/helpers');
 const { normalizeText } = require('../utils/imagenes');
+const PresentacionModel = require('../models/presentacionModel');
+const { validarPresentaciones } = require('../utils/presentaciones');
+
+// id de producto de la URL como entero positivo, o null
+const idDeRuta = (valor) => {
+    const id = Number(valor);
+    return Number.isInteger(id) && id > 0 ? id : null;
+};
 
 const ProductoController = {
 
@@ -154,7 +162,7 @@ const ProductoController = {
         const categorias = normalizarCategorias(req.query.categoria || req.query.categorias);
         const busqueda = String(req.query.busqueda || '').trim().toLowerCase();
 
-        ProductoModel.obtenerTodos((error, resultados) => {
+        ProductoModel.obtenerTodos(async (error, resultados) => {
             if (error) {
                 return res.status(500).json({ error: 'Error al consultar la BD' });
             }
@@ -171,7 +179,55 @@ const ProductoController = {
                 );
             }
 
+            // Presentaciones de venta de cada producto (una sola consulta)
+            try {
+                await PresentacionModel.adjuntar(productosFiltrados);
+            } catch (errorPresentaciones) {
+                console.error('Error consultando presentaciones:', errorPresentaciones);
+                return res.status(500).json({ error: 'Error al consultar la BD' });
+            }
+
             res.json(productosFiltrados);
+        });
+    },
+
+    // GET /api/admin/productos/:id/presentaciones
+    // Lista las presentaciones activas del producto.
+    listarPresentaciones: async (req, res) => {
+        const id = idDeRuta(req.params.id);
+        if (!id) return res.status(400).json({ error: 'Producto inválido.' });
+        try {
+            const mapa = await PresentacionModel.listarPorProductos([id]);
+            return res.json({ presentaciones: mapa.get(id) || [] });
+        } catch (error) {
+            console.error('Error listando presentaciones:', error);
+            return res.status(500).json({ error: 'Error al consultar las presentaciones.' });
+        }
+    },
+
+    // PUT /api/admin/productos/:id/presentaciones
+    // body: { presentaciones: [{ nombre, factor }] } reemplaza la lista completa.
+    guardarPresentaciones: (req, res) => {
+        const id = idDeRuta(req.params.id);
+        if (!id) return res.status(400).json({ error: 'Producto inválido.' });
+
+        const validacion = validarPresentaciones(req.body && req.body.presentaciones);
+        if (validacion.error) return res.status(400).json({ error: validacion.error });
+
+        ProductoModel.obtenerPorId(id, async (err, resultados) => {
+            if (err) return res.status(500).json({ error: 'Error al consultar el producto.' });
+            if (!resultados || resultados.length === 0) return res.status(404).json({ error: 'Producto no encontrado.' });
+
+            try {
+                await PresentacionModel.reemplazarDeProducto(id, validacion.datos);
+                const mapa = await PresentacionModel.listarPorProductos([id]);
+                const resumen = validacion.datos.map((p) => `${p.nombre}=${p.factor}`).join(', ') || 'ninguna';
+                auditoriaService.registrar(req, 'producto_presentaciones', `Actualizó las presentaciones del producto "${resultados[0].nombre}" (id ${id}): ${resumen}.`);
+                return res.json({ ok: true, presentaciones: mapa.get(id) || [], mensaje: 'Presentaciones guardadas.' });
+            } catch (error) {
+                console.error('Error guardando presentaciones:', error);
+                return res.status(500).json({ error: 'Error en el servidor al guardar las presentaciones.' });
+            }
         });
     },
 
