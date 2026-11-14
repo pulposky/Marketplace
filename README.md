@@ -19,7 +19,6 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 
 - [✨ ¿Por qué elegir Marketplace?](#-por-qué-elegir-marketplace)
 - [🚀 Características](#-características)
-- [📸 Capturas](#-capturas)
 - [🛠️ Tecnologías](#️-tecnologías)
 - [📦 Requisitos previos](#-requisitos-previos)
 - [⚙️ Instalación](#️-instalación)
@@ -52,7 +51,7 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 | --- | --- |
 | 🛍️ **Catálogo dinámico** | Búsqueda en tiempo real y filtro por categorías |
 | 📦 **Sistema de apartados** | Reserva de productos con descuento automático de stock |
-| 🥚 **Manejo de huevos** | Conversión automática entre cubetas y unidades (1 cubeta = 30) |
+| 📦 **Presentaciones por producto** | Vende por unidad o por presentación (p. ej. Caja = 12 unidades), configurable por producto |
 | 🎠 **Carousel automático** | Carga imágenes desde una carpeta sin tocar código |
 | 🔔 **Notificaciones** | Alertas en tiempo real para nuevos apartados |
 | 📊 **Dashboard admin** | Estadísticas: ventas, productos top, clientes frecuentes, visitas |
@@ -62,14 +61,6 @@ Olvídate de perder ventas por falta de stock o de llevar pedidos a mano. **Mark
 | ⚡ **Gestión de stock** | Devolución automática al cancelar apartados |
 | 🏷️ **Ofertas y descuentos** | Descuentos por producto, gestión desde el panel admin y precio capturado al apartar |
 | ⏱️ **Expiración automática** | Los apartados sin confirmar se cancelan y liberan stock tras 1 hora |
-
----
-
-## 📸 Capturas
-
-### Página de inicio
-
-![Página de inicio del Marketplace](docs/capturas/inicio.jpg)
 
 ---
 
@@ -118,24 +109,35 @@ npm install
 En la raíz del proyecto, crea un archivo `.env` con tus credenciales:
 
 ```env
-BD_HOST="localhost"
-BD_PORT=3306
-BD_USER="root"
-BD_PASSWORD="tu_contraseña"
-BD_DATABASE="marketplace"
+DB_HOST="localhost"
+DB_PORT=3306
+DB_USER="root"
+DB_PASSWORD="tu_contraseña"
+DB_DATABASE="tienda_db"
 
 PORT=3000
 ```
 
-> ⚠️ Usa el nombre de base de datos que prefieras en `BD_DATABASE`. Solo asegúrate de que coincida con el nombre que crea el script de la base de datos.
+> ⚠️ `database/schema.sql` crea la base `tienda_db`. Si usas otro nombre en `DB_DATABASE`, ajústalo también en el script. Los nombres antiguos `BD_*` se siguen aceptando como alias.
 
 ### 2. Ejecuta el script SQL
 
-El script crea la base de datos y todas sus tablas automáticamente:
+El script (MySQL 8) crea la base de datos y todas sus tablas automáticamente:
 
 ```bash
 mysql -u root -p < database/schema.sql
 ```
+
+### 3. (Opcional) Carga datos de demostración
+
+Llena la base con una tienda ficticia (categorías, productos con imagen, clientes, apartados y visitas):
+
+```bash
+npm run seed            # base vacía
+npm run seed -- --force # borra los datos de demo y los vuelve a cargar
+```
+
+> El seed se niega a correr sobre una base que parezca real (más de 50 clientes). Los usuarios de prueba están al inicio de `scripts/seed.js`.
 
 > ✅ ¿Todo listo? Al arrancar el servidor, la consola te confirmará la conexión con el mensaje **"Conexión al pool de base de datos establecida correctamente"**.
 
@@ -154,6 +156,8 @@ mysql -u root -p < database/schema.sql
 | `auditoria` | Solo web | Registro de acciones del panel |
 | `contenido_sitio` | Solo web | Bloques de texto editables (mini-CMS), publicados en `/informacion` |
 | `banners` | Solo web | Franjas promocionales de la portada con fechas e imagen |
+| `configuracion_tienda` | Solo web | Identidad del negocio: nombre, logo, colores, contacto, horario |
+| `producto_presentacion` | Solo web | Presentaciones de venta por producto (nombre y factor en unidades) |
 | `venta`, `detalle_venta` | Solo POS | Facturación en punto de venta |
 | `compras`, `detalle_compras`, `proveedores` | Solo POS | Compras a proveedores |
 | `entradas`, `detalle_entradas` | Solo POS | Ajustes de inventario |
@@ -254,7 +258,8 @@ Marketplace/
 │   ├── permisos.js                # Catálogo de permisos y defaults por rol
 │   └── imagenes.js                # Carga/depuración de imágenes de productos
 ├── database/
-│   ├── schema.sql                 # Script de tablas
+│   ├── schema.sql                 # Script de tablas (MySQL 8)
+│   ├── seed/img/                  # Imágenes de los productos demo
 │   └── conexion.js                # Conexión MySQL
 ├── public/
 │   ├── css/                       # Estilos
@@ -337,6 +342,7 @@ Marketplace/
 | `GET` | `/admin/categorias` | permiso `categorias` |
 | `GET` | `/admin/auditoria` | permiso `auditoria` |
 | `GET` | `/admin/respaldo` | permiso `respaldo` |
+| `GET` | `/admin/configuracion` | solo Administrador |
 
 ### 🛡️ Panel de administración — API
 
@@ -380,6 +386,9 @@ Marketplace/
 | `GET` | `/api/admin/auditoria` | permiso `auditoria` |
 | `GET` | `/api/admin/respaldo/completo` | Respaldo JSON sin contraseñas (auditado) — permiso `respaldo` |
 | `GET` | `/api/admin/respaldo/tabla/:clave` | Tabla en CSV (auditado) — permiso `respaldo` |
+| `GET` | `/api/admin/tienda` | Leer configuración de la tienda — solo Administrador |
+| `PUT` | `/api/admin/tienda` | Guardar configuración de la tienda — solo Administrador |
+| `POST` | `/api/admin/tienda/logo` | Subir logo de la tienda — solo Administrador |
 
 ### 📈 Estadísticas (permiso `analitica`)
 
@@ -435,12 +444,11 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 6. El admin confirma el apartado.
 7. El cliente va al punto de venta a pagar y reclamar su pedido.
 
-### 🥚 Manejo de huevos
+### 📦 Presentaciones por producto
 
-- **1 cubeta = 30 unidades**
-- El admin configura cuántas cubetas quiere vender.
-- El cliente selecciona cubetas y el sistema convierte automáticamente.
-- El stock se almacena en unidades individuales para mayor precisión.
+- El stock se guarda siempre en la **unidad mínima** del producto (unidad, kg, etc.).
+- Cada producto puede tener presentaciones de venta, por ejemplo **Caja = 12 unidades** o **Bulto = 25 kg**.
+- El cliente elige la presentación y el sistema descuenta del stock las unidades equivalentes.
 
 ### ⚡ Gestión de stock
 
