@@ -9,6 +9,7 @@
     </script>
     <link rel="stylesheet" href="/css/admin/historicos.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <%- include('partials/estilosPanel') %>
 </head>
 <body>
 
@@ -16,7 +17,8 @@
     <div class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>Analítica</span> - Panel Admin
+                <a href="/admin" class="marca-panel"><img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="" class="marca-panel-logo"><b><%= tienda.nombre %></b></a>
+                <span class="marca-seccion">Analítica</span>
             </div>
             <div class="header-derecha">
                 <a href="/api/admin/historicos/exportar" class="btn-exportar-pdf">
@@ -24,7 +26,7 @@
                     Exportar PDF
                 </a>
                 <a href="/admin" class="btn-regresar">
-                    ← Regresar al Inicio
+                    ← Panel
                 </a>
             </div>
         </div>

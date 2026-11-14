@@ -2,12 +2,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--f-texto);
 }
 
 body {
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--fondo);
+    color: var(--tinta);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -16,7 +16,7 @@ body {
 /* HEADER Y BOTÓN REGRESAR */
 .header-catalogo {
     background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--borde);
     padding: 12px 24px;
     position: sticky;
     top: 0;
@@ -36,27 +36,27 @@ body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    color: #374151;
+    color: var(--tinta-2);
     font-weight: 600;
     font-size: 0.9rem;
-    background-color: #f9fafb;
+    background-color: var(--fondo);
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-fuerte);
     transition: all 0.2s ease;
     text-decoration: none;
 }
 
 .btn-regresar:hover {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
-    border-color: #0f5132;
+    border-color: var(--marca);
     transform: translateX(-3px);
 }
 
 .marca-catalogo span {
     font-weight: 700;
-    color: #0f5132;
+    color: var(--marca);
     letter-spacing: 0.5px;
 }
 
@@ -80,7 +80,7 @@ body {
 .titulo-catalogo {
     font-size: 1.6rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--tinta);
     letter-spacing: 0.5px;
 }
 
@@ -97,7 +97,7 @@ body {
     align-items: center;
     height: 38px;
     padding: 0 20px;
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
     border-radius: 20px;
     font-weight: 600;
@@ -109,7 +109,7 @@ body {
 }
 
 .boton-filtrar:hover {
-    background-color: #0b3d26;
+    background-color: var(--marca-oscuro);
 }
 
 .boton-filtrar:disabled {
@@ -126,7 +126,7 @@ body {
 
 .pedido-card {
     background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 12px;
     padding: 20px 24px;
     display: flex;
@@ -158,7 +158,7 @@ body {
 .campo-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--suave);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -166,7 +166,7 @@ body {
 .campo-valor {
     font-size: 1rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--tinta);
 }
 
 .pedido-acciones {
@@ -182,8 +182,8 @@ body {
     justify-content: center;
     padding: 10px 20px;
     border-radius: 10px;
-    border: 1px solid #0f5132;
-    background-color: #0f5132;
+    border: 1px solid var(--marca);
+    background-color: var(--marca);
     color: #ffffff;
     font-weight: 600;
     font-size: 0.85rem;
@@ -192,8 +192,8 @@ body {
 }
 
 .btn-confirmar:hover {
-    background-color: #0b3d26;
-    border-color: #0b3d26;
+    background-color: var(--marca-oscuro);
+    border-color: var(--marca-oscuro);
     box-shadow: 0 4px 12px rgba(15, 81, 50, 0.25);
 }
 
@@ -204,7 +204,7 @@ body {
     justify-content: center;
     padding: 10px 20px;
     border-radius: 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     background-color: #ffffff;
     color: #475569;
     font-weight: 600;
@@ -223,7 +223,7 @@ body {
 .estado-vacio {
     text-align: center;
     background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 12px;
     padding: 48px 24px;
 }
@@ -231,13 +231,13 @@ body {
 .estado-vacio h3 {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--tinta);
     margin-bottom: 8px;
 }
 
 .estado-vacio p {
     font-size: 0.9rem;
-    color: #6b7280;
+    color: var(--suave);
 }
 
 /* RESPONSIVE */
@@ -282,8 +282,8 @@ body {
 .btn-acceso-admin {
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #0f5132;
-    color: #0f5132;
+    border: 1px solid var(--marca);
+    color: var(--marca);
     background-color: transparent;
     font-weight: 600;
     font-size: 0.85rem;
@@ -292,7 +292,7 @@ body {
 }
 
 .btn-acceso-admin:hover {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
 }
 
@@ -303,8 +303,9 @@ body {
     align-items: center;
     height: 38px;
     padding: 0 20px;
-    background-color: #1d4ed8;
-    color: #ffffff;
+    background-color: var(--superficie);
+    color: var(--tinta);
+    border: 1.5px solid var(--borde-fuerte);
     border-radius: 20px;
     font-weight: 600;
     font-size: 0.85rem;
@@ -314,7 +315,7 @@ body {
 }
 
 .btn-exportar:hover {
-    background-color: #1e40af;
+    border-color: var(--tinta);
 }
 
 /* FILTROS POR ESTADO (CHIPS) */
@@ -328,9 +329,9 @@ body {
 .chip-filtro {
     padding: 8px 18px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-fuerte);
     background-color: #ffffff;
-    color: #374151;
+    color: var(--tinta-2);
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
@@ -338,13 +339,13 @@ body {
 }
 
 .chip-filtro:hover {
-    border-color: #0f5132;
-    color: #0f5132;
+    border-color: var(--marca);
+    color: var(--marca);
 }
 
 .chip-filtro.activo {
-    background-color: #0f5132;
-    border-color: #0f5132;
+    background-color: var(--marca);
+    border-color: var(--marca);
     color: #ffffff;
 }
 
@@ -409,12 +410,12 @@ body {
 .campo-fecha {
     font-size: 0.85rem !important;
     font-weight: 500 !important;
-    color: #6b7280 !important;
+    color: var(--suave) !important;
 }
 
 /* DESCRIPCIÓN DE LA VISTA (modo pendientes) */
 .descripcion-vista {
-    color: #6b7280;
+    color: var(--suave);
     font-size: 0.9rem;
     margin: -10px 0 18px 0;
 }
@@ -426,7 +427,7 @@ body {
 /* Tarjeta contenedora de un cliente */
 .pedido-grupo {
     background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 12px;
     padding: 18px 22px;
     transition: box-shadow 0.2s ease;
@@ -455,17 +456,17 @@ body {
 .grupo-nombre {
     font-size: 1.05rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--tinta);
 }
 
 .grupo-meta {
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--suave);
 }
 
 .grupo-total {
     font-weight: 700;
-    color: #0f5132;
+    color: var(--marca);
     margin-left: auto;
 }
 
@@ -473,7 +474,7 @@ body {
     padding: 9px 24px;
     border-radius: 20px;
     border: none;
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
     font-weight: 600;
     font-size: 0.85rem;
@@ -482,7 +483,7 @@ body {
 }
 
 .btn-ver-grupo:hover {
-    background-color: #0b3d26;
+    background-color: var(--marca-oscuro);
 }
 
 /* Detalle desplegable del grupo */
@@ -492,7 +493,7 @@ body {
     gap: 16px;
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px dashed #d1d5db;
+    border-top: 1px dashed var(--borde-fuerte);
 }
 
 /* El atributo hidden debe ganarle al display:flex de arriba,
@@ -506,7 +507,7 @@ body {
     display: flex;
     gap: 32px;
     flex-wrap: wrap;
-    background-color: #f9fafb;
+    background-color: var(--fondo);
     border-radius: 10px;
     padding: 12px 18px;
 }
@@ -529,7 +530,7 @@ body {
 }
 
 .pedido-fila {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 10px;
     padding: 12px 16px;
     display: flex;
@@ -548,7 +549,7 @@ body {
 
 .fila-producto {
     font-weight: 700;
-    color: #111827;
+    color: var(--tinta);
     font-size: 0.95rem;
 }
 
@@ -556,7 +557,7 @@ body {
     display: flex;
     gap: 18px;
     flex-wrap: wrap;
-    color: #6b7280;
+    color: var(--suave);
     font-size: 0.85rem;
     flex: 1;
 }
@@ -630,11 +631,11 @@ body {
 
 /* Confirmar (verde oscuro) */
 .btn-grupo-confirmar {
-    background-color: #0f5132;
+    background-color: var(--marca);
 }
 
 .btn-grupo-confirmar:hover {
-    background-color: #0b3d26;
+    background-color: var(--marca-oscuro);
     box-shadow: 0 4px 12px rgba(15, 81, 50, 0.25);
 }
 

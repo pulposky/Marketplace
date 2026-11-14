@@ -10,6 +10,7 @@
     </script>
     <link rel="stylesheet" href="/css/admin/gestionOfertas.css">
     <link rel="stylesheet" href="/css/toast.css">
+    <%- include('partials/estilosPanel') %>
 </head>
 
 <body>
@@ -18,11 +19,12 @@
     <div class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>Gestión de Ofertas</span> - Panel Admin
+                <a href="/admin" class="marca-panel"><img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="" class="marca-panel-logo"><b><%= tienda.nombre %></b></a>
+                <span class="marca-seccion">Gestión de Ofertas</span>
             </div>
             <div>
                 <a href='/admin' class="btn-regresar">
-                    ← Regresar al Inicio
+                    ← Panel
                 </a>
             </div>
         </div>

@@ -6,12 +6,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--f-texto);
 }
 
 body {
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--fondo);
+    color: var(--tinta);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -20,7 +20,7 @@ body {
 /* HEADER */
 .header-catalogo {
     background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--borde);
     padding: 12px 24px;
     position: sticky;
     top: 0;
@@ -68,22 +68,22 @@ body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    color: #374151;
+    color: var(--tinta-2);
     font-weight: 600;
     font-size: 0.9rem;
-    background-color: #f9fafb;
+    background-color: var(--fondo);
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-fuerte);
     transition: all 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
 }
 
 .btn-regresar:hover {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
-    border-color: #0f5132;
+    border-color: var(--marca);
     transform: translateX(-3px);
 }
 
@@ -93,7 +93,7 @@ body {
 
 .marca-catalogo span {
     font-weight: 700;
-    color: #0f5132;
+    color: var(--marca);
     letter-spacing: 0.5px;
 }
 
@@ -115,7 +115,7 @@ body {
 
 .resumen-card {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 14px;
     padding: 22px 24px;
     display: flex;
@@ -141,7 +141,7 @@ body {
 
 .resumen-ventas .resumen-icono {
     background: #d1fae5;
-    color: #0f5132;
+    color: var(--marca);
 }
 
 .resumen-clientes .resumen-icono {
@@ -164,13 +164,13 @@ body {
 .resumen-valor {
     font-size: 1.8rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--tinta);
     line-height: 1.1;
 }
 
 .resumen-label {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: var(--suave);
     font-weight: 500;
 }
 
@@ -184,7 +184,7 @@ body {
 
 .grafico-card {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 14px;
     padding: 24px;
     min-width: 0;
@@ -193,13 +193,13 @@ body {
 .grafico-card h3 {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--tinta);
     margin-bottom: 2px;
 }
 
 .grafico-subtitulo {
     font-size: 0.8rem;
-    color: #9ca3af;
+    color: var(--muy-suave);
     margin-bottom: 16px;
 }
 
@@ -227,7 +227,7 @@ body {
     gap: 8px;
     text-align: center;
     padding: 0 18px;
-    color: #9ca3af;
+    color: var(--muy-suave);
 }
 
 .grafico-vacio span {
@@ -238,7 +238,7 @@ body {
 .grafico-vacio p {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--suave);
     margin: 0;
 }
 

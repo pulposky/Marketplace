@@ -8,18 +8,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // Paleta de colores del proyecto
-    const colores = [
-        '#0f5132', '#15803d', '#22c55e', '#4ade80', '#86efac',
-        '#0369a1', '#0ea5e9', '#38bdf8', '#7dd3fc',
-        '#b45309', '#f59e0b', '#fbbf24'
-    ];
+    // Un solo tono para comparar barras (paleta validada del panel)
+    const colores = new Array(12).fill('#2a78d6');
 
-    const coloresPastel = [
-        '#d1fae5', '#bbf7d0', '#86efac',
-        '#dbeafe', '#bfdbfe', '#93c5fd',
-        '#fef3c7', '#fde68a', '#fcd34d',
-        '#fce7f3', '#fbcfe8', '#f9a8d4'
-    ];
+    const coloresPastel = new Array(12).fill('rgba(42,120,214,0.18)');
 
     // Muestra un mensaje dentro de la tarjeta cuando no hay datos
     // (o cuando falla la carga), en lugar de dejar el gráfico vacío.
@@ -138,12 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: 'Ventas',
                         data: data.map(d => d.total_ventas),
-                        borderColor: '#0f5132',
-                        backgroundColor: 'rgba(15, 81, 50, 0.1)',
+                        borderColor: '#2a78d6',
+                        backgroundColor: 'rgba(42,120,214,0.12)',
                         fill: true,
                         tension: 0.3,
                         pointRadius: 4,
-                        pointBackgroundColor: '#0f5132'
+                        pointBackgroundColor: '#2a78d6'
                     }]
                 },
                 options: {
@@ -186,12 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: 'Visitas',
                         data: data.map(d => d.total_visitas),
-                        borderColor: '#b45309',
-                        backgroundColor: 'rgba(180, 83, 9, 0.1)',
+                        borderColor: '#2a78d6',
+                        backgroundColor: 'rgba(42,120,214,0.12)',
                         fill: true,
                         tension: 0.3,
                         pointRadius: 4,
-                        pointBackgroundColor: '#b45309'
+                        pointBackgroundColor: '#2a78d6'
                     }]
                 },
                 options: {
@@ -226,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ctx = document.getElementById('graficoEstados').getContext('2d');
             const coloresDona = {
                 'pendiente': '#f59e0b',
-                'confirmado': '#22c55e',
+                'confirmado': '#2a78d6',
                 'cancelado': '#ef4444'
             };
             new Chart(ctx, {

@@ -22,7 +22,7 @@
             gap: 12px;
         }
         .tarjeta-respaldo h3 {
-            color: #0f5132;
+            color: var(--marca);
             font-size: 1rem;
         }
         .tarjeta-respaldo p {
@@ -43,6 +43,7 @@
             color: #14532d;
         }
     </style>
+    <%- include('partials/estilosPanel') %>
 </head>
 <body>
 
@@ -50,11 +51,12 @@
     <div class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>Respaldo y Exportación</span> - Panel Admin
+                <a href="/admin" class="marca-panel"><img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="" class="marca-panel-logo"><b><%= tienda.nombre %></b></a>
+                <span class="marca-seccion">Respaldo y Exportación</span>
             </div>
             <div class="header-derecha">
                 <a href="/admin" class="btn-regresar">
-                    ← Regresar al Inicio
+                    ← Panel
                 </a>
             </div>
         </div>

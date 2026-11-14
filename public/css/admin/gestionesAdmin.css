@@ -7,12 +7,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--f-texto);
 }
 
 body {
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--fondo);
+    color: var(--tinta);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -21,7 +21,7 @@ body {
 /* HEADER */
 .header-catalogo {
     background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--borde);
     padding: 12px 24px;
     position: sticky;
     top: 0;
@@ -51,7 +51,7 @@ body {
 
 .marca-catalogo span {
     font-weight: 700;
-    color: #0f5132;
+    color: var(--marca);
     letter-spacing: 0.5px;
 }
 
@@ -60,22 +60,22 @@ body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    color: #374151;
+    color: var(--tinta-2);
     font-weight: 600;
     font-size: 0.9rem;
-    background-color: #f9fafb;
+    background-color: var(--fondo);
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-fuerte);
     transition: all 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
 }
 
 .btn-regresar:hover {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
-    border-color: #0f5132;
+    border-color: var(--marca);
     transform: translateX(-3px);
 }
 
@@ -90,12 +90,12 @@ body {
 .titulo-catalogo {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #0f5132;
+    color: var(--marca);
     margin-bottom: 8px;
 }
 
 .texto-ayuda {
-    color: #4b5563;
+    color: var(--tinta-2);
     font-size: 0.92rem;
     line-height: 1.5;
     margin-bottom: 22px;
@@ -127,7 +127,7 @@ body {
 .campo label {
     font-weight: 600;
     font-size: 0.88rem;
-    color: #374151;
+    color: var(--tinta-2);
 }
 
 .input-buscar,
@@ -136,11 +136,11 @@ body {
 .campo textarea {
     width: 100%;
     padding: 11px 14px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-fuerte);
     border-radius: 10px;
     font-size: 0.92rem;
     background-color: #ffffff;
-    color: #111827;
+    color: var(--tinta);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -160,7 +160,7 @@ body {
 
 .campo .ayuda-campo {
     font-size: 0.78rem;
-    color: #6b7280;
+    color: var(--suave);
 }
 
 /* BOTONES */
@@ -199,13 +199,13 @@ body {
 }
 
 .btn-secundario {
-    background-color: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
+    background-color: var(--fondo);
+    color: var(--tinta-2);
+    border: 1px solid var(--borde-fuerte);
 }
 
 .btn-secundario:hover {
-    background-color: #e5e7eb;
+    background-color: var(--borde);
 }
 
 .btn-peligro {
@@ -226,7 +226,7 @@ body {
 /* TABLA */
 .tabla-envoltura {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 14px;
     overflow-x: auto;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
@@ -239,7 +239,7 @@ body {
 }
 
 .tabla-datos thead th {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
     font-size: 0.82rem;
     font-weight: 700;
@@ -250,7 +250,7 @@ body {
 
 .tabla-datos tbody td {
     padding: 13px 14px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--fondo);
     vertical-align: middle;
     font-size: 0.9rem;
 }
@@ -260,7 +260,7 @@ body {
 }
 
 .tabla-datos tbody tr:hover {
-    background-color: #f8fafc;
+    background-color: var(--fondo);
 }
 
 .acciones-fila {
@@ -304,14 +304,14 @@ body {
 .estado-vacio {
     text-align: center;
     padding: 40px 20px;
-    color: #9ca3af;
+    color: var(--muy-suave);
     font-size: 0.92rem;
 }
 
 /* MENSAJE / ESTADO */
 .mensaje-estado {
     font-size: 0.88rem;
-    color: #6b7280;
+    color: var(--suave);
     margin-left: 12px;
 }
 
@@ -353,7 +353,7 @@ body {
 }
 
 .modal-caja h3 {
-    color: #0f5132;
+    color: var(--marca);
     font-size: 1.15rem;
     margin-bottom: 18px;
 }
@@ -373,13 +373,13 @@ body {
     gap: 14px;
     margin-top: 20px;
     font-size: 0.88rem;
-    color: #4b5563;
+    color: var(--tinta-2);
 }
 
 /* CONFIGURACIÓN: tarjeta del formulario */
 .tarjeta-form {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 14px;
     padding: 26px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
@@ -395,7 +395,7 @@ body {
     margin-top: auto;
     text-align: center;
     padding: 18px;
-    color: #9ca3af;
+    color: var(--muy-suave);
     font-size: 0.8rem;
 }
 

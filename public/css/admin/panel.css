@@ -1,0 +1,86 @@
+/* =============================================
+   PANEL.CSS - BASE COMPARTIDA DEL PANEL ADMIN
+   =============================================
+   Se carga DESPUÉS de la hoja propia de cada
+   pantalla. Define los colores y fuentes que las
+   hojas de cada módulo usan como variables, y el
+   encabezado común (mismo estilo del dashboard).
+   --marca llega de la configuración de la tienda.
+   ============================================= */
+
+:root {
+    --fondo: #f5f6f4;
+    --superficie: #ffffff;
+    --tinta: #1d2321;
+    --tinta-2: #3d4642;
+    --suave: #5c6661;
+    --muy-suave: #898781;
+    --borde: #e1e5e2;
+    --borde-fuerte: #c9d0cc;
+    --marca: #1f7a4d;
+    --marca-oscuro: color-mix(in srgb, var(--marca) 78%, #000);
+    --marca-suave: color-mix(in srgb, var(--marca) 10%, #fff);
+    --oferta: #b42318;
+    --serie: #2a78d6;
+    --f-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --f-texto: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+    --gutter: max(16px, env(safe-area-inset-left, 0px));
+}
+
+body { background-color: var(--fondo); color: var(--tinta); font-family: var(--f-texto); }
+h1, h2, h3 { font-family: var(--f-titulo); letter-spacing: -0.015em; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--marca) 55%, transparent); outline-offset: 2px; }
+
+/* ---------- Encabezado común ---------- */
+.header-catalogo {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borde);
+    padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px var(--gutter);
+    box-shadow: none;
+}
+.header-catalogo .contenedor-header {
+    max-width: 1320px; margin: 0 auto; padding: 0;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px 16px; flex-wrap: wrap;
+}
+.header-catalogo .marca-catalogo { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 15px; color: var(--suave); }
+.marca-panel { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--tinta); }
+.marca-panel-logo { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; }
+.marca-panel b { font: 800 18px/1 var(--f-titulo); letter-spacing: -0.02em; }
+.header-catalogo .marca-catalogo .marca-seccion {
+    font: 600 15px/1.2 var(--f-texto); color: var(--suave); letter-spacing: 0;
+    padding-left: 12px; border-left: 1px solid var(--borde-fuerte);
+}
+.header-catalogo .header-derecha,
+.header-catalogo .header-accesos,
+.header-catalogo .contenedor-header > div:last-child { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.header-catalogo .btn-regresar,
+.header-catalogo .btn-acceso-admin,
+.header-catalogo .btn-exportar-pdf {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    border: 1.5px solid var(--borde-fuerte); background: var(--superficie); color: var(--tinta);
+    font: 600 14px/1.2 var(--f-texto); text-decoration: none; white-space: nowrap; transform: none; box-shadow: none;
+}
+.header-catalogo .btn-regresar:hover,
+.header-catalogo .btn-acceso-admin:hover,
+.header-catalogo .btn-exportar-pdf:hover { border-color: var(--tinta); background: var(--superficie); color: var(--tinta); transform: none; }
+.header-catalogo .btn-nuevo-producto {
+    padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--marca);
+    background: var(--marca); color: #fff; font: 600 14px/1.2 var(--f-texto); cursor: pointer; box-shadow: none;
+}
+.header-catalogo .btn-nuevo-producto:hover { background: var(--marca-oscuro); border-color: var(--marca-oscuro); transform: none; }
+
+@media (max-width: 560px) {
+    .header-catalogo .marca-catalogo .marca-seccion { display: none; }
+}
+
+/* ---------- Ajustes comunes de componentes ---------- */
+table { font-variant-numeric: tabular-nums; }
+input, select, textarea, button { font-family: var(--f-texto); }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}
+

@@ -2,13 +2,13 @@
    GESTIÓN DE CARRUSEL - PANEL ADMIN
 ============================================= */
 :root {
-    --verde-marca: #39A900;
+    --verde-marca: var(--marca);
     --verde-oscuro: #2c7a00;
     --blanco: #ffffff;
     --fondo: #f6f8f6;
     --texto: #1f2937;
-    --texto-secundario: #6b7280;
-    --borde: #e5e7eb;
+    --texto-secundario: var(--suave);
+    --borde: var(--borde);
     --rojo: #d32f2f;
 }
 
@@ -18,7 +18,7 @@
 
 body {
     margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--f-texto);
     background: var(--fondo);
     color: var(--texto);
 }
@@ -157,7 +157,7 @@ body {
 }
 
 .btn-subir:disabled {
-    background: #9ca3af;
+    background: var(--muy-suave);
     cursor: not-allowed;
 }
 
@@ -241,9 +241,9 @@ body {
 }
 
 .btn-eliminar:disabled {
-    background: #e5e7eb;
-    color: #9ca3af;
-    border-color: #e5e7eb;
+    background: var(--borde);
+    color: var(--muy-suave);
+    border-color: var(--borde);
     cursor: not-allowed;
 }
 

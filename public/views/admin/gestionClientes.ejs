@@ -10,6 +10,7 @@
             if (e.persisted) window.location.reload();
         });
     </script>
+    <%- include('partials/estilosPanel') %>
 </head>
 
 <body>
@@ -18,12 +19,13 @@
     <div class="header-catalogo">
         <div class="contenedor-header">
             <div class="marca-catalogo">
-                <span>Clientes</span> - Panel Admin
+                <a href="/admin" class="marca-panel"><img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="" class="marca-panel-logo"><b><%= tienda.nombre %></b></a>
+                <span class="marca-seccion">Clientes</span>
             </div>
             <div class="header-accesos">
                 <a href="/admin/pedidos" class="btn-acceso-admin">Pedidos</a>
                 <a href='/admin' class="btn-regresar">
-                    ← Regresar al Inicio
+                    ← Panel
                 </a>
             </div>
         </div>

@@ -6,12 +6,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--f-texto);
 }
 
 body {
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--fondo);
+    color: var(--tinta);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -20,7 +20,7 @@ body {
 /* HEADER */
 .header-catalogo {
     background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--borde);
     padding: 12px 24px;
     position: sticky;
     top: 0;
@@ -47,7 +47,7 @@ body {
 
 .marca-catalogo span {
     font-weight: 700;
-    color: #0f5132;
+    color: var(--marca);
     letter-spacing: 0.5px;
 }
 
@@ -56,22 +56,22 @@ body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    color: #374151;
+    color: var(--tinta-2);
     font-weight: 600;
     font-size: 0.9rem;
-    background-color: #f9fafb;
+    background-color: var(--fondo);
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-fuerte);
     transition: all 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
 }
 
 .btn-regresar:hover {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
-    border-color: #0f5132;
+    border-color: var(--marca);
     transform: translateX(-3px);
 }
 
@@ -86,12 +86,12 @@ body {
 .titulo-catalogo {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #0f5132;
+    color: var(--marca);
     margin-bottom: 8px;
 }
 
 .texto-ayuda {
-    color: #4b5563;
+    color: var(--tinta-2);
     font-size: 0.92rem;
     line-height: 1.5;
     margin-bottom: 22px;
@@ -101,7 +101,7 @@ body {
 /* TABLA / MATRIZ */
 .tabla-envoltura {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 14px;
     overflow-x: auto;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
@@ -114,7 +114,7 @@ body {
 }
 
 .tabla-permisos thead th {
-    background-color: #0f5132;
+    background-color: var(--marca);
     color: #ffffff;
     font-size: 0.85rem;
     font-weight: 700;
@@ -129,7 +129,7 @@ body {
 
 .tabla-permisos tbody td {
     padding: 14px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--fondo);
     vertical-align: middle;
 }
 
@@ -138,7 +138,7 @@ body {
 }
 
 .tabla-permisos tbody tr:hover {
-    background-color: #f8fafc;
+    background-color: var(--fondo);
 }
 
 .col-permiso {
@@ -154,13 +154,13 @@ body {
 .permiso-nombre {
     display: block;
     font-weight: 700;
-    color: #111827;
+    color: var(--tinta);
     font-size: 0.95rem;
 }
 
 .permiso-desc {
     display: block;
-    color: #6b7280;
+    color: var(--suave);
     font-size: 0.8rem;
     margin-top: 2px;
 }
@@ -183,7 +183,7 @@ body {
     position: absolute;
     cursor: pointer;
     inset: 0;
-    background-color: #d1d5db;
+    background-color: var(--borde-fuerte);
     border-radius: 999px;
     transition: background-color 0.2s ease;
 }
@@ -215,7 +215,7 @@ body {
 }
 
 .switch input:focus-visible + .switch-slider {
-    outline: 2px solid #0f5132;
+    outline: 2px solid var(--marca);
     outline-offset: 2px;
 }
 
@@ -248,13 +248,13 @@ body {
 }
 
 .btn-guardar:disabled {
-    background-color: #9ca3af;
+    background-color: var(--muy-suave);
     cursor: not-allowed;
 }
 
 .estado-permisos {
     font-size: 0.88rem;
-    color: #6b7280;
+    color: var(--suave);
 }
 
 .estado-permisos.ok {
@@ -272,7 +272,7 @@ body {
     margin-top: auto;
     text-align: center;
     padding: 18px;
-    color: #9ca3af;
+    color: var(--muy-suave);
     font-size: 0.8rem;
 }
 

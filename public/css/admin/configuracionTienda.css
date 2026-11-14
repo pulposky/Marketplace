@@ -13,14 +13,14 @@
 }
 
 .config-seccion h2 {
-    color: #0f5132;
+    color: var(--marca);
     font-size: 1.1rem;
     margin: 0 0 16px 0;
 }
 
 .config-seccion > .ayuda-campo {
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--suave);
     margin: -8px 0 14px 0;
 }
 
@@ -34,7 +34,7 @@
 .etiqueta-campo {
     font-weight: 600;
     font-size: 0.88rem;
-    color: #374151;
+    color: var(--tinta-2);
 }
 
 .etiqueta-secundaria {
@@ -81,9 +81,9 @@
     width: 96px;
     height: 96px;
     object-fit: contain;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde);
     border-radius: 12px;
-    background: #f9fafb;
+    background: var(--fondo);
     padding: 6px;
 }
 
@@ -142,7 +142,7 @@
     gap: 12px;
     align-items: center;
     padding: 14px;
-    border: 1px dashed #d1d5db;
+    border: 1px dashed var(--borde-fuerte);
     border-radius: 12px;
 }
 

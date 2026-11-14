@@ -1,0 +1,7 @@
+<%# Fuentes, base compartida del panel y color de marca. Va al final del <head>,
+    después de la hoja propia de cada pantalla, para que sus variables manden. %>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/admin/panel.css">
+<style>:root{--marca:<%= /^#[0-9a-fA-F]{6}$/.test(tienda.color_primario || '') ? tienda.color_primario : '#1F7A4D' %>}</style>
