@@ -4,7 +4,7 @@
    ============================================= */
 
 :root {
-    --verde-sena: #39A900;
+    --verde-marca: #39A900;
     --verde-oscuro: #0f5132;
     --verde-mas-oscuro: #0b3d26;
     --gris-bg: #f3f5f7;
@@ -98,7 +98,7 @@ body {
 }
 
 .topbar-badge {
-    background: var(--verde-sena);
+    background: var(--verde-marca);
     color: #fff;
     font-size: 0.72rem;
     font-weight: 700;
@@ -204,7 +204,7 @@ body {
 }
 
 .hero h1 strong {
-    color: var(--verde-sena);
+    color: var(--verde-marca);
 }
 
 .hero p {
@@ -475,7 +475,7 @@ body {
 
 .stat-enlace {
     font-size: 0.8rem;
-    color: var(--verde-sena);
+    color: var(--verde-marca);
     text-decoration: none;
     font-weight: 600;
     width: 100%;
@@ -514,7 +514,7 @@ body {
 .admin-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 14px 30px rgba(15, 81, 50, 0.12);
-    border-color: var(--verde-sena);
+    border-color: var(--verde-marca);
 }
 
 .card-icono {
@@ -553,7 +553,7 @@ body {
 }
 
 .card-flecha {
-    color: var(--verde-sena);
+    color: var(--verde-marca);
     font-size: 1.3rem;
     font-weight: 700;
     flex-shrink: 0;

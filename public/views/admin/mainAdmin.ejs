@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png" />
-    <meta name="csrf-token" content="<%= csrfToken %>" />
-    <title>Panel de administración</title>
+    <%- include('../partials/headMeta', { titulo: 'Panel de administración' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -31,11 +27,11 @@
         <div class="topbar-inner">
             <div class="topbar-marca">
                 <div class="topbar-logo">
-                    <img src="/img/Logo_sena.png" alt="Logotipo SENA">
+                    <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>">
                 </div>
                 <div class="topbar-texto">
-                    <span class="topbar-nombre">SENAEMPRESA</span>
-                    <span class="topbar-sub">Centro Agroindustrial Hachón</span>
+                    <span class="topbar-nombre"><%= tienda.nombre %></span>
+                    <% if (tienda.direccion) { %><span class="topbar-sub"><%= tienda.direccion %></span><% } %>
                 </div>
             </div>
 
@@ -83,7 +79,7 @@
         <!-- HERO / BIENVENIDA -->
         <section class="hero">
             <div class="hero-logo">
-                <img src="/img/Logo_sena.png" alt="SENA">
+                <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>">
             </div>
             <span class="hero-eyebrow"><%= usuario.role %></span>
             <h1>¡Hola, <strong><%= usuario.nombre || usuario.usuario || 'Administrador' %></strong>!</h1>
@@ -316,7 +312,7 @@
 
     <!-- FOOTER -->
     <footer class="admin-footer">
-        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+        <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %> · Panel de administración</p>
     </footer>
 
     <script src="/js/csrf.js"></script>

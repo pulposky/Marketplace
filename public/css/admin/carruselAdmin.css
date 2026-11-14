@@ -2,7 +2,7 @@
    GESTIÓN DE CARRUSEL - PANEL ADMIN
 ============================================= */
 :root {
-    --verde-sena: #39A900;
+    --verde-marca: #39A900;
     --verde-oscuro: #2c7a00;
     --blanco: #ffffff;
     --fondo: #f6f8f6;
@@ -46,11 +46,11 @@ body {
 
 .marca-catalogo span {
     font-weight: 800;
-    color: var(--verde-sena);
+    color: var(--verde-marca);
 }
 
 .btn-regresar {
-    color: var(--verde-sena);
+    color: var(--verde-marca);
     text-decoration: none;
     font-weight: 600;
 }
@@ -140,7 +140,7 @@ body {
 }
 
 .btn-subir {
-    background: var(--verde-sena);
+    background: var(--verde-marca);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -258,7 +258,7 @@ body {
 }
 
 .enlace-preview {
-    color: var(--verde-sena);
+    color: var(--verde-marca);
     text-decoration: none;
     font-weight: 600;
 }

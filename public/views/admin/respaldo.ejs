@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/img/Logo_sena.png">
-    <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Respaldo y Exportación - Panel Admin</title>
+    <%- include('../partials/headMeta', { titulo: 'Respaldo y Exportación' }) %>
     <link rel="stylesheet" href="/css/admin/gestionesAdmin.css">
     <link rel="stylesheet" href="/css/toast.css">
     <style>
@@ -98,7 +94,7 @@
 
     <!-- FOOTER -->
     <footer class="admin-footer">
-        <p>&copy; 2026 SENAEMPRESA · Panel de administración</p>
+        <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %> · Panel de administración</p>
     </footer>
 
     <script src="/js/csrf.js"></script>
