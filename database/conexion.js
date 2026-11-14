@@ -14,7 +14,7 @@ const dbConfig = require('../config/database');
 const conexion = mysql.createPool({
     ...dbConfig,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 50,
     queueLimit: 0
 });
 
