@@ -3,28 +3,17 @@
 <head>
     <%# El error puede ocurrir antes de generar el token CSRF: se pasa vacío en ese caso %>
     <%- include('partials/headMeta', { titulo: 'Error ' + codigo, csrfToken: typeof csrfToken !== 'undefined' ? csrfToken : '' }) %>
-    <link rel="stylesheet" href="/css/error.css">
+    <%- include('partials/estilosTienda') %>
 </head>
-<body>
-    <div class="error-contenedor">
-        <div class="error-icono">
-            <% if (codigo === 404) { %>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    <line x1="8" y1="11" x2="14" y2="11"></line>
-                </svg>
-            <% } else { %>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-            <% } %>
+<body class="pagina-error">
+    <main class="error">
+        <p class="error-codigo"><%= codigo %></p>
+        <h1><%= codigo === 404 ? 'Este pasillo no existe' : 'Algo salió mal' %></h1>
+        <p><%= mensaje %></p>
+        <div class="error-acciones">
+            <a href="/catalogo" class="btn">Ir al catálogo</a>
+            <a href="/" class="btn btn-suave">Inicio</a>
         </div>
-        <h1 class="error-codigo"><%= codigo %></h1>
-        <p class="error-mensaje"><%= mensaje %></p>
-        <a href="/" class="error-boton">Volver al inicio</a>
-    </div>
+    </main>
 </body>
 </html>

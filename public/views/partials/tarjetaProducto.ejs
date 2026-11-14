@@ -1,0 +1,69 @@
+<%# Tarjeta de producto del inicio y del catálogo.
+    Recibe: producto, pasillos y modo ('ver' = enlace a la ficha, 'agregar' = botón que abre el modal del catálogo).
+    El stock está en la unidad mínima; si hay presentaciones, el precio se muestra por la primera. %>
+<%
+    const _p = producto;
+    const _pasillo = (pasillos || []).find((x) => x.nombre === String(_p.categoria || '').trim()) || null;
+    const _presentaciones = Array.isArray(_p.presentaciones) ? _p.presentaciones : [];
+    const _unidad = _p.unidad || 'unidad';
+
+    const _precioBase = Number(_p.precio) || 0;
+    const _descuento = Number(_p.descuento) || 0;
+    const _ahora = new Date();
+    const _enOferta = _descuento > 0
+        && (!_p.fecha_inicio_oferta || _ahora >= new Date(_p.fecha_inicio_oferta))
+        && (!_p.fecha_fin_oferta || _ahora <= new Date(_p.fecha_fin_oferta));
+    const _precioUnidad = _enOferta ? _precioBase * (1 - _descuento / 100) : _precioBase;
+
+    const _principal = _presentaciones[0] || null;
+    const _factor = _principal ? Number(_principal.factor) || 1 : 1;
+    const _etiqueta = _principal ? _principal.nombre : _unidad;
+    const _stock = Number(_p.limite_venta) || 0;
+    const _disponibles = Math.floor(_stock / _factor);
+    const _cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
+%>
+<article class="producto tarjeta-producto" data-categoria="<%= _p.categoria || '' %>"<%- _pasillo ? ` style="--k:${_pasillo.color}"` : '' %>>
+    <a class="producto-foto" href="/producto/<%= _p.id_producto %>" tabindex="-1" aria-hidden="true">
+        <% if (_p.imagenUpload) { %>
+            <img src="<%= _p.imagenUpload %>" alt="" loading="lazy">
+        <% } else { %>
+            <span class="producto-sin-foto"><%= String(_p.nombre || '?').charAt(0) %></span>
+        <% } %>
+        <% if (_pasillo) { %><i class="producto-pasillo">Pasillo <%= _pasillo.numero %></i><% } %>
+        <% if (_enOferta) { %><i class="producto-oferta">−<%= Math.round(_descuento) %>%</i><% } %>
+    </a>
+
+    <div class="producto-linea">
+        <h3 class="nombre-producto"><a href="/producto/<%= _p.id_producto %>"><%= _p.nombre %></a></h3>
+        <p class="producto-precio">
+            <% if (_enOferta) { %><s><%= _cop(_precioBase * _factor) %></s><% } %>
+            <b><%= _cop(_precioUnidad * _factor) %></b>
+            <span>/ <%= _etiqueta %></span>
+        </p>
+    </div>
+
+    <% if (_presentaciones.length > 1) { %>
+        <p class="producto-presentaciones">
+            <% _presentaciones.forEach((pr) => { %><span><%= pr.nombre %> · <%= pr.factor %></span><% }) %>
+        </p>
+    <% } %>
+    <p class="producto-stock<%= _disponibles < 1 ? ' agotado' : '' %>">
+        <%= _disponibles < 1 ? 'Agotado' : _disponibles + ' disponibles' %>
+    </p>
+
+    <% if (modo === 'agregar') { %>
+        <button type="button" class="btn btn-ancho btn-accion-apartar" <%= _disponibles < 1 ? 'disabled' : '' %>
+            data-id="<%= _p.id_producto %>"
+            data-nombre="<%= _p.nombre %>"
+            data-precio="<%= _cop(_precioUnidad) %>"
+            data-precio-num="<%= _precioUnidad.toFixed(2) %>"
+            data-precio-unitario="<%= _precioUnidad %>"
+            data-unidad="<%= _unidad %>"
+            data-presentaciones="<%= JSON.stringify(_presentaciones) %>"
+            data-imagen="<%= _p.imagenUpload || '' %>"
+            data-descripcion="<%= _p.descripcion || '' %>"
+            data-limite="<%= _stock %>">Agregar</button>
+    <% } else { %>
+        <a class="btn btn-ancho btn-suave" href="/producto/<%= _p.id_producto %>">Ver y apartar</a>
+    <% } %>
+</article>

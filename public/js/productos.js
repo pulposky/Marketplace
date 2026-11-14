@@ -256,8 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------
     // ANIMACIÓN DEL CARRITO DE COMPRAS
     // -----------------------------------------------
-    const COLORES_CONFETI = ['#39A900', '#00A1DE', '#F5A623', '#8E44AD', '#FFD700', '#FFFFFF'];
-
     function volarProductoHaciaCarrito(origenX, origenY, imagenSrc) {
         return new Promise((resolver) => {
             const rectCarrito = carritoAnimado.getBoundingClientRect();
@@ -318,15 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => carritoAnimado.classList.remove('recibiendo'), 650);
     }
 
-    function crearOnda(x, y) {
-        const onda = document.createElement('div');
-        onda.className = 'onda-carrito';
-        onda.style.left = x + 'px';
-        onda.style.top = y + 'px';
-        document.body.appendChild(onda);
-        setTimeout(() => onda.remove(), 750);
-    }
-
     function crearBadgeCantidad(x, y, cantidad) {
         const badge = document.createElement('div');
         badge.className = 'badge-apartado';
@@ -335,22 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
         badge.style.top = (y - 44) + 'px';
         document.body.appendChild(badge);
         setTimeout(() => badge.remove(), 950);
-    }
-
-    function crearConfeti(x, y) {
-        for (let i = 0; i < 10; i++) {
-            const pieza = document.createElement('div');
-            pieza.className = 'confeti-apartado';
-            pieza.style.left = x + 'px';
-            pieza.style.top = y + 'px';
-            pieza.style.backgroundColor = COLORES_CONFETI[i % COLORES_CONFETI.length];
-            const angulo = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.2;
-            const distancia = 45 + Math.random() * 55;
-            pieza.style.setProperty('--cx', (Math.cos(angulo) * distancia) + 'px');
-            pieza.style.setProperty('--cy', (Math.sin(angulo) * distancia + 70) + 'px');
-            document.body.appendChild(pieza);
-            setTimeout(() => pieza.remove(), 1100);
-        }
     }
 
     async function animarApartado(botonOrigen, cantidadAgregada) {
@@ -376,9 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const centroY = rectCarrito.top + rectCarrito.height / 2;
 
         rebotarCarrito();
-        crearOnda(centroX, centroY);
         crearBadgeCantidad(centroX, centroY, cantidadAgregada || 1);
-        crearConfeti(centroX, centroY);
     }
 
     // -----------------------------------------------

@@ -1,0 +1,28 @@
+<%# Pie de la tienda pública: solo muestra los datos configurados. %>
+<%
+    const _wa = String(tienda.whatsapp || '').replace(/\D/g, '');
+    const _redes = [['Facebook', tienda.facebook], ['Instagram', tienda.instagram], ['TikTok', tienda.tiktok]].filter((r) => r[1]);
+%>
+<footer class="pie">
+    <div class="pie-interior">
+        <div class="pie-marca">
+            <b><%= tienda.nombre %></b>
+            <% if (tienda.descripcion) { %><p><%= tienda.descripcion %></p><% } %>
+        </div>
+
+        <dl class="pie-datos">
+            <% if (tienda.direccion) { %><div><dt>Dirección</dt><dd><%= tienda.direccion %></dd></div><% } %>
+            <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
+            <% if (tienda.telefono) { %><div><dt>Teléfono</dt><dd><a href="tel:<%= String(tienda.telefono).replace(/[^\d+]/g, '') %>"><%= tienda.telefono %></a></dd></div><% } %>
+            <% if (_wa) { %><div><dt>WhatsApp</dt><dd><a href="https://wa.me/<%= _wa %>" target="_blank" rel="noopener noreferrer">Escríbenos</a></dd></div><% } %>
+            <% if (tienda.correo) { %><div><dt>Correo</dt><dd><a href="mailto:<%= tienda.correo %>"><%= tienda.correo %></a></dd></div><% } %>
+        </dl>
+
+        <% if (_redes.length) { %>
+            <ul class="pie-redes" aria-label="Redes sociales">
+                <% _redes.forEach((r) => { %><li><a href="<%= r[1] %>" target="_blank" rel="noopener noreferrer"><%= r[0] %></a></li><% }) %>
+            </ul>
+        <% } %>
+    </div>
+    <p class="pie-legal">&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %></p>
+</footer>

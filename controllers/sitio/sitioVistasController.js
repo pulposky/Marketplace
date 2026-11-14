@@ -12,6 +12,7 @@ const PresentacionModel = require('../../models/presentacionModel');
 const { normalizarCategorias } = require('../../utils/helpers');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
+const { armarPasillos } = require('../../utils/pasillos');
 
 const SitioVistasController = {
 
@@ -57,6 +58,7 @@ const SitioVistasController = {
                             PresentacionModel.adjuntar(destacadosConImagen).catch(() => {}).then(() => res.render('main', {
                                 destacados: destacadosConImagen,
                                 productos: todosConImagen,
+                                pasillos: armarPasillos(todosConImagen),
                                 ofertas: listaOfertas,
                                 usuario: req.session?.usuario || null
                             }));
@@ -90,11 +92,15 @@ const SitioVistasController = {
                 return res.status(404).render('error', { codigo: 404, mensaje: 'El producto no está disponible en este momento.' });
             }
 
-            asociarImagenesAProductos([producto], (productoConImagen) => {
-                PresentacionModel.adjuntar(productoConImagen).catch(() => {}).then(() => res.render('productoDetalle', {
-                    producto: productoConImagen[0],
-                    usuario: req.session?.usuario || null
-                }));
+            // Todos los productos solo para numerar el pasillo (si falla, la ficha sale sin pasillo)
+            ProductoModel.obtenerTodos((errorTodos, todos) => {
+                asociarImagenesAProductos([producto], (productoConImagen) => {
+                    PresentacionModel.adjuntar(productoConImagen).catch(() => {}).then(() => res.render('productoDetalle', {
+                        producto: productoConImagen[0],
+                        pasillos: errorTodos ? [] : armarPasillos(todos),
+                        usuario: req.session?.usuario || null
+                    }));
+                });
             });
         });
     },
@@ -164,6 +170,7 @@ const SitioVistasController = {
                 PresentacionModel.adjuntar(productosConImagen).catch(() => {}).then(() => res.render("productos", {
                     productos: productosConImagen,
                     categorias,
+                    pasillos: armarPasillos(listaProductosRaw),
                     categoriasSeleccionadas,
                     busqueda,
                     soloOferta,

@@ -2,191 +2,82 @@
 <html lang="es">
 
 <head>
-    <%- include('partials/headMeta', { titulo: 'Mi Perfil' }) %>
+    <%- include('partials/headMeta', { titulo: 'Mi perfil' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
     </script>
-    <link rel="stylesheet" href="/css/perfil.css">
-    <link rel="stylesheet" href="/css/toast.css">
+    <%- include('partials/estilosTienda') %>
 </head>
 
 <body>
+    <%- include('partials/encabezado') %>
 
-    <!-- HEADER -->
-    <header class="header-catalogo">
-        <div class="contenedor-header">
-            <div class="marca-catalogo">
-                <span><%= tienda.nombre %></span>
+    <main class="contenedor contenedor-angosto">
+        <header class="pagina-cabeza perfil-cabeza">
+            <span class="perfil-inicial" aria-hidden="true"><%= (cliente.nombre || 'C').trim().charAt(0).toUpperCase() %></span>
+            <div>
+                <h1><%= cliente.nombre %></h1>
+                <p>Documento <%= cliente.documento %></p>
             </div>
-            <div class="acciones-header">
-                <a href="/" class="btn-regresar">← Volver al inicio</a>
-            </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="contenedor-principal">
+        <div class="perfil-grid">
+            <section class="panel" aria-labelledby="tituloEditar">
+                <h2 id="tituloEditar">Tus datos</h2>
+                <p class="panel-ayuda">Para guardar cambios escribe tu contraseña actual.</p>
 
-        <!-- CABECERA DEL PERFIL -->
-        <section class="cabecera-perfil">
-            <div class="avatar-wrapper">
-                <div class="bolitas bolitas-a" aria-hidden="true"></div>
-                <div class="bolitas bolitas-b" aria-hidden="true"></div>
-                <div class="avatar-perfil" aria-hidden="true">
-                    <%= (cliente.nombre || 'C').trim().charAt(0).toUpperCase() %>
-                </div>
-            </div>
-            <div class="datos-cabecera">
-                <h1 class="nombre-perfil"><%= cliente.nombre %></h1>
-                <span class="badge-rol"><%= cliente.rol || 'cliente' %></span>
-            </div>
-        </section>
-
-        <!-- TARJETAS HORIZONTALES -->
-        <div class="tarjetas-horizontales">
-
-            <!-- TARJETA DE DATOS DE IDENTIDAD -->
-            <section class="tarjeta-perfil tarjeta-datos">
-                <h2 class="titulo-seccion">Mis datos</h2>
-                <div class="lista-datos">
-                    <div class="dato-fila">
-                        <span class="dato-icono">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                        </span>
-                        <span class="dato-etiqueta">Documento</span>
-                        <span class="dato-valor-fila"><%= cliente.documento %></span>
+                <form id="formPerfil" class="formulario formulario-dos" autocomplete="off">
+                    <div class="campo campo-ancho">
+                        <label for="perfilNombre">Nombre completo</label>
+                        <input type="text" id="perfilNombre" name="nombre" value="<%= cliente.nombre %>" required maxlength="255">
+                        <small>También se actualiza en tus apartados.</small>
                     </div>
-                    <div class="dato-fila">
-                        <span class="dato-icono">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                            </svg>
-                        </span>
-                        <span class="dato-etiqueta">Teléfono</span>
-                        <span class="dato-valor-fila"><%= cliente.telefono || 'No registrado' %></span>
-                    </div>
-                    <div class="dato-fila">
-                        <span class="dato-icono">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                        </span>
-                        <span class="dato-etiqueta">Dirección</span>
-                        <span class="dato-valor-fila"><%= cliente.direccion || 'No registrada' %></span>
-                    </div>
-                    <div class="dato-fila">
-                        <span class="dato-icono">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </span>
-                        <span class="dato-etiqueta">Rol</span>
-                        <span class="dato-valor-fila"><%= cliente.rol || 'cliente' %></span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TARJETA DE EDICIÓN -->
-            <section class="tarjeta-perfil tarjeta-edicion">
-                <h2 class="titulo-seccion">Modificar mis datos</h2>
-                <p class="texto-ayuda">Actualiza la información. Para guardar debes ingresar tu contraseña.</p>
-
-                <form id="formPerfil" class="formulario-perfil" autocomplete="off">
                     <div class="campo">
-                        <label for="perfilNombre">Nombre completo *</label>
-                        <input type="text" id="perfilNombre" name="nombre"
-                            value="<%= cliente.nombre %>" required maxlength="255">
-                        <small>Si cambias tu nombre se actualiza también en tus apartados.</small>
+                        <label for="perfilTelefono">Teléfono</label>
+                        <input type="tel" id="perfilTelefono" name="telefono" value="<%= cliente.telefono || '' %>" required maxlength="50">
                     </div>
-
                     <div class="campo">
-                        <label for="perfilTelefono">Teléfono *</label>
-                        <input type="text" id="perfilTelefono" name="telefono"
-                            value="<%= cliente.telefono || '' %>" required maxlength="50">
+                        <label for="perfilDireccion">Dirección <span class="opcional">(opcional)</span></label>
+                        <input type="text" id="perfilDireccion" name="direccion" value="<%= cliente.direccion || '' %>" maxlength="255">
                     </div>
 
-                    <div class="campo">
-                        <label for="perfilDireccion">Dirección</label>
-                        <input type="text" id="perfilDireccion" name="direccion"
-                            value="<%= cliente.direccion || '' %>" maxlength="255">
-                    </div>
+                    <fieldset class="campo-ancho grupo">
+                        <legend>Cambiar contraseña <span class="opcional">(opcional)</span></legend>
+                        <div class="formulario-dos">
+                            <div class="campo">
+                                <label for="perfilNuevaPassword">Nueva contraseña</label>
+                                <input type="password" id="perfilNuevaPassword" name="nuevaPassword" placeholder="Mínimo 6 caracteres" maxlength="100" autocomplete="new-password">
+                            </div>
+                            <div class="campo">
+                                <label for="perfilConfirmarPassword">Repite la nueva</label>
+                                <input type="password" id="perfilConfirmarPassword" maxlength="100" autocomplete="new-password">
+                            </div>
+                        </div>
+                    </fieldset>
 
-                    <div class="campo">
-                        <label for="perfilPassword">Contraseña actual *</label>
-                        <input type="password" id="perfilPassword" name="password"
-                            placeholder="Ingresa tu contraseña para guardar" required autocomplete="current-password">
-                        <small>Por seguridad, debes ingresar tu contraseña para guardar los cambios.</small>
+                    <div class="campo campo-ancho">
+                        <label for="perfilPassword">Contraseña actual</label>
+                        <input type="password" id="perfilPassword" name="password" required autocomplete="current-password">
                     </div>
-
-                    <div class="campo">
-                        <label for="perfilNuevaPassword">Nueva contraseña</label>
-                        <input type="password" id="perfilNuevaPassword" name="nuevaPassword"
-                            placeholder="Déjala vacía para no cambiarla" maxlength="100" autocomplete="new-password">
-                    </div>
-
-                    <div class="campo">
-                        <label for="perfilConfirmarPassword">Confirmar nueva contraseña</label>
-                        <input type="password" id="perfilConfirmarPassword"
-                            placeholder="Repite la nueva contraseña" maxlength="100" autocomplete="new-password">
-                        <small>Mínimo 6 caracteres. Si no quieres cambiarla, deja ambos campos vacíos.</small>
-                    </div>
-
-                    <button type="submit" class="btn-guardar" id="btnGuardarPerfil">Guardar cambios</button>
+                    <button type="submit" class="btn campo-ancho" id="btnGuardarPerfil">Guardar cambios</button>
                 </form>
             </section>
 
-        </div><!-- /tarjetas-horizontales -->
-
-        <!-- ZONA DE INFORMACIÓN COMPLEMENTARIA -->
-        <section class="zona-informacion">
-            <div class="info-item">
-                <svg class="icono-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 16 12 12 8 8"></polyline>
-                    <line x1="16" y1="16" x2="16" y2="16"></line>
-                </svg>
-                <div>
-                    <h3>Horario de atención</h3>
-                    <p><%= tienda.horario || 'Consulta el horario de atención en nuestro punto de venta.' %></p>
-                </div>
-            </div>
-            <div class="info-item">
-                <svg class="icono-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <div>
-                    <h3>Recoge tus apartados</h3>
-                    <p>Retira lo que apartaste dentro del horario indicado.</p>
-                </div>
-            </div>
-            <div class="info-item">
-                <svg class="icono-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                <div>
-                    <h3>Mantén tus datos al día</h3>
-                    <p>Así te avisamos mejor sobre tus pedidos y apartados.</p>
-                </div>
-            </div>
-        </section>
+            <aside class="panel panel-suave" aria-labelledby="tituloRecoger">
+                <h2 id="tituloRecoger">Dónde recoger</h2>
+                <dl class="ficha-datos">
+                    <div><dt>Dirección</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div>
+                    <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
+                    <div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div>
+                </dl>
+                <a href="/verApartados" class="btn btn-suave btn-ancho">Ver mis apartados</a>
+            </aside>
+        </div>
     </main>
+
+    <%- include('partials/pie') %>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>

@@ -2,441 +2,138 @@
 <html lang="es">
 
 <head>
-    <!-- Página de catálogo con la lista completa de productos y el modal de apartado -->
+    <!-- Catálogo: pasillos, filtros, tarjetas, modal de cantidad y carrito -->
     <%- include('partials/headMeta', { titulo: 'Catálogo' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
     </script>
-    <link rel="stylesheet" href="/css/login.css">
-    <link rel="stylesheet" href="/css/registro.css">
-    <link rel="stylesheet" href="/css/productos.css">
-    <link rel="stylesheet" href="/css/toast.css">
+    <%- include('partials/estilosTienda') %>
 </head>
 
 <body>
+    <%- include('partials/encabezado', { buscadorId: 'inputBuscar', busqueda, conModalLogin: !usuario }) %>
+    <%- include('partials/pasillos', { pasillos, activas: categoriasSeleccionadas }) %>
 
-    <!-- BARRA DE NAVEGACIÓN SUPERIOR / REGRESAR -->
-        <header class="header-catalogo">
-            <div class="contenedor-header">
-                <a href="<%= esRolPanel(usuario && usuario.role) ? '/admin' : '/' %>"
-                    class="btn-regresar">
-                    ← Regresar al Inicio
-                </a>
-
-                <div class="marca-catalogo">
-                    <span><%= tienda.nombre %></span>
-                </div>
-            </div>
-        </header>
-
-        <!-- CONTENEDOR PRINCIPAL DEL CATÁLOGO -->
-        <main class="contenedor-principal">
-
-            <div class="encabezado-seccion">
-                <h1 class="titulo-catalogo">CATÁLOGO DE PRODUCTOS</h1>
-
-                <div class="barra-superior">
-                    <div class="campo-busqueda">
-                        <input type="text" id="inputBuscar" placeholder="Buscar producto...">
-                    </div>
-                </div>
+    <%
+        const _unaCategoria = categoriasSeleccionadas.length === 1
+            ? pasillos.find((p) => p.nombre === categoriasSeleccionadas[0]) : null;
+        const _filtrado = categoriasSeleccionadas.length > 0 || soloOferta || busqueda;
+    %>
+    <main class="contenedor">
+        <div class="catalogo-cabeza"<%- _unaCategoria ? ` style="--k:${_unaCategoria.color}"` : '' %>>
+            <div>
+                <% if (_unaCategoria) { %><p class="catalogo-pasillo">Pasillo <%= _unaCategoria.numero %></p><% } %>
+                <h1><%= _unaCategoria ? _unaCategoria.nombre : (busqueda ? `Resultados para “${busqueda}”` : 'Todo el catálogo') %></h1>
+                <p class="catalogo-total"><%= productos.length %> producto<%= productos.length === 1 ? '' : 's' %>
+                    <% if (_filtrado) { %> · <a href="/catalogo">Quitar filtros</a><% } %></p>
             </div>
 
-            <div class="contenido-principal">
-
-                <!-- PANEL LATERAL DE FILTROS -->
-                <aside class="panel-lateral">
-                    <div class="seccion-categorias">
-                        <div class="titulo-categoria">Categorías</div>
-                        <div class="linea-divisora"></div>
-
-                        <% const categoriasActivas=Array.isArray(categoriasSeleccionadas) ? categoriasSeleccionadas :
-                            []; %>
-                            <form method="get" action="/catalogo" class="filtros-categorias-form">
-                                <div class="lista-categorias">
-                                    <% (Array.isArray(categorias) ? categorias : []).forEach(cat => { %>
-                                    <label class="opcion-categoria">
-                                        <input type="checkbox" name="categoria" value="<%= cat %>" <%= categoriasActivas.includes(cat) ? 'checked' : '' %>>
-                                            <span><%= cat %></span>
-                                    </label>
-                                    <% }) %>
-                                </div>
-
-                                <button type="submit" class="boton-filtrar">Aplicar Filtros</button>
-                            </form>
-                    </div>
-
-                    <!-- FILTROS ADICIONALES -->
-                    <div class="seccion-categorias">
-                        <form method="get" action="/catalogo" class="filtros-categorias-form">
-                            <% categoriasSeleccionadas.forEach(c => { %>
-                                <input type="hidden" name="categoria" value="<%= c %>">
-                                <% }) %>
-                                <label class="opcion-categoria">
-                                    <input type="checkbox" name="soloOferta" value="1" <%= soloOferta ? 'checked' : ''
-                                        %>>
-                                        <span>Solo en oferta</span>
-                                </label>
-                                <div class="opcion-orden">
-                                    <label for="ordenProductos">Ordenar por:</label>
-                                    <select name="orden" id="ordenProductos">
-                                        <option value="">Predeterminado</option>
-                                        <option value="nombre" <%= orden === 'nombre' ? 'selected' : '' %>>Nombre (A-Z)</option>
-                                        <option value="precio-asc" <%= orden === 'precio-asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
-                                        <option value="precio-desc" <%= orden === 'precio-desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="boton-filtrar">Aplicar</button>
-                        </form>
-                    </div>
-                </aside>
-
-                <!-- REJILLA DE PRODUCTOS -->
-                <section class="rejilla-productos">
-                        <% productos.forEach(producto=> {
-                        const precioUnitarioReal = Number(producto.precio);
-
-                        // Oferta: descuento porcentual vigente por fechas
-                        const descuentoProd = Number(producto.descuento) || 0;
-                        const ahoraOferta = new Date();
-                        const enOferta = descuentoProd > 0
-                            && (!producto.fecha_inicio_oferta || ahoraOferta >= new Date(producto.fecha_inicio_oferta))
-                            && (!producto.fecha_fin_oferta || ahoraOferta <= new Date(producto.fecha_fin_oferta));
-                        const precioUnitarioOferta = enOferta
-                            ? precioUnitarioReal * (1 - descuentoProd / 100)
-                            : precioUnitarioReal;
-
-                        // Precio y stock en la unidad mínima; las presentaciones
-                        // (ej. Caja = 12 und) se eligen en el modal de cantidad
-                        const precioMostrar = precioUnitarioOferta;
-                        const precioOriginalMostrar = precioUnitarioReal;
-                        const textoUnidad = producto.unidad || 'Unidad(es)';
-                        const limiteStock = Number(producto.limite_venta) || 0;
-                        const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
-                        %>
-                        <div class="tarjeta-producto" data-categoria="<%= producto.categoria || '' %>">
-                            <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
-                                title="Ver detalles de <%= producto.nombre %>">
-                                <div class="imagen-producto">
-                                    <% if (producto.imagenUpload) { %>
-                                        <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= producto.nombre %>">
-                                        <% } else { %>
-                                            <span class="imagen-placeholder">
-                                                <%= producto.nombre %>
-                                            </span>
-                                            <% } %>
-                                </div>
-                            </a>
-                            <div class="info-producto-detalles">
-                                <a class="enlace-detalle-producto" href="/producto/<%= producto.id_producto %>"
-                                    title="Ver detalles de <%= producto.nombre %>">
-                                    <h3 class="nombre-producto">
-                                        <%= producto.nombre %>
-                                    </h3>
-                                </a>
-                                <span class="presentacion-producto">
-                                    Presentación: <%= textoUnidad %>
-                                </span>
-
-                                <% if (producto.descripcion) { %>
-                                    <p class="descripcion-tarjeta">
-                                        <%= producto.descripcion %>
-                                    </p>
-                                <% } %>
-
-                                <p class="stock-producto">
-                                    <span class="chip-stock">
-                                        Disponibles: <strong>
-                                            <%= limiteStock %>
-                                        </strong>
-                                        <%= textoUnidad %>
-                                    </span>
-                                    <% if (presentaciones.length) { %>
-                                        <span class="stock-detalle">
-                                            (<%= presentaciones.map(p => Math.floor(limiteStock / p.factor) + ' ' + p.nombre + '(s)').join(', ') %>)
-                                        </span>
-                                        <% } %>
-                                </p>
-
-                                <div class="precio-producto">
-                                    <% if (enOferta) { %>
-                                        <span class="precio-original">
-                                            $<%= Number(precioOriginalMostrar).toLocaleString("es-CO") %>
-                                        </span>
-                                        <span class="precio-oferta">
-                                            $<%= Number(precioMostrar).toLocaleString("es-CO") %>
-                                        </span>
-                                        <span class="badge-oferta">
-                                            -<%= descuentoProd %>%
-                                        </span>
-                                    <% } else { %>
-                                        $<%= Number(precioMostrar).toLocaleString("es-CO") %>
-                                    <% } %>
-                                    <span class="precio-unidad">/ <%= textoUnidad %></span>
-                                </div>
-                            </div>
-
-                            <button class="boton-apartar btn-accion-apartar" data-id="<%= producto.id_producto %>"
-                                data-nombre="<%= producto.nombre %>"
-                                data-precio="$<%= Number(precioMostrar).toLocaleString('es-CO') %>"
-                                data-precio-num="<%= Number(precioMostrar).toFixed(2) %>"
-                                data-precio-unitario="<%= precioUnitarioOferta %>"
-                                data-unidad="<%= textoUnidad %>"
-                                data-presentaciones="<%= JSON.stringify(presentaciones) %>"
-                                data-imagen="<%= producto.imagenUpload || '' %>"
-                                data-descripcion="<%= producto.descripcion || '' %>"
-                                data-limite="<%= limiteStock %>"> <!-- Stock en unidades mínimas -->
-                                Agregar
-                            </button>
-                        </div>
-                        <% }) %>
-                </section>
-                <nav class="paginacion-productos" id="paginacionProductos" aria-label="Paginación de productos"></nav>
-
-            </div>
-        </main>
-
-        <!-- MODAL AGREGAR PRODUCTO -->
-        <div class="modal-fondo" id="modalApartarProducto">
-            <div class="modal-contenido">
-                <span class="cerrar-modal" id="cerrarModalProducto">&times;</span>
-
-                <main class="card-container">
-                    <div class="card-body">
-                        <div class="modal-imagen" style="margin-bottom:12px;">
-                            <img id="apartarImagenProducto" src="" alt="Imagen del producto"
-                                style="width:100%; height:auto; display:block; object-fit:contain; border-radius:8px;" />
-                        </div>
-                        <h1 class="product-title" id="apartarNombreProducto">Nombre del Producto</h1>
-
-                        <p class="descripcion-modal" id="apartarDescripcionProducto"></p>
-
-                        <div class="product-info">
-                            <span class="price-tag" id="apartarPrecioProducto">$0 COP</span>
-                            <small id="apartarPrecioDetalle"
-                                style="display:block; color:#666; font-size:0.85rem; margin-top:2px;"></small>
-                        </div>
-
-                        <form id="formConfirmarApartado" style="width: 100%; margin-top: 15px;">
-                            <input type="hidden" id="apartarProductoId" name="productoId">
-
-                            <div class="campo" id="campoPresentacionModal" style="margin-bottom: 12px; display: none;">
-                                <label for="presentacionApartar" style="display:block; margin-bottom:5px;">Presentación:</label>
-                                <select id="presentacionApartar" style="width: 100%; padding: 8px;"></select>
-                            </div>
-
-                            <div class="campo" style="margin-bottom: 12px;">
-                                <label for="cantidadApartar" id="labelCantidadModal"
-                                    style="display:block; margin-bottom:5px;">Cantidad:</label>
-
-                                <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1"
-                                    required style="width: 100%; padding: 8px;">
-                                <small id="textoDisponibles" style="display:block; color:#666; margin-top:4px;">
-                                    Disponibles: <span id="cantDisponiblesModal">0</span> <span
-                                        id="unidadDisponiblesModal"></span>
-                                </small>
-                            </div>
-                            <button type="submit" class="btn-principal" style="width: 100%;"
-                                id="btnAgregarCarrito">Agregar al carrito</button>
-                        </form>
-                    </div>
-                </main>
-            </div>
+            <form method="get" action="/catalogo" class="catalogo-filtros">
+                <% categoriasSeleccionadas.forEach((c) => { %><input type="hidden" name="categoria" value="<%= c %>"><% }) %>
+                <% if (busqueda) { %><input type="hidden" name="busqueda" value="<%= busqueda %>"><% } %>
+                <label class="interruptor">
+                    <input type="checkbox" name="soloOferta" value="1" <%= soloOferta ? 'checked' : '' %>>
+                    <span>Solo ofertas</span>
+                </label>
+                <label class="solo-lector" for="ordenProductos">Ordenar</label>
+                <select name="orden" id="ordenProductos">
+                    <option value="">Orden de la tienda</option>
+                    <option value="nombre" <%= orden === 'nombre' ? 'selected' : '' %>>Nombre (A-Z)</option>
+                    <option value="precio-asc" <%= orden === 'precio-asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
+                    <option value="precio-desc" <%= orden === 'precio-desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
+                </select>
+                <button type="submit" class="btn btn-chico btn-suave">Aplicar</button>
+            </form>
         </div>
 
-        <!-- MODAL LOGIN -->
-        <div class="modal-fondo" id="modalLogin">
-            <div class="modal-contenido">
-                <span class="cerrar-modal" id="cerrarModal">&times;</span>
-                <div class="contenedor-login">
-                    <div class="marca">
-                        <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>" class="marca-icono">
-                        <span class="marca-texto"><%= tienda.nombre %></span>
-                    </div>
-                    <main class="login" role="main">
-                        <div class="login-encabezado">
-                            <h1>Bienvenido</h1>
-                            <p>Ingresa tus credenciales para continuar</p>
-                        </div>
-                        <form class="login-form" id="formLogin">
-                            <div class="campo campo-tipo" style="margin-bottom:8px;">
-                                <div class="tipo-options">
-                                    <label class="tipo-option">
-                                        <input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked>
-                                        <span class="tipo-label">Soy Cliente</span>
-                                    </label>
-                                    <label class="tipo-option">
-                                        <input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario">
-                                        <span class="tipo-label">Soy Admin</span>
-                                    </label>
-                                </div>
-                            </div>
+        <section class="rejilla rejilla-productos" aria-label="Productos">
+            <% productos.forEach((producto) => { %>
+                <%- include('partials/tarjetaProducto', { producto, pasillos, modo: 'agregar' }) %>
+            <% }) %>
+        </section>
+        <p class="vacio" id="avisoSinResultados" <%- productos.length ? 'style="display:none;"' : '' %>>
+            No hay productos con esos filtros. <a href="/catalogo">Ver todo el catálogo</a>
+        </p>
+        <nav class="paginacion-productos" id="paginacionProductos" aria-label="Paginación de productos"></nav>
+    </main>
 
-                            <div id="clienteFields">
-                                <div class="campo" id="campoDoc">
-                                    <label for="doc">Documento</label>
-                                    <input type="text" id="doc" name="documento" placeholder="Documento">
-                                </div>
-                                <div class="campo" id="campoPwd" style="display:none;">
-                                    <label for="pwdCliente">Contraseña</label>
-                                    <input type="password" id="pwdCliente" name="password" placeholder="Contraseña">
-                                </div>
-                                <div class="campo" id="campoNuevaPwd" style="display:none;">
-                                    <label for="nuevaPwd">Nueva contraseña</label>
-                                    <input type="password" id="nuevaPwd" name="nuevaPassword" placeholder="Crea tu contraseña">
-                                </div>
-                                <div class="campo" id="campoConfirmPwd" style="display:none;">
-                                    <label for="confirmPwd">Confirmar contraseña</label>
-                                    <input type="password" id="confirmPwd" placeholder="Repite tu contraseña">
-                                </div>
-                            </div>
+    <%- include('partials/pie') %>
 
-                            <div id="usuarioFields" style="display:none;">
-                                <div class="campo">
-                                    <label for="user">Usuario</label>
-                                    <input type="text" id="user" name="usuario" placeholder="Usuario">
-                                </div>
-                                <div class="campo">
-                                    <label for="pwd">Contraseña</label>
-                                    <input type="password" id="pwd" name="password" placeholder="Contraseña">
-                                </div>
-                            </div>
+    <!-- MODAL: ELEGIR PRESENTACIÓN Y CANTIDAD -->
+    <div class="modal-fondo" id="modalApartarProducto">
+        <div class="modal-contenido modal-producto" role="dialog" aria-modal="true" aria-labelledby="apartarNombreProducto">
+            <button type="button" class="cerrar-modal" id="cerrarModalProducto" aria-label="Cerrar">&times;</button>
+            <img id="apartarImagenProducto" src="" alt="" class="modal-producto-foto">
+            <h2 id="apartarNombreProducto">Producto</h2>
+            <p class="modal-ayuda" id="apartarDescripcionProducto"></p>
+            <p class="modal-producto-precio"><span id="apartarPrecioProducto">$0</span> <small id="apartarPrecioDetalle"></small></p>
 
-                            <button type="submit" id="btnLoginSubmit" class="btn-principal">Iniciar sesión</button>
-                        </form>
-                        <p class="login-pie">
-                            ¿No tienes cuenta? <a href="#" class="enlace-fuerte enlace-registro">Regístrate</a>
-                        </p>
-                        <p class="login-pie" id="enlaceOlvideLogin" style="display:none;">
-                            ¿Olvidaste tu contraseña? <a href="#" class="enlace-fuerte enlace-olvide">Recupérala</a>
-                        </p>
-                        <p id="mensaje" class="mensaje-error"></p>
-                    </main>
-                    <footer class="pie-pagina">
-                        <span class="pie-punto" aria-hidden="true"></span>
-                        <%= tienda.nombre %>
-                    </footer>
+            <form id="formConfirmarApartado" class="formulario">
+                <input type="hidden" id="apartarProductoId" name="productoId">
+                <div class="campo" id="campoPresentacionModal" style="display:none;">
+                    <label for="presentacionApartar">Presentación</label>
+                    <select id="presentacionApartar"></select>
                 </div>
-            </div>
-        </div>
-
-        <!-- MODAL REGISTRO -->
-        <div class="modal-fondo" id="modalRegistro">
-            <div class="modal-contenido">
-                <span class="cerrar-modal" id="cerrarModalRegistro">&times;</span>
-                <div class="contenedor-registro">
-                    <div class="marca">
-                        <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>" class="marca-icono">
-                        <span class="marca-texto"><%= tienda.nombre %></span>
-                    </div>
-                    <main class="registro" role="main">
-                        <div class="registro-encabezado">
-                            <h1>Crear Cuenta</h1>
-                            <p>Completa tus datos para registrarte</p>
-                        </div>
-                        <form class="registro-form" id="formRegistro">
-                            <div class="campo">
-                                <label for="regNombre">Nombre completo</label>
-                                <input type="text" id="regNombre" name="nombre" placeholder="Nombre completo">
-                            </div>
-                            <div class="campo">
-                                <label for="regDocumento">Documento</label>
-                                <input type="text" id="regDocumento" name="documento" placeholder="Número de documento">
-                            </div>
-                            <div class="campo">
-                                <label for="regDireccion">Dirección</label>
-                                <input type="text" id="regDireccion" name="direccion" placeholder="Dirección">
-                            </div>
-                            <div class="campo">
-                                <label for="regTelefono">Teléfono</label>
-                                <input type="text" id="regTelefono" name="telefono" placeholder="Teléfono">
-                            </div>
-                            <div class="campo">
-                                <label for="regPassword">Contraseña</label>
-                                <input type="password" id="regPassword" name="password" placeholder="Crea tu contraseña">
-                            </div>
-                            <div class="campo">
-                                <label for="regConfirmarPassword">Confirmar contraseña</label>
-                                <input type="password" id="regConfirmarPassword" placeholder="Repite tu contraseña">
-                            </div>
-                            <button type="submit" class="btn-principal">Registrarme</button>
-                        </form>
-                        <p class="registro-pie">
-                            ¿Ya tienes cuenta? <a href="#" class="enlace-fuerte" id="volverLogin">Inicia sesión</a>
-                        </p>
-                        <p id="mensajeRegistro" class="mensaje-registro"></p>
-                    </main>
-                    <footer class="pie-pagina">
-                        <span class="pie-punto" aria-hidden="true"></span>
-                        <%= tienda.nombre %>
-                    </footer>
+                <div class="campo">
+                    <label for="cantidadApartar" id="labelCantidadModal">Cantidad</label>
+                    <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1" required>
+                    <small id="textoDisponibles">Disponibles: <span id="cantDisponiblesModal">0</span> <span id="unidadDisponiblesModal"></span></small>
                 </div>
-            </div>
+                <button type="submit" class="btn btn-ancho" id="btnAgregarCarrito">Agregar al carrito</button>
+            </form>
         </div>
+    </div>
 
-        <%- include('partials/modalAyudaRecuperacion') %>
+    <%- include('partials/modalesCuenta') %>
 
-        <!-- CARRITO FLOTANTE (abre el carrito y muestra el contador) -->
-        <div class="carrito-fijo" id="carritoAnimado" role="button" tabindex="0"
-            title="Ver tu carrito" aria-label="Ver tu carrito">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-            </svg>
-            <span class="badge-carrito-fijo" id="badgeCarritoFijo">0</span>
+    <!-- BOTÓN FLOTANTE DEL CARRITO -->
+    <div class="carrito-fijo" id="carritoAnimado" role="button" tabindex="0" aria-label="Ver tu carrito">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20.5" r="1.2"/><circle cx="18" cy="20.5" r="1.2"/></svg>
+        <span>Carrito</span>
+        <span class="badge-carrito-fijo" id="badgeCarritoFijo">0</span>
+    </div>
+
+    <!-- CARRITO LATERAL -->
+    <div class="carrito-fondo" id="carritoFondo"></div>
+    <aside class="carrito-drawer" id="carritoDrawer" aria-hidden="true" aria-labelledby="tituloCarrito">
+        <div class="carrito-cabecera">
+            <h2 id="tituloCarrito">Tu carrito</h2>
+            <button type="button" class="cerrar-carrito" id="cerrarCarrito" aria-label="Cerrar carrito">&times;</button>
         </div>
-
-        <!-- DIBUJO CARRITO LATERAL (CARRITO REAL) -->
-        <div class="carrito-fondo" id="carritoFondo"></div>
-        <aside class="carrito-drawer" id="carritoDrawer" aria-hidden="true">
-            <div class="carrito-cabecera">
-                <h2>Tu carrito</h2>
-                <button type="button" class="cerrar-carrito" id="cerrarCarrito" aria-label="Cerrar carrito">&times;</button>
-            </div>
-
-            <div class="carrito-vacio" id="carritoVacio">
-                <p>Tu carrito está vacío. Agrega productos del catálogo.</p>
-            </div>
-
-            <ul class="carrito-lista" id="carritoLista"></ul>
-
-            <div class="carrito-pie">
-                <div class="carrito-totales">
-                    <span class="carrito-total-unidades" id="carritoTotalUnidades">0 unidades</span>
-                    <span class="carrito-total-precio" id="carritoTotalPrecio">$0</span>
-                </div>
-                <button type="button" class="btn-confirmar-carrito" id="btnConfirmarCarrito">Confirmar apartado</button>
-                <button type="button" class="btn-vaciar-carrito" id="btnVaciarCarrito">Vaciar carrito</button>
-                <p class="carrito-nota">El pago es presencial en el punto de venta. Tus productos quedan apartados por <%- include('partials/duracionApartado') %>.</p>
-                <a href="/verApartados" class="carrito-link">Ver mis apartados</a>
-            </div>
-        </aside>
-
-        <!-- ALERTA INFORMATIVA DE APARTADO -->
-        <div class="alerta-fondo" id="alertaApartado">
-            <div class="alerta-contenido">
-                <div class="alerta-icono">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
-                    </svg>
-                </div>
-                <h3 class="alerta-titulo">Aviso importante</h3>
-                <p class="alerta-mensaje">Los productos estarán apartados por <strong><%- include('partials/duracionApartado') %></strong>.</p>
-                <button class="alerta-boton" id="cerrarAlertaApartado">Entendido</button>
-            </div>
+        <div class="carrito-vacio" id="carritoVacio">
+            <p>Todavía no has agregado productos.</p>
         </div>
+        <ul class="carrito-lista" id="carritoLista"></ul>
+        <div class="carrito-pie">
+            <div class="carrito-totales">
+                <span id="carritoTotalUnidades">0 artículos</span>
+                <b id="carritoTotalPrecio">$0</b>
+            </div>
+            <button type="button" class="btn btn-ancho" id="btnConfirmarCarrito">Confirmar apartado</button>
+            <button type="button" class="btn btn-ancho btn-texto" id="btnVaciarCarrito">Vaciar carrito</button>
+            <p class="carrito-nota">Pagas al recoger. Te lo guardamos <%- include('partials/duracionApartado') %>.</p>
+            <a href="/verApartados" class="carrito-link">Ver mis apartados</a>
+        </div>
+    </aside>
 
-        <script src="/js/csrf.js"></script>
-        <script src="/js/toast.js"></script>
-        <script src="/js/login.js"></script>
-        <script src="/js/registro.js"></script>
-        <script src="/js/olvide.js"></script>
-        <script src="/js/paginacionProductos.js"></script>
-        <script src="/js/productos.js"></script>
+    <!-- AVISO DE DURACIÓN DEL APARTADO (una vez por pestaña) -->
+    <div class="alerta-fondo" id="alertaApartado">
+        <div class="alerta-contenido" role="alertdialog" aria-labelledby="tituloAlertaApartado">
+            <h2 id="tituloAlertaApartado">Antes de apartar</h2>
+            <p>Lo que apartes te lo guardamos <strong><%- include('partials/duracionApartado') %></strong>. Si no lo recoges en ese tiempo, vuelve a quedar disponible.</p>
+            <button type="button" class="btn btn-ancho" id="cerrarAlertaApartado">Entendido</button>
+        </div>
+    </div>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/login.js"></script>
+    <script src="/js/registro.js"></script>
+    <script src="/js/olvide.js"></script>
+    <script src="/js/paginacionProductos.js"></script>
+    <script src="/js/productos.js"></script>
 </body>
 
 </html>

@@ -1,27 +1,11 @@
 <!-- Aviso compartido para clientes que solicitan recuperar su contraseña. -->
 <div class="modal-fondo" id="modalOlvide">
-    <div class="modal-contenido">
-        <span class="cerrar-modal" id="cerrarModalOlvide" role="button" tabindex="0" aria-label="Cerrar">&times;</span>
-        <div class="contenedor-registro">
-            <div class="marca">
-                <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="<%= tienda.nombre %>" class="marca-icono">
-                <span class="marca-texto"><%= tienda.nombre %></span>
-            </div>
-            <main class="registro" role="main">
-                <div class="registro-encabezado">
-                    <h1>Recuperar contraseña</h1>
-                    <p>Por seguridad, el restablecimiento lo realiza el Administrador del sitio.</p>
-                </div>
-                <p>Comunícate con este número para solicitar una clave temporal. Ten a mano tu documento. Después de iniciar sesión, cámbiala desde tu perfil.</p>
-                <p id="contactoRecuperacion" class="contacto-recuperacion" aria-live="polite">Cargando número de contacto…</p>
-                <p class="registro-pie">
-                    <a href="#" class="enlace-fuerte" id="volverLoginOlvide">Volver al inicio de sesión</a>
-                </p>
-            </main>
-            <footer class="pie-pagina">
-                <span class="pie-punto" aria-hidden="true"></span>
-                <%= tienda.nombre %>
-            </footer>
-        </div>
+    <div class="modal-contenido modal-cuenta" role="dialog" aria-modal="true" aria-labelledby="tituloOlvide">
+        <button type="button" class="cerrar-modal" id="cerrarModalOlvide" aria-label="Cerrar">&times;</button>
+        <p class="modal-marca"><%= tienda.nombre %></p>
+        <h2 id="tituloOlvide">Recuperar contraseña</h2>
+        <p class="modal-ayuda">La tienda te da una clave temporal. Llama o escribe a este número con tu documento a la mano; después de entrar, cámbiala desde tu perfil.</p>
+        <p id="contactoRecuperacion" class="contacto-recuperacion" aria-live="polite">Cargando número de contacto…</p>
+        <p class="modal-pie"><a href="#" id="volverLoginOlvide">Volver a entrar</a></p>
     </div>
 </div>

@@ -2,289 +2,149 @@
 <html lang="es">
 
 <head>
-    <%- include('partials/headMeta', { titulo: 'Mis Apartados' }) %>
+    <%- include('partials/headMeta', { titulo: 'Mis apartados' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
         });
     </script>
-    <link rel="stylesheet" href="/css/verApartados.css">
-    <link rel="stylesheet" href="/css/toast.css">
+    <%- include('partials/estilosTienda') %>
 </head>
 
 <body>
+    <%- include('partials/encabezado') %>
 
-    <!-- HEADER Y BOTÓN REGRESAR -->
-    <header class="header-catalogo">
-        <div class="contenedor-header">
-            <div class="marca-catalogo">
-                <span><%= tienda.nombre %></span>
-            </div>
-            <a href="/" class="btn-inicio">← Regresar al Inicio</a>
-        </div>
-    </header>
+    <%
+        const lista = typeof apartados !== 'undefined' && Array.isArray(apartados) ? apartados : [];
+        const estadoDe = (item) => item.estado_apartado || 'pendiente';
+        // Activos: pendiente o confirmado. Historial: entregado o cancelado.
+        const activos = lista.filter((item) => !['entregado', 'cancelado'].includes(estadoDe(item)));
+        const historial = lista.filter((item) => ['entregado', 'cancelado'].includes(estadoDe(item)));
+        const cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="contenedor-principal">
+        // La BD guarda unidades mínimas y el precio aplicado por unidad mínima.
+        // Si el apartado guardó presentación, la cantidad se muestra en ella.
+        const resumen = (item) => {
+            const factor = Number(item.presentacion_factor) || 0;
+            const conPres = !!item.presentacion_nombre && factor > 0;
+            const unidad = item.unidad || 'unidad';
+            const unidades = Number(item.cantidad) || 0;
+            const precioUnidad = Number(item.precio_aplicado) > 0 ? Number(item.precio_aplicado) : Number(item.precio) || 0;
+            return {
+                cantidad: conPres ? Math.floor(unidades / factor) : unidades,
+                nombreCantidad: conPres ? item.presentacion_nombre : unidad,
+                detalle: conPres ? `${unidades} ${unidad} en total` : '',
+                precioPorUno: conPres ? precioUnidad * factor : precioUnidad,
+                antes: Number(item.precio_aplicado) > 0 && Number(item.precio_aplicado) < Number(item.precio)
+                    ? (conPres ? Number(item.precio) * factor : Number(item.precio)) : 0,
+                total: unidades * precioUnidad,
+            };
+        };
+    %>
+
+    <main class="contenedor contenedor-angosto">
+        <header class="pagina-cabeza">
+            <h1>Mis apartados</h1>
+            <p>Lo que tienes guardado en la tienda y lo que ya recogiste.</p>
+        </header>
 
         <% if (usuario) { %>
-        <!-- SECCIÓN DE NOTIFICACIONES DEL CLIENTE -->
-        <section class="seccion-notificaciones" id="seccionNotificaciones" style="display:none;">
-            <div class="notificaciones-cabecera">
-                <h2 class="titulo-notificaciones">Notificaciones</h2>
-                <button type="button" class="btn-marcar-todas-notif" id="btnMarcarTodasNotif">Marcar todo leído</button>
+        <section class="notificaciones" id="seccionNotificaciones" style="display:none;" aria-labelledby="tituloNotif">
+            <div class="notificaciones-cabeza">
+                <h2 id="tituloNotif">Novedades</h2>
+                <button type="button" class="btn-texto" id="btnMarcarTodasNotif">Marcar todo como leído</button>
             </div>
             <div class="notificaciones-lista" id="listaNotificaciones">
-                <p class="notif-vacio">Cargando notificaciones...</p>
+                <p class="notif-vacio">Cargando…</p>
             </div>
         </section>
         <% } %>
 
-        <div class="encabezado-seccion">
-            <div>
-                <h1 class="titulo-catalogo">MIS APARTADOS</h1>
-                <p class="subtitulo-seccion">Consulta y gestiona los productos que has reservado.</p>
+        <% if (!activos.length && !historial.length) { %>
+            <div class="vacio vacio-grande">
+                <h2>Aún no has apartado nada</h2>
+                <p>Recorre los pasillos y aparta lo que necesites; te lo guardamos <%- include('partials/duracionApartado') %>.</p>
+                <a href="/catalogo" class="btn">Ir al catálogo</a>
             </div>
-        </div>
+        <% } %>
 
-        <% 
-        // Apartados ACTIVOS: los que todavía se pueden gestionar (pendiente/confirmado)
-        const apartadosVisibles = (typeof apartados !== 'undefined') 
-            ? apartados.filter(item => {
-                const estado = item.estado_apartado || 'pendiente';
-                return estado !== 'entregado' && estado !== 'cancelado';
-            }) 
-            : [];
-
-        // HISTORIAL: pedidos terminados (entregados o cancelados)
-        const apartadosHistorial = (typeof apartados !== 'undefined') 
-            ? apartados.filter(item => {
-                const estado = item.estado_apartado || 'pendiente';
-                return estado === 'entregado' || estado === 'cancelado';
-            }) 
-            : [];
-        %>
-
-        <% if (apartadosVisibles.length === 0 && apartadosHistorial.length === 0) { %>
-            <div class="estado-vacio">
-                <h3>No tienes apartados ni historial de compras</h3>
-                <p>Explora nuestro catálogo y aparta tus productos favoritos.</p>
-                <a href="/catalogo" class="btn-explorar">Ver Catálogo</a>
-            </div>
-        <% } else { %>
-        <% if (apartadosVisibles.length > 0) { %>
-            <div class="rejilla-productos">
-                <% apartadosVisibles.forEach(item => {
-                    // 1. Presentación guardada al apartar (ej. Caja = 12 und); si no hay, unidad mínima
-                    const factorPres = Number(item.presentacion_factor) || 0;
-                    const conPresentacion = !!item.presentacion_nombre && factorPres > 0;
-                    const unidadItem = item.unidad || 'Unidad(es)';
-
-                    // 2. Precio base: usamos el precio capturado al apartar (ya con descuento).
-                    //    Si viene en 0 (apartados viejos sin precio), caemos al precio actual del producto.
-                    const precioUnitarioReal = Number(item.precio_aplicado) > 0
-                        ? Number(item.precio_aplicado)
-                        : Number(item.precio);
-                    const precioSinDescuento = Number(item.precio);
-                    const hayDescuento = Number(item.precio_aplicado) > 0
-                        && Number(item.precio_aplicado) < Number(item.precio);
-
-                    // 3. La BD guarda unidades mínimas; el precio aplicado es por unidad mínima
-                    const cantidadUnidades = Number(item.cantidad);
-                    const cantidadPres = conPresentacion ? Math.floor(cantidadUnidades / factorPres) : cantidadUnidades;
-
-                    // 4. Calcular el total acumulado real a pagar
-                    const totalPagar = cantidadUnidades * precioUnitarioReal;
-
-                    // 5. Estado del apartado
-                    const estadoApartado = item.estado_apartado || 'pendiente';
-                    const esConfirmado = estadoApartado === 'confirmado';
-
-                    // Texto legible del estado
-                    const textoEstado = {
-                        confirmado: 'Confirmado',
-                        pendiente: 'Pendiente'
-                    }[estadoApartado] || 'Pendiente';
+        <% if (activos.length) { %>
+        <section class="seccion" aria-labelledby="tituloActivos">
+            <h2 id="tituloActivos" class="seccion-subtitulo">Por recoger</h2>
+            <ul class="apartados">
+                <% activos.forEach((item) => {
+                    const r = resumen(item);
+                    const estado = estadoDe(item);
+                    const confirmado = estado === 'confirmado';
                 %>
-                    <div class="tarjeta-producto" id="apartado-<%= item.id_apartado %>" data-estado="<%= estadoApartado %>">
-                        <div class="imagen-producto">
-                            <% if (item.imagenUpload) { %>
-                                <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
-                            <% } else { %>
-                                <span><%= item.nombre %></span>
-                            <% } %>
-                            <span class="badge-estado <%= estadoApartado %>">
-                                <%= textoEstado %>
-                            </span>
-                        </div>
-
-                        <div class="nombre-producto">
-                            <%= item.nombre %>
-                        </div>
-
-                        <p class="presentacion-producto">
-                            Cantidad: <strong><%= cantidadPres %></strong>
-                            <%= conPresentacion ? item.presentacion_nombre + '(s)' : unidadItem %>
-                            <% if (conPresentacion) { %>
-                                <small style="display: block; color: #666;">(<%= cantidadUnidades %> <%= unidadItem %> en total)</small>
-                            <% } %>
+                <li class="apartado tarjeta-producto" id="apartado-<%= item.id_apartado %>" data-estado="<%= estado %>">
+                    <div class="apartado-foto">
+                        <% if (item.imagenUpload) { %><img src="<%= item.imagenUpload %>" alt=""><% } else { %><span class="producto-sin-foto"><%= String(item.nombre || '?').charAt(0) %></span><% } %>
+                    </div>
+                    <div class="apartado-info">
+                        <p class="apartado-nombre"><%= item.nombre %></p>
+                        <p class="apartado-cantidad">
+                            <b><%= r.cantidad %></b> <%= r.nombreCantidad %> × <%= cop(r.precioPorUno) %>
+                            <% if (r.antes) { %><s><%= cop(r.antes) %></s><% } %>
+                            <% if (r.detalle) { %><small><%= r.detalle %></small><% } %>
                         </p>
-
-                        <p class="presentacion-producto">
-                            <% if (conPresentacion) { %>
-                                Precio por <%= item.presentacion_nombre %>: <strong>$<%= (precioUnitarioReal * factorPres).toLocaleString("es-CO") %></strong>
-                                <% if (hayDescuento) { %>
-                                    <small style="display:block; color:#d32f2f;">
-                                        Antes $<%= (precioSinDescuento * factorPres).toLocaleString("es-CO") %>
-                                    </small>
-                                <% } %>
-                                <small style="display: block; color: #888;">($<%= precioUnitarioReal.toLocaleString("es-CO") %> / <%= unidadItem %>)</small>
-                            <% } else { %>
-                                Precio un.: $<%= precioUnitarioReal.toLocaleString("es-CO") %>
-                                <% if (hayDescuento) { %>
-                                    <small style="display:block; color:#d32f2f;">
-                                        Antes $<%= precioSinDescuento.toLocaleString("es-CO") %>
-                                    </small>
-                                <% } %>
-                            <% } %>
-                        </p>
-
-                        <div class="precio-producto">
-                            Total: $<%= totalPagar.toLocaleString("es-CO") %>
-                        </div>
-
-                        <% if (!esConfirmado && item.fecha) { 
-                            const fechaApartado = new Date(item.fecha);
-                            // Duración configurada por la tienda (minutos_expiracion_apartado)
-                            const expira = new Date(fechaApartado.getTime() + (Number(tienda.minutos_expiracion_apartado) || 60) * 60 * 1000);
+                        <% if (!confirmado && item.fecha) {
+                            const expira = new Date(new Date(item.fecha).getTime() + (Number(tienda.minutos_expiracion_apartado) || 60) * 60 * 1000);
                         %>
-                            <div class="temporizador-apartado" data-expira="<%= expira.toISOString() %>">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                                </svg>
+                            <p class="temporizador-apartado" data-expira="<%= expira.toISOString() %>">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                                 <span class="texto-temporizador"></span>
-                            </div>
+                            </p>
                         <% } %>
-
-                        <% if (esConfirmado) { %>
-                            <button type="button" class="btn-dismiss btn-dismiss-confirmado" data-id="<%= item.id_apartado %>">
-                                Ocultar
-                            </button>
+                    </div>
+                    <div class="apartado-lado">
+                        <span class="estado estado-<%= estado %>"><%= confirmado ? 'Listo para recoger' : 'Pendiente' %></span>
+                        <b class="apartado-total"><%= cop(r.total) %></b>
+                        <% if (confirmado) { %>
+                            <button type="button" class="btn-texto btn-dismiss" data-id="<%= item.id_apartado %>">Ocultar</button>
                         <% } else { %>
-                            <button type="button" class="btn-cancelar btn-accion-cancelar" data-id="<%= item.id_apartado %>">
-                                Cancelar Apartado
-                            </button>
+                            <button type="button" class="btn-texto btn-peligro btn-accion-cancelar" data-id="<%= item.id_apartado %>">Cancelar</button>
                         <% } %>
                     </div>
+                </li>
                 <% }) %>
-            </div>
+            </ul>
+        </section>
         <% } %>
 
-        <% if (apartadosHistorial.length > 0) { %>
-            <div class="seccion-historial">
-                <h2 class="titulo-seccion-historial">HISTORIAL DE COMPRAS</h2>
-                <p class="subtitulo-seccion">Pedidos entregados o cancelados.</p>
-
-                <div class="filtro-historial">
-                    <div class="filtro-cabecera">
-                        <svg class="icono-filtro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>Filtrar por fecha</span>
-                    </div>
-                    <div class="filtro-campos">
-                        <label class="filtro-campo">
-                            <span class="filtro-etiqueta">Desde</span>
-                            <input type="date" id="filtro-desde" aria-label="Fecha desde">
-                        </label>
-                        <label class="filtro-campo">
-                            <span class="filtro-etiqueta">Hasta</span>
-                            <input type="date" id="filtro-hasta" aria-label="Fecha hasta">
-                        </label>
-                        <button type="button" class="btn-limpiar-filtro" id="btn-limpiar-filtro">
-                            <svg class="icono-limpiar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <polyline points="1 4 1 10 7 10"></polyline>
-                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-                            </svg>
-                            Limpiar filtro
-                        </button>
-                    </div>
+        <% if (historial.length) { %>
+        <section class="seccion" aria-labelledby="tituloHistorial">
+            <div class="seccion-cabeza">
+                <h2 id="tituloHistorial" class="seccion-subtitulo">Historial</h2>
+                <div class="filtro-fechas">
+                    <label>Desde <input type="date" id="filtro-desde"></label>
+                    <label>Hasta <input type="date" id="filtro-hasta"></label>
+                    <button type="button" class="btn-texto" id="btn-limpiar-filtro">Limpiar</button>
                 </div>
-
-                <div class="rejilla-historial">
-                    <% apartadosHistorial.forEach(item => {
-                        // 1. Presentación guardada al apartar (si la hubo)
-                        const factorH = Number(item.presentacion_factor) || 0;
-                        const conPresentacionH = !!item.presentacion_nombre && factorH > 0;
-
-                        // 2. Precios base (capturado al apartar, con fallback al precio actual)
-                        const precioUnitarioH = Number(item.precio_aplicado) > 0
-                            ? Number(item.precio_aplicado)
-                            : Number(item.precio);
-
-                        // 3. Cantidad en la presentación (la BD guarda unidades mínimas)
-                        const cantidadUnidadesH = Number(item.cantidad);
-                        const cantidadPresH = conPresentacionH ? Math.floor(cantidadUnidadesH / factorH) : cantidadUnidadesH;
-
-                        // 4. Total pagado
-                        const totalHistorial = cantidadUnidadesH * precioUnitarioH;
-
-                        // 5. Estado del pedido
-                        const estadoH = item.estado_apartado || 'cancelado';
-                        const esCanceladoH = estadoH === 'cancelado';
-                        const textoEstadoH = estadoH === 'entregado' ? 'Entregado' : 'Cancelado';
-                        const fechaItemH = item.fecha ? new Date(item.fecha) : null;
-                        const fechaTextoH = fechaItemH ? fechaItemH.toLocaleString('es-CO') : '';
-                        // Fecha en formato yyyy-mm-dd para poder compararla con los inputs del filtro
-                        const fechaLocal = fechaItemH
-                            ? `${fechaItemH.getFullYear()}-${String(fechaItemH.getMonth() + 1).padStart(2, '0')}-${String(fechaItemH.getDate()).padStart(2, '0')}`
-                            : '';
-                        const motivoH = esCanceladoH && item.cancelado_por
-                            ? (item.cancelado_por === 'cliente' ? 'Cancelado por el cliente' : 'Cancelado por el administrador')
-                            : '';
-                    %>
-                        <div class="tarjeta-historial" data-fecha="<%= fechaLocal %>">
-                            <div class="imagen-miniatura">
-                                <% if (item.imagenUpload) { %>
-                                    <img src="<%= item.imagenUpload %>" alt="Imagen de <%= item.nombre %>">
-                                <% } else { %>
-                                    <span><%= item.nombre %></span>
-                                <% } %>
-                            </div>
-                            <div class="detalle-historial">
-                                <div class="fila-historial">
-                                    <span class="nombre-producto"><%= item.nombre %></span>
-                                    <span class="badge-estado <%= estadoH %>"><%= textoEstadoH %></span>
-                                </div>
-                                <p class="presentacion-historial">
-                                    Cantidad: <strong><%= cantidadPresH %></strong>
-                                    <%= conPresentacionH ? item.presentacion_nombre + '(s) (' + cantidadUnidadesH + ' ' + (item.unidad || 'Unidad(es)') + ')' : (item.unidad || 'Unidad(es)') %>
-                                </p>
-                                <p class="presentacion-historial">
-                                    Total: <strong>$<%= totalHistorial.toLocaleString('es-CO') %></strong>
-                                </p>
-                                <% if (fechaTextoH) { %>
-                                    <p class="fecha-historial">Fecha: <%= fechaTextoH %></p>
-                                <% } %>
-                                <% if (motivoH) { %>
-                                    <p class="nota-cancelado"><%= motivoH %></p>
-                                <% } %>
-                            </div>
-                        </div>
-                    <% }) %>
-                </div>
-                <p id="filtro-historial-vacio" class="filtro-historial-vacio" style="display:none;">
-                    No hay pedidos en el rango de fechas seleccionado.
-                </p>
             </div>
-        <% } %>
+            <ul class="historial">
+                <% historial.forEach((item) => {
+                    const r = resumen(item);
+                    const estado = estadoDe(item);
+                    const fecha = item.fecha ? new Date(item.fecha) : null;
+                    const fechaLocal = fecha ? `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}` : '';
+                    const motivo = estado === 'cancelado' && item.cancelado_por
+                        ? (item.cancelado_por === 'cliente' ? 'Lo cancelaste tú' : 'Lo canceló la tienda') : '';
+                %>
+                <li class="tarjeta-historial" data-fecha="<%= fechaLocal %>">
+                    <span class="historial-fecha"><%= fecha ? fecha.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '' %></span>
+                    <span class="historial-nombre"><%= item.nombre %> <small><%= r.cantidad %> <%= r.nombreCantidad %><%= motivo ? ' · ' + motivo : '' %></small></span>
+                    <span class="estado estado-<%= estado %>"><%= estado === 'entregado' ? 'Entregado' : 'Cancelado' %></span>
+                    <b class="historial-total"><%= cop(r.total) %></b>
+                </li>
+                <% }) %>
+            </ul>
+            <p id="filtro-historial-vacio" class="vacio" style="display:none;">No hay pedidos entre esas fechas.</p>
+        </section>
         <% } %>
     </main>
+
+    <%- include('partials/pie') %>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>

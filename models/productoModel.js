@@ -91,6 +91,7 @@ const ProductoModel = {
                 p.limite_venta,
                 p.estado,
                 p.descripcion,
+                p.categoria,
                 SUM(a.cantidad) AS total_vendido
             FROM producto p
             INNER JOIN apartados a ON a.producto = p.id_producto
@@ -98,7 +99,7 @@ const ProductoModel = {
               AND p.nombre NOT IN (?)
               AND p.precio > 0
             GROUP BY p.id_producto, p.nombre, p.unidad, p.lugar, p.precio, p.descuento,
-                     p.fecha_inicio_oferta, p.fecha_fin_oferta, p.limite_venta, p.estado, p.descripcion
+                     p.fecha_inicio_oferta, p.fecha_fin_oferta, p.limite_venta, p.estado, p.descripcion, p.categoria
             ORDER BY total_vendido DESC
             LIMIT 4
         `;

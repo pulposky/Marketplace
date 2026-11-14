@@ -1,0 +1,92 @@
+<%# Modales de login, registro y recuperación (inicio y catálogo).
+    Los ids los usan login.js, registro.js y olvide.js. %>
+<div class="modal-fondo" id="modalLogin">
+    <div class="modal-contenido modal-cuenta" role="dialog" aria-modal="true" aria-labelledby="tituloLogin">
+        <button type="button" class="cerrar-modal" id="cerrarModal" aria-label="Cerrar">&times;</button>
+        <p class="modal-marca"><%= tienda.nombre %></p>
+        <h2 id="tituloLogin">Entrar</h2>
+        <p class="modal-ayuda">Con tu cuenta apartas productos y ves tus pedidos.</p>
+
+        <form class="formulario" id="formLogin">
+            <div class="selector-tipo" role="radiogroup" aria-label="Tipo de cuenta">
+                <label><input type="radio" id="tipo_cliente" name="tipoLogin" value="cliente" checked><span>Cliente</span></label>
+                <label><input type="radio" id="tipo_usuario" name="tipoLogin" value="usuario"><span>Personal de la tienda</span></label>
+            </div>
+
+            <div id="clienteFields">
+                <div class="campo" id="campoDoc">
+                    <label for="doc">Documento</label>
+                    <input type="text" id="doc" name="documento" inputmode="numeric" autocomplete="username">
+                </div>
+                <div class="campo" id="campoPwd" style="display:none;">
+                    <label for="pwdCliente">Contraseña</label>
+                    <input type="password" id="pwdCliente" name="password" autocomplete="current-password">
+                </div>
+                <div class="campo" id="campoNuevaPwd" style="display:none;">
+                    <label for="nuevaPwd">Crea tu contraseña</label>
+                    <input type="password" id="nuevaPwd" name="nuevaPassword" autocomplete="new-password">
+                </div>
+                <div class="campo" id="campoConfirmPwd" style="display:none;">
+                    <label for="confirmPwd">Repite la contraseña</label>
+                    <input type="password" id="confirmPwd" autocomplete="new-password">
+                </div>
+            </div>
+
+            <div id="usuarioFields" style="display:none;">
+                <div class="campo">
+                    <label for="user">Usuario</label>
+                    <input type="text" id="user" name="usuario" autocomplete="username">
+                </div>
+                <div class="campo">
+                    <label for="pwd">Contraseña</label>
+                    <input type="password" id="pwd" name="password" autocomplete="current-password">
+                </div>
+            </div>
+
+            <button type="submit" id="btnLoginSubmit" class="btn btn-ancho">Entrar</button>
+        </form>
+        <p class="modal-pie">¿No tienes cuenta? <a href="#" class="enlace-registro">Regístrate</a></p>
+        <p class="modal-pie" id="enlaceOlvideLogin" style="display:none;">¿Olvidaste tu contraseña? <a href="#" class="enlace-olvide">Recupérala</a></p>
+        <p id="mensaje" class="mensaje-error" role="alert"></p>
+    </div>
+</div>
+
+<div class="modal-fondo" id="modalRegistro">
+    <div class="modal-contenido modal-cuenta" role="dialog" aria-modal="true" aria-labelledby="tituloRegistro">
+        <button type="button" class="cerrar-modal" id="cerrarModalRegistro" aria-label="Cerrar">&times;</button>
+        <p class="modal-marca"><%= tienda.nombre %></p>
+        <h2 id="tituloRegistro">Crear cuenta</h2>
+        <p class="modal-ayuda">Solo pedimos lo necesario para entregarte tus apartados.</p>
+        <form class="formulario formulario-dos" id="formRegistro">
+            <div class="campo campo-ancho">
+                <label for="regNombre">Nombre completo</label>
+                <input type="text" id="regNombre" name="nombre" autocomplete="name">
+            </div>
+            <div class="campo">
+                <label for="regDocumento">Documento</label>
+                <input type="text" id="regDocumento" name="documento" inputmode="numeric">
+            </div>
+            <div class="campo">
+                <label for="regTelefono">Teléfono</label>
+                <input type="tel" id="regTelefono" name="telefono" autocomplete="tel">
+            </div>
+            <div class="campo campo-ancho">
+                <label for="regDireccion">Dirección</label>
+                <input type="text" id="regDireccion" name="direccion" autocomplete="street-address">
+            </div>
+            <div class="campo">
+                <label for="regPassword">Contraseña</label>
+                <input type="password" id="regPassword" name="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+            </div>
+            <div class="campo">
+                <label for="regConfirmarPassword">Repite la contraseña</label>
+                <input type="password" id="regConfirmarPassword" name="confirmarPassword" autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn btn-ancho campo-ancho">Crear cuenta</button>
+        </form>
+        <p class="modal-pie">¿Ya tienes cuenta? <a href="#" id="volverLogin">Entra</a></p>
+        <p id="mensajeRegistro" class="mensaje-registro" role="alert"></p>
+    </div>
+</div>
+
+<%- include('modalAyudaRecuperacion') %>

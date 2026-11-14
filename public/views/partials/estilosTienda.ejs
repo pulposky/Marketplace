@@ -1,0 +1,13 @@
+<%# Hojas de estilo de la tienda pública y color de marca desde la configuración.
+    El texto sobre el color de marca se elige claro u oscuro según su luminosidad. %>
+<%
+    const _marca = /^#[0-9a-fA-F]{6}$/.test(tienda.color_primario || '') ? tienda.color_primario : '#1F7A4D';
+    const _n = parseInt(_marca.slice(1), 16);
+    const _luz = (0.299 * (_n >> 16) + 0.587 * ((_n >> 8) & 255) + 0.114 * (_n & 255)) / 255;
+%>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/tienda.css">
+<link rel="stylesheet" href="/css/toast.css">
+<style>:root{--marca:<%= _marca %>;--sobre-marca:<%= _luz > 0.62 ? '#1d2321' : '#ffffff' %>}</style>

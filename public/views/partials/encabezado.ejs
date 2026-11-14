@@ -1,0 +1,43 @@
+<%# Barra superior de la tienda pública.
+    Opcionales: buscadorId (id del campo de búsqueda; el catálogo usa 'inputBuscar' para filtrar en vivo),
+    busqueda (texto ya buscado) y conModalLogin (true si la página trae el modal de login). %>
+<%
+    const _usuario = typeof usuario !== 'undefined' ? usuario : null;
+    const _buscadorId = (typeof buscadorId !== 'undefined' && buscadorId) ? buscadorId : 'buscarProductos';
+    const _busqueda = typeof busqueda !== 'undefined' ? busqueda : '';
+    const _conModal = typeof conModalLogin !== 'undefined' && conModalLogin;
+%>
+<header class="barra">
+    <div class="barra-interior">
+        <a href="/" class="barra-marca">
+            <img src="<%= tienda.logo_url || '/img/marca/logo-default.svg' %>" alt="" class="barra-logo">
+            <span><%= tienda.nombre %></span>
+        </a>
+
+        <form class="barra-buscar" action="/catalogo" method="get" role="search">
+            <label for="<%= _buscadorId %>" class="solo-lector">Buscar productos</label>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="<%= _buscadorId %>" name="busqueda" value="<%= _busqueda %>" placeholder="Buscar productos" autocomplete="off">
+        </form>
+
+        <nav class="barra-nav" aria-label="Principal">
+            <a href="/catalogo">Catálogo</a>
+            <% if (_usuario && esRolPanel(_usuario.role)) { %>
+                <a href="/admin">Panel</a>
+            <% } else if (_usuario) { %>
+                <a href="/verApartados">Mis apartados</a>
+                <a href="/perfil">Perfil</a>
+            <% } %>
+            <% if (_usuario) { %>
+                <form method="POST" action="/logout" class="barra-salir">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit">Salir</button>
+                </form>
+            <% } else if (_conModal) { %>
+                <button type="button" class="btn btn-chico" id="abrirModalLogin">Entrar</button>
+            <% } else { %>
+                <a href="/catalogo?login=1" class="btn btn-chico">Entrar</a>
+            <% } %>
+        </nav>
+    </div>
+</header>

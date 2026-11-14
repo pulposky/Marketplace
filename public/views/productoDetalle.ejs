@@ -8,144 +8,112 @@
             if (e.persisted) window.location.reload();
         });
     </script>
-    <link rel="stylesheet" href="/css/productoDetalle.css">
-    <link rel="stylesheet" href="/css/toast.css">
+    <%- include('partials/estilosTienda') %>
 </head>
 
 <body>
+    <%
+        // Misma lógica de precios que el catálogo; el stock está en la unidad mínima
+        const unidad = producto.unidad || 'unidad';
+        const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
+        const pasillo = (pasillos || []).find((p) => p.nombre === String(producto.categoria || '').trim()) || null;
 
-    <% 
-    // ---- Preparación de datos para la ficha (misma lógica que el catálogo) ----
-    const nombreMostrar = producto.nombre;
-    const unidadMostrar = producto.unidad || 'Unidad(es)';
-    // Presentaciones de venta (ej. Caja = 12 unidades); el stock está en la unidad mínima
-    const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
+        const precioBase = Number(producto.precio) || 0;
+        const descuento = Number(producto.descuento) || 0;
+        const ahora = new Date();
+        const enOferta = descuento > 0
+            && (!producto.fecha_inicio_oferta || ahora >= new Date(producto.fecha_inicio_oferta))
+            && (!producto.fecha_fin_oferta || ahora <= new Date(producto.fecha_fin_oferta));
+        const precioUnidad = enOferta ? precioBase * (1 - descuento / 100) : precioBase;
 
-    const precioUnitarioReal = Number(producto.precio);
-    const descuentoProd = Number(producto.descuento) || 0;
-    const ahoraOferta = new Date();
-    const enOferta = descuentoProd > 0
-        && (!producto.fecha_inicio_oferta || ahoraOferta >= new Date(producto.fecha_inicio_oferta))
-        && (!producto.fecha_fin_oferta || ahoraOferta <= new Date(producto.fecha_fin_oferta));
-    const precioUnitarioOferta = enOferta ? precioUnitarioReal * (1 - descuentoProd / 100) : precioUnitarioReal;
-
-    const precioMostrar = precioUnitarioOferta;
-    const precioOriginalMostrar = precioUnitarioReal;
-
-    const stockDisponible = Number(producto.limite_venta) || 0;
+        const principal = presentaciones[0] || null;
+        const factor = principal ? Number(principal.factor) || 1 : 1;
+        const etiqueta = principal ? principal.nombre : unidad;
+        const stock = Number(producto.limite_venta) || 0;
+        const cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
     %>
+    <%- include('partials/encabezado') %>
 
-    <!-- HEADER -->
-    <header class="header-catalogo">
-        <div class="contenedor-header">
-            <a href="/catalogo" class="btn-regresar">← Volver al catálogo</a>
-            <div class="marca-catalogo">
-                <span><%= tienda.nombre %></span>
-            </div>
-        </div>
-    </header>
+    <main class="contenedor ficha"<%- pasillo ? ` style="--k:${pasillo.color}"` : '' %>>
+        <nav class="migas" aria-label="Ruta">
+            <a href="/catalogo">Catálogo</a>
+            <% if (pasillo) { %><span aria-hidden="true">/</span><a href="/catalogo?categoria=<%= encodeURIComponent(pasillo.nombre) %>">Pasillo <%= pasillo.numero %> · <%= pasillo.nombre %></a><% } %>
+        </nav>
 
-    <!-- FICHA DEL PRODUCTO -->
-    <main class="contenedor-detalle">
-
-        <div class="ficha-producto">
-
-            <!-- IMAGEN -->
-            <div class="ficha-imagen">
+        <div class="ficha-grid">
+            <div class="ficha-foto">
                 <% if (producto.imagenUpload) { %>
-                    <img src="<%= producto.imagenUpload %>" alt="Imagen de <%= nombreMostrar %>">
+                    <img src="<%= producto.imagenUpload %>" alt="<%= producto.nombre %>">
                 <% } else { %>
-                    <span class="imagen-placeholder"><%= nombreMostrar %></span>
+                    <span class="producto-sin-foto"><%= String(producto.nombre || '?').charAt(0) %></span>
                 <% } %>
+                <% if (enOferta) { %><i class="producto-oferta">−<%= Math.round(descuento) %>%</i><% } %>
             </div>
 
-            <!-- INFORMACIÓN -->
             <div class="ficha-info">
-                <span class="categoria-tag"><%= producto.categoria || 'Otros' %></span>
+                <% if (pasillo) { %><p class="ficha-pasillo">Pasillo <%= pasillo.numero %> · <%= pasillo.nombre %></p><% } %>
+                <h1><%= producto.nombre %></h1>
 
-                <h1 class="ficha-nombre"><%= nombreMostrar %></h1>
-
-                <p class="ficha-presentacion">
-                    Presentación: <strong><%= unidadMostrar %></strong>
-                    <% if (producto.lugar) { %>
-                        <span class="ficha-lugar">· <%= producto.lugar %></span>
-                    <% } %>
+                <p class="ficha-precio">
+                    <% if (enOferta) { %><s><%= cop(precioBase * factor) %></s><% } %>
+                    <b id="fichaPrecio"><%= cop(precioUnidad * factor) %></b>
+                    <span id="fichaEtiqueta">/ <%= etiqueta %></span>
                 </p>
 
-                <% if (producto.descripcion) { %>
-                    <p class="ficha-descripcion"><%= producto.descripcion %></p>
-                <% } %>
+                <% if (producto.descripcion) { %><p class="ficha-descripcion"><%= producto.descripcion %></p><% } %>
 
-                <p class="ficha-stock">
-                    <span class="chip-stock">
-                        Disponibles: <strong><%= stockDisponible %></strong> <%= unidadMostrar %>
-                    </span>
-                    <% if (presentaciones.length) { %>
-                        <span class="stock-detalle">(<%= presentaciones.map(p => Math.floor(stockDisponible / p.factor) + ' ' + p.nombre + '(s)').join(', ') %>)</span>
-                    <% } %>
-                </p>
-
-                <div class="ficha-precio">
-                    <% if (enOferta) { %>
-                        <span class="precio-original">$<%= precioOriginalMostrar.toLocaleString("es-CO") %></span>
-                        <span class="precio-oferta">$<%= precioMostrar.toLocaleString("es-CO") %></span>
-                        <span class="badge-oferta">-<%= descuentoProd %>% OFERTA</span>
-                    <% } else { %>
-                        <span class="precio">$<%= precioMostrar.toLocaleString("es-CO") %></span>
-                    <% } %>
-                    <span class="precio-unidad">/ <%= unidadMostrar %></span>
-                    <% presentaciones.forEach(p => { %>
-                        <span class="precio-unidad">· <%= p.nombre %> (<%= p.factor %> und): $<%= (precioUnitarioOferta * p.factor).toLocaleString("es-CO") %></span>
-                    <% }) %>
-                </div>
-
-                <!-- APARTAR / ACCIÓN -->
                 <% if (!usuario) { %>
-                    <a href="/catalogo?login=1&amp;desde=producto" class="btn-apartar">Inicia sesión para apartar</a>
-                    <p class="ficha-nota">Al apartar, el producto queda reservado por <%- include('partials/duracionApartado') %>.</p>
+                    <% if (presentaciones.length) { %>
+                        <p class="ficha-se-vende">Se vende por: <%= presentaciones.map((p) => `${p.nombre} (${p.factor} ${unidad})`).join(', ') %></p>
+                    <% } %>
+                    <a href="/catalogo?login=1&amp;desde=producto" class="btn btn-grande">Entra para apartar</a>
+                <% } else if (stock < factor) { %>
+                    <p class="ficha-agotado">Agotado por ahora.</p>
                 <% } else { %>
-                    <div class="ficha-accion">
+                    <div class="ficha-compra">
                         <% if (presentaciones.length) { %>
-                            <div class="campo-cantidad">
-                                <label for="presentacionDetalle">Presentación</label>
-                                <select id="presentacionDetalle">
-                                    <% presentaciones.forEach(p => { %>
-                                        <option value="<%= p.id %>" data-factor="<%= p.factor %>" data-nombre="<%= p.nombre %>"><%= p.nombre %> (<%= p.factor %> und)</option>
+                            <fieldset class="segmentos">
+                                <legend>Presentación</legend>
+                                <div class="segmentos-fila">
+                                    <% presentaciones.forEach((p, i) => { %>
+                                        <label>
+                                            <input type="radio" name="presentacionDetalle" value="<%= p.id %>"
+                                                data-factor="<%= p.factor %>" data-nombre="<%= p.nombre %>" <%= i === 0 ? 'checked' : '' %>>
+                                            <span><b><%= p.nombre %></b><small><%= p.factor %> <%= unidad %></small></span>
+                                        </label>
                                     <% }) %>
-                                </select>
-                            </div>
+                                </div>
+                            </fieldset>
                         <% } %>
-                        <div class="campo-cantidad">
-                            <label for="cantidadDetalle">Cantidad</label>
-                            <input type="number" id="cantidadDetalle" value="1" min="1" max="<%= stockDisponible %>" required>
-                            <small id="textoDisponiblesDetalle">
-                                Disponibles: <span id="cantDisponiblesDetalle"><%= stockDisponible %></span>
-                                <span id="unidadDisponiblesDetalle"><%= unidadMostrar %></span>
-                                <span id="precioPresentacionDetalle"></span>
-                            </small>
+
+                        <div class="ficha-cantidad">
+                            <div class="campo">
+                                <label for="cantidadDetalle">Cantidad</label>
+                                <input type="number" id="cantidadDetalle" value="1" min="1" max="<%= Math.floor(stock / factor) %>" required>
+                            </div>
+                            <button type="button" class="btn btn-grande" id="btnApartarDetalle"
+                                data-id="<%= producto.id_producto %>"
+                                data-precio-unitario="<%= precioUnidad %>"
+                                data-unidad="<%= unidad %>"
+                                data-limite="<%= stock %>">Apartar</button>
                         </div>
-                        <button type="button" class="btn-apartar" id="btnApartarDetalle"
-                            data-id="<%= producto.id_producto %>"
-                            data-precio-unitario="<%= precioUnitarioOferta %>"
-                            data-unidad="<%= unidadMostrar %>"
-                            data-limite="<%= stockDisponible %>">
-                            Apartar
-                        </button>
+                        <p class="ficha-disponibles" id="textoDisponiblesDetalle">
+                            Disponibles: <span id="cantDisponiblesDetalle"><%= Math.floor(stock / factor) %></span>
+                            <span id="unidadDisponiblesDetalle"><%= etiqueta %></span>
+                        </p>
                     </div>
-                    <p class="ficha-nota">
-                        Reserva por <%- include('partials/duracionApartado') %>. El pago se realiza de forma presencial
-                        <% if (tienda.direccion) { %>en <%= tienda.direccion %>.<% } else { %>en nuestro punto de venta.<% } %>
-                    </p>
                 <% } %>
 
+                <dl class="ficha-datos">
+                    <div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div>
+                    <div><dt>Pagas y recoges en</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div>
+                    <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
+                </dl>
             </div>
         </div>
-
-        <div class="ficha-extra">
-            <a href="/catalogo" class="enlace-volver-catalogo">← Explorar más productos en el catálogo</a>
-        </div>
-
     </main>
+
+    <%- include('partials/pie') %>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>

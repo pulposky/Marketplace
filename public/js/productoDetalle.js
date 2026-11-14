@@ -16,29 +16,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stock en unidades mínimas; la presentación elegida (si hay) define el factor
     const stockUnidades = Number(botonApartar.dataset.limite) || 0;
     const precioUnitario = Number(botonApartar.dataset.precioUnitario) || 0;
-    const selectPresentacion = document.getElementById('presentacionDetalle');
+    // Presentación elegida (botones de radio); sin presentaciones se vende por unidad mínima
+    const elegida = () => document.querySelector('input[name="presentacionDetalle"]:checked');
     const textoCantidad = document.getElementById('cantDisponiblesDetalle');
     const textoUnidad = document.getElementById('unidadDisponiblesDetalle');
-    const textoPrecio = document.getElementById('precioPresentacionDetalle');
+    const textoPrecio = document.getElementById('fichaPrecio');
+    const textoEtiqueta = document.getElementById('fichaEtiqueta');
     let maximo = stockUnidades;
 
     // Recalcula máximo, disponibles y precio según la presentación elegida.
     // El precio es solo informativo: el servidor lo recalcula al apartar.
     const actualizarPresentacion = () => {
-        const opcion = selectPresentacion ? selectPresentacion.selectedOptions[0] : null;
+        const opcion = elegida();
         const factor = opcion ? Number(opcion.dataset.factor) || 1 : 1;
-        const unidad = botonApartar.dataset.unidad || 'unidades';
+        const nombre = opcion ? opcion.dataset.nombre : (botonApartar.dataset.unidad || 'unidad');
         maximo = Math.floor(stockUnidades / factor);
         inputCantidad.max = maximo;
         if (Number(inputCantidad.value) > maximo) inputCantidad.value = Math.max(1, maximo);
         if (textoCantidad) textoCantidad.textContent = maximo;
-        if (textoUnidad) textoUnidad.textContent = factor > 1 ? `${opcion.dataset.nombre}(s) (${stockUnidades} ${unidad})` : unidad;
-        if (textoPrecio) textoPrecio.textContent = factor > 1 ? `· $${(precioUnitario * factor).toLocaleString('es-CO')} c/u` : '';
+        if (textoUnidad) textoUnidad.textContent = nombre;
+        if (textoPrecio) textoPrecio.textContent = `$${(precioUnitario * factor).toLocaleString('es-CO')}`;
+        if (textoEtiqueta) textoEtiqueta.textContent = `/ ${nombre}`;
     };
-    if (selectPresentacion) {
-        selectPresentacion.addEventListener('change', actualizarPresentacion);
-        actualizarPresentacion();
-    }
+    document.querySelectorAll('input[name="presentacionDetalle"]').forEach((radio) => {
+        radio.addEventListener('change', actualizarPresentacion);
+    });
+    actualizarPresentacion();
 
     botonApartar.addEventListener('click', async () => {
 
@@ -59,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     productoId: botonApartar.dataset.id,
                     cantidad,
-                    presentacionId: selectPresentacion && selectPresentacion.value ? Number(selectPresentacion.value) : undefined
+                    presentacionId: elegida() ? Number(elegida().value) : undefined
                 })
             });
 
