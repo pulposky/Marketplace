@@ -113,10 +113,8 @@ const ApartadoController = {
                     () => {}
                 );
 
-                // FIXME: El stock se descuenta DESPUÉS de crear el apartado.
-                // Si hay concurrencia alta, dos clientes pueden crear apartados
-                // con el mismo stock. Un SELECT FOR UPDATE o una transacción
-                // con nivel SERIALIZABLE sería más seguro.
+                // El descuento es atómico (WHERE limite_venta >= ?): si otro cliente
+                // tomó el stock, affectedRows = 0 y se cancela el apartado recién creado.
                 ProductoModel.restarLimiteVenta(productoId, unidadesARestar, (errorUpdate, resultadoUpdate) => {
                     if (errorUpdate) {
                         console.error('Error actualizando límite tras apartado:', errorUpdate);
@@ -273,10 +271,12 @@ const ApartadoController = {
                     ProductoModel.restarLimiteVenta(detalle.producto, detalle.cantidad, (errorUpdate, resultadoUpdate) => {
                         if (errorUpdate) {
                             console.error('Error actualizando límite tras lote:', errorUpdate);
-                            // Revierto todo lo que se creó hasta ahora
+                            // Revierto lo creado; el último ítem no alcanzó a descontar stock
                             idsCreados.forEach((idCreado, i) => {
                                 ApartadoModel.cancelarApartadoCliente(idCreado, () => {});
-                                ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
+                                if (i < idsCreados.length - 1) {
+                                    ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
+                                }
                             });
                             return res.status(500).json({
                                 error: 'Error al actualizar el stock. Intenta de nuevo.',
@@ -288,9 +288,7 @@ const ApartadoController = {
                             // Sin stock: revierto todo lo creado en este lote
                             idsCreados.forEach((idCreado, i) => {
                                 ApartadoModel.cancelarApartadoCliente(idCreado, () => {});
-                                // FIXME: No se devuelve el stock del último ítem (el que falló)
-                                // porque el loop lo salta con la condición i < length - 1.
-                                // Revisar si esto causa loss de stock.
+                                // El último ítem (el que falló) no descontó stock: no se devuelve
                                 if (i < idsCreados.length - 1) {
                                     ProductoModel.devolverStockProducto(detallesCreados[i].producto, detallesCreados[i].cantidad, () => {});
                                 }
@@ -355,10 +353,13 @@ const ApartadoController = {
             return res.status(400).json({ error: 'ID de apartado no proporcionado.' });
         }
 
-        ApartadoModel.confirmarApartado(id, nombreAdmin, (error) => {
+        ApartadoModel.confirmarApartado(id, nombreAdmin, (error, resultado) => {
             if (error) {
                 console.error('Error al confirmar apartado:', error);
                 return res.status(500).json({ error: 'Error al confirmar el apartado.' });
+            }
+            if (!resultado || resultado.affectedRows === 0) {
+                return res.status(409).json({ error: 'Solo se pueden confirmar pedidos pendientes.' });
             }
             ApartadoController.notificarClientePorApartado(
                 id,
@@ -434,10 +435,13 @@ const ApartadoController = {
             const apartado = resultados[0];
 
             // Cambio el estado a cancelado
-            ApartadoModel.cancelarApartadoAdmin(id, (errCancel) => {
+            ApartadoModel.cancelarApartadoAdmin(id, (errCancel, resultadoCancel) => {
                 if (errCancel) {
                     console.error('Error al cancelar apartado:', errCancel);
                     return res.status(500).json({ error: 'Error al cancelar el apartado.' });
+                }
+                if (!resultadoCancel || resultadoCancel.affectedRows === 0) {
+                    return res.status(409).json({ error: 'El pedido ya estaba cancelado o entregado.' });
                 }
 
                 ApartadoController.notificarClientePorApartado(
@@ -493,10 +497,13 @@ const ApartadoController = {
             }
 
             // Cambio el estado a cancelado con cancelado_por = 'cliente'
-            ApartadoModel.cancelarApartadoCliente(idApartado, (errCancel) => {
+            ApartadoModel.cancelarApartadoCliente(idApartado, (errCancel, resultadoCancel) => {
                 if (errCancel) {
                     console.error('Error al cancelar apartado del cliente:', errCancel);
                     return res.status(500).json({ error: 'Error al cancelar el apartado en la BD.' });
+                }
+                if (!resultadoCancel || resultadoCancel.affectedRows === 0) {
+                    return res.status(409).json({ error: 'El apartado ya estaba cancelado o entregado.' });
                 }
 
                 // Devuelvo las unidades exactas al stock del producto

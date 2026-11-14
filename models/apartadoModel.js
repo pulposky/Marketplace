@@ -135,7 +135,8 @@ const ApartadoModel = {
     // Cambia el estado de un apartado a "confirmado" y registra el nombre del admin que confirmó.
     // Se usa cuando el admin revisa y aprueba una reserva pendiente.
     confirmarApartado: (idApartado, nombreAdmin, callback) => {
-        const sql = 'UPDATE apartados SET estado = ?, confirmado_por = ? WHERE id_apartado = ?';
+        // Solo un pendiente pasa a confirmado (no revive cancelados ni entregados)
+        const sql = "UPDATE apartados SET estado = ?, confirmado_por = ? WHERE id_apartado = ? AND estado = 'pendiente'";
         conexion.query(sql, ['confirmado', nombreAdmin || null, idApartado], callback);
     },
 
@@ -152,17 +153,19 @@ const ApartadoModel = {
 
     // Cancela un apartado desde el panel de administración.
     // Registra 'admin' como quien canceló para trazabilidad.
+    // Solo cancela si sigue activo: affectedRows = 0 => ya estaba cancelado/entregado
+    // y NO se debe devolver stock otra vez.
     cancelarApartadoAdmin: (idApartado, callback) => {
-        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
+        const sql = "UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ? AND estado IN ('pendiente', 'confirmado')";
         conexion.query(sql, ['cancelado', 'admin', idApartado], callback);
     },
 
     // Cancela un apartado desde el lado del cliente.
     // Usa UPDATE en vez de DELETE para que el apartado quede en el historial.
     // Registra 'cliente' como quien canceló.
-    // FIXME: falta validar que el apartado pertenezca al cliente logueado antes de permitir la cancelación
+    // La propiedad se valida en el controller. Solo cancela si sigue activo.
     cancelarApartadoCliente: (idApartado, callback) => {
-        const sql = 'UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ?';
+        const sql = "UPDATE apartados SET estado = ?, cancelado_por = ? WHERE id_apartado = ? AND estado IN ('pendiente', 'confirmado')";
         conexion.query(sql, ['cancelado', 'cliente', idApartado], callback);
     },
 
