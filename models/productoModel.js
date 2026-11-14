@@ -8,6 +8,14 @@
 // =============================================
 
 const conexion = require('../database/conexion');
+const tiendaService = require('../services/tiendaService');
+
+// Nombres de productos internos del POS que no se muestran en la web
+// (configurable en la tienda; por defecto 'COMODIN'). '' si la lista está vacía.
+const ocultos = () => {
+    const lista = tiendaService.productosOcultos();
+    return lista.length ? lista : [''];
+};
 
 // Columnas que necesita el sitio público (y el panel en habilitar/ofertas).
 // No incluir codigo ni stock: son datos internos del POS.
@@ -18,7 +26,7 @@ const ProductoModel = {
     // Trae todos los productos excepto el comodín y los sin precio.
     // Alimenta vistas y API públicas: solo columnas públicas (sin codigo ni stock del POS).
     obtenerTodos: (callback) => {
-        conexion.query(`SELECT ${COLUMNAS_PUBLICAS} FROM producto WHERE nombre != 'COMODIN' AND precio > 0 ORDER BY nombre ASC`, callback);
+        conexion.query(`SELECT ${COLUMNAS_PUBLICAS} FROM producto WHERE nombre NOT IN (?) AND precio > 0 ORDER BY nombre ASC`, [ocultos()], callback);
     },
 
     // Crea un producto nuevo (lo usa el admin). El código se genera
@@ -87,14 +95,14 @@ const ProductoModel = {
             FROM producto p
             INNER JOIN apartados a ON a.producto = p.id_producto
             WHERE a.estado IN ('confirmado', 'entregado')
-              AND p.nombre != 'COMODIN'
+              AND p.nombre NOT IN (?)
               AND p.precio > 0
             GROUP BY p.id_producto, p.nombre, p.unidad, p.lugar, p.precio, p.descuento,
                      p.fecha_inicio_oferta, p.fecha_fin_oferta, p.limite_venta, p.estado, p.descripcion
             ORDER BY total_vendido DESC
             LIMIT 4
         `;
-        conexion.query(sql, callback);
+        conexion.query(sql, [ocultos()], callback);
     },
 
     // Busca un producto por su ID (lo uso antes de crear un apartado)
@@ -108,14 +116,14 @@ const ProductoModel = {
     obtenerConOfertas: (callback) => {
         const sql = `
             SELECT ${COLUMNAS_PUBLICAS} FROM producto
-            WHERE nombre != 'COMODIN'
+            WHERE nombre NOT IN (?)
               AND precio > 0
               AND descuento > 0
               AND (fecha_inicio_oferta IS NULL OR fecha_inicio_oferta <= NOW())
               AND (fecha_fin_oferta IS NULL OR fecha_fin_oferta >= NOW())
             ORDER BY nombre ASC
         `;
-        conexion.query(sql, callback);
+        conexion.query(sql, [ocultos()], callback);
     },
 
     // Actualiza la oferta (descuento y fechas) de un producto.

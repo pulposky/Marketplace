@@ -31,6 +31,8 @@ const RespaldoVistasController = require('../controllers/admin/respaldoVistasCon
 const RespaldoApiController = require('../controllers/admin/respaldoApiController');
 const RecuperacionVistasController = require('../controllers/admin/recuperacionVistasController');
 const RecuperacionApiController = require('../controllers/admin/recuperacionApiController');
+const TiendaVistasController = require('../controllers/admin/tiendaVistasController');
+const TiendaApiController = require('../controllers/admin/tiendaApiController');
 const verificarAdmin = require('../middleware/verificarAdmin');
 const verificarRol = require('../middleware/verificarRol');
 const verificarPermiso = require('../middleware/verificarPermiso');
@@ -60,6 +62,9 @@ router.get('/admin/carrusel', verificarPermiso('carrusel'), CarruselVistasContro
 // Administración de permisos: SOLO el Administrador (superadmin).
 router.get('/admin/permisos', verificarRol([ROL_SUPERADMIN]), PermisosVistasController.mostrarPermisos);
 router.get('/admin/recuperacion', verificarPermiso('recuperacion'), RecuperacionVistasController.mostrarRecuperacion);
+
+// Configuración de la tienda (nombre, logo, colores...): SOLO el Administrador.
+router.get('/admin/configuracion', verificarRol([ROL_SUPERADMIN]), TiendaVistasController.mostrarConfiguracion);
 
 // Módulos del superadmin que también se pueden delegar por permiso:
 // personal del panel, ajustes del sitio, categorías y auditoría.
@@ -176,6 +181,13 @@ router.get('/api/admin/categorias', verificarPermiso('categorias'), CategoriasAp
 router.post('/api/admin/categorias', verificarPermiso('categorias'), CategoriasApiController.crear);
 router.patch('/api/admin/categorias/:id', verificarPermiso('categorias'), CategoriasApiController.renombrar);
 router.delete('/api/admin/categorias/:id', verificarPermiso('categorias'), CategoriasApiController.eliminar);
+
+// -----------------------------------------------
+// API DE CONFIGURACIÓN DE LA TIENDA (SOLO Administrador)
+// -----------------------------------------------
+router.get('/api/admin/tienda', verificarRol([ROL_SUPERADMIN]), TiendaApiController.obtener);
+router.put('/api/admin/tienda', verificarRol([ROL_SUPERADMIN]), TiendaApiController.guardar);
+router.post('/api/admin/tienda/logo', verificarRol([ROL_SUPERADMIN]), TiendaApiController.subirLogo);
 
 // -----------------------------------------------
 // API DE AUDITORÍA (permiso 'auditoria')

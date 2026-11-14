@@ -70,6 +70,9 @@ permisosService.iniciar();
 // categorías y auditoría. Crea las tablas/columnas
 // que falten para esos módulos.
 const iniciarModulos = require('./services/iniciarModulos');
+
+// Configuración de la tienda (nombre, logo, colores...): la cargo en memoria
+require('./services/tiendaService').iniciar();
 iniciarModulos.iniciar();
 
 // Configuración del puerto (prioriza .env, por defecto usa 3000)

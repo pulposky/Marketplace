@@ -8,6 +8,7 @@
 /* ============================================= */
 
 const conexion = require('../database/conexion');
+const tiendaService = require('../services/tiendaService');
 
 const pool = conexion.promise();
 
@@ -198,7 +199,8 @@ const ApartadoModel = {
     // EXPIRACIÓN AUTOMÁTICA DE APARTADOS (1 HORA)
     // ------------------------------------------------
 
-    // Busca apartados en estado 'pendiente' cuya fecha de creación ya superó 1 hora.
+    // Busca apartados en estado 'pendiente' cuya fecha de creación ya superó el
+    // tiempo de reserva configurado en la tienda (por defecto 60 minutos).
     // Se ejecuta periódicamente para cancelar reservas que el cliente no confirmó a tiempo.
     // Devuelve id, producto, cantidad y nombre_cliente para liberar stock después.
     obtenerApartadosExpirados: (callback) => {
@@ -206,9 +208,9 @@ const ApartadoModel = {
             SELECT a.id_apartado, a.producto, a.cantidad, a.nombre_cliente, a.id_cliente
             FROM apartados a
             WHERE a.estado = 'pendiente'
-              AND DATE_ADD(a.fecha, INTERVAL 1 HOUR) < NOW()
+              AND DATE_ADD(a.fecha, INTERVAL ? MINUTE) < NOW()
         `;
-        conexion.query(sql, callback);
+        conexion.query(sql, [tiendaService.minutosExpiracion()], callback);
     },
 
     // Cancela un apartado por expiración del sistema.

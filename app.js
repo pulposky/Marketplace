@@ -18,6 +18,7 @@ const { limiteGeneral, limiteAuth } = require('./config/rateLimit');
 const { iniciarCsrf, verificarCsrf } = require('./middleware/csrf');
 const { esRolAdmin, esRolPanel, esRolMantenimiento, puedeGestionarCarrusel, esSuperAdmin } = require('./utils/roles');
 const permisosService = require('./services/permisosService');
+const tiendaService = require('./services/tiendaService');
 
 const app = express();
 
@@ -60,6 +61,8 @@ app.set('view engine', 'ejs');
 // Expongo los helpers de roles a todas las vistas EJS
 // (p. ej. esRolAdmin(usuario.role) para mostrar secciones)
 app.use((req, res, next) => {
+    // Configuración del negocio (nombre, logo, colores, contacto...) para todas las vistas
+    res.locals.tienda = tiendaService.obtener();
     res.locals.esRolAdmin = esRolAdmin;
     res.locals.esRolPanel = esRolPanel;
     res.locals.esRolMantenimiento = esRolMantenimiento;
@@ -71,7 +74,7 @@ app.use((req, res, next) => {
 // Esto me permite leer formularios HTML y también JSON que mande el frontend con fetch
 // Límite grande SOLO en las rutas que suben imágenes en base64;
 // el resto acepta 100 kb (si el primer parser ya leyó el body, el segundo lo salta).
-app.use(['/api/admin/productos', '/api/admin/carrusel'], express.json({ limit: '4mb' }));
+app.use(['/api/admin/productos', '/api/admin/carrusel', '/api/admin/tienda'], express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(express.json({ limit: '100kb' }));
 
