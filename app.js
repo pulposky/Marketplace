@@ -66,6 +66,8 @@ app.use((req, res, next) => {
     res.locals.tienda = tiendaService.obtener();
     // Palabras según el tipo de negocio (Pasillo, Sección, Menú...)
     res.locals.vocab = vocabulario(res.locals.tienda.tipo_negocio);
+    // Ruta actual, para marcar el módulo activo en el menú del panel
+    res.locals.rutaActual = req.path;
     res.locals.esRolAdmin = esRolAdmin;
     res.locals.esRolPanel = esRolPanel;
     res.locals.esRolMantenimiento = esRolMantenimiento;

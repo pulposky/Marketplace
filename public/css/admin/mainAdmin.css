@@ -176,25 +176,6 @@ body.cargando .kpi-valor, body.cargando .grafica { opacity: .55; transition: opa
 .estado-entregado { background: #e0f2e8; color: var(--bueno); }
 .estado-cancelado { background: #fbe6e4; color: var(--malo); }
 
-/* Accesos a módulos: fichas con ícono arriba del tablero */
-.accesos { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
-.accesos a {
-    display: grid; justify-items: center; align-content: center; gap: 8px; min-height: 92px; padding: 14px 8px;
-    text-decoration: none; text-align: center; background: var(--superficie);
-    border: 1px solid var(--borde); border-radius: 12px; transition: border-color .15s, transform .15s;
-}
-.accesos a:hover { border-color: var(--marca); transform: translateY(-2px); }
-.accesos svg {
-    width: 40px; height: 40px; padding: 9px; border-radius: 10px;
-    background: color-mix(in srgb, var(--marca) 12%, var(--superficie)); color: var(--marca);
-    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-}
-.accesos span { font-weight: 600; font-size: 13px; line-height: 1.2; }
-@media (max-width: 480px) {
-    .accesos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-    .accesos a { min-height: 84px; padding: 10px 4px; }
-}
-
 .admin-footer { text-align: center; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); color: var(--muy-suave); font-size: 12px; border-top: 1px solid var(--borde); }
 
 @media (prefers-reduced-motion: reduce) {
