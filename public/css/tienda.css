@@ -569,7 +569,8 @@ button, input, select { font: inherit; color: inherit; }
 .error-acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+    /* sin retraso: con fill "both" el estado inicial (semitransparente) se vería durante la espera */
+    *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; animation-delay: 0s !important; transition-delay: 0s !important; }
 }
 .anuncio { background: var(--marca); color: var(--sobre-marca); text-align: center; font-size: 14px; font-weight: 600; padding: 8px 16px; }
 

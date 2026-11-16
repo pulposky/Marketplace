@@ -13,7 +13,7 @@
             <div class="pila" aria-hidden="true">
                 <% b.productos.forEach((p, i) => { const _k = (pasillos.find((x) => x.nombre === String(p.categoria || '').trim()) || {}).color; %>
                     <a class="pila-item" href="/producto/<%= p.id_producto %>" tabindex="-1" style="--n:<%= i %><%= _k ? ';--k:' + _k : '' %>">
-                        <% if (p.imagenUpload) { %><img src="<%= p.imagenUpload %>" alt=""><% } else { %><span><%= String(p.nombre || '?').charAt(0) %></span><% } %>
+                        <% if (p.imagenUpload) { %><img src="<%= p.imagenUpload %>" alt=""<%- i === 1 ? ' fetchpriority="high"' : '' %>><% } else { %><span><%= String(p.nombre || '?').charAt(0) %></span><% } %>
                         <i><%= p.nombre %></i>
                     </a>
                 <% }) %>
