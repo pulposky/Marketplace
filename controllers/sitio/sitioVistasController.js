@@ -119,7 +119,7 @@ const SitioVistasController = {
                 return res.status(404).render('error', { codigo: 404, mensaje: 'El producto no está disponible en este momento.' });
             }
 
-            // Todos los productos solo para numerar el pasillo (si falla, la ficha sale sin pasillo)
+            // Todos los productos para saber el color de la categoría (si falla, la ficha sale sin color)
             ProductoModel.obtenerTodos((errorTodos, todos) => {
                 asociarImagenesAProductos([producto], (productoConImagen) => {
                     PresentacionModel.adjuntar(productoConImagen).catch(() => {}).then(() => res.render('productoDetalle', {

@@ -29,7 +29,7 @@
         <% } else { %>
             <span class="producto-sin-foto"><%= String(_p.nombre || '?').charAt(0) %></span>
         <% } %>
-        <% if (_pasillo) { %><i class="producto-pasillo"><%= vocab.numerar ? `${vocab.seccion} ${_pasillo.numero}` : _pasillo.nombre %></i><% } %>
+        <% if (_pasillo) { %><i class="producto-pasillo"><%= _pasillo.nombre %></i><% } %>
         <% if (_enOferta) { %><i class="producto-oferta">−<%= Math.round(_descuento) %>%</i><% } %>
     </a>
 

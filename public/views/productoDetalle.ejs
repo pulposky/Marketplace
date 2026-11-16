@@ -31,7 +31,7 @@
         const etiqueta = principal ? principal.nombre : unidad;
         const stock = Number(producto.limite_venta) || 0;
         const cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
-        const etiquetaPasillo = pasillo ? (vocab.numerar ? `${vocab.seccion} ${pasillo.numero} · ${pasillo.nombre}` : pasillo.nombre) : '';
+        const etiquetaPasillo = pasillo ? pasillo.nombre : '';
     %>
     <%- include('partials/encabezado') %>
 

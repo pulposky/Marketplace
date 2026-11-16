@@ -14,7 +14,7 @@
 
 <body>
     <%- include('partials/encabezado', { buscadorId: 'inputBuscar', busqueda, conModalLogin: !usuario }) %>
-    <%- include('partials/pasillos', { pasillos, activas: categoriasSeleccionadas }) %>
+    <%- include('partials/categorias', { pasillos, activas: categoriasSeleccionadas }) %>
 
     <%
         const _unaCategoria = categoriasSeleccionadas.length === 1
@@ -24,7 +24,6 @@
     <main class="contenedor">
         <div class="catalogo-cabeza"<%- _unaCategoria ? ` style="--k:${_unaCategoria.color}"` : '' %>>
             <div>
-                <% if (_unaCategoria && vocab.numerar) { %><p class="catalogo-pasillo"><%= vocab.seccion %> <%= _unaCategoria.numero %></p><% } %>
                 <h1><%= _unaCategoria ? _unaCategoria.nombre : (busqueda ? `Resultados para “${busqueda}”` : `Todo el ${vocab.catalogo.toLowerCase()}`) %></h1>
                 <p class="catalogo-total"><%= productos.length %> producto<%= productos.length === 1 ? '' : 's' %>
                     <% if (_filtrado) { %> · <a href="/catalogo">Quitar filtros</a><% } %></p>

@@ -13,7 +13,7 @@
 
 <body>
     <%- include('partials/encabezado', { conModalLogin: !usuario }) %>
-    <%- include('partials/pasillos', { pasillos }) %>
+    <%- include('partials/categorias', { pasillos }) %>
 
     <main class="contenedor">
         <section class="portada">
@@ -72,7 +72,6 @@
         <section class="seccion seccion-pasillo" style="--k:<%= pasillo.color %>" aria-labelledby="sec-<%= pasillo.numero %>">
             <div class="seccion-cabeza">
                 <h2 id="sec-<%= pasillo.numero %>">
-                    <% if (vocab.numerar) { %><small><%= vocab.seccion %> <%= pasillo.numero %></small><% } %>
                     <%= pasillo.nombre %>
                 </h2>
                 <a class="seccion-ver" href="/catalogo?categoria=<%= encodeURIComponent(pasillo.nombre) %>">Ver los <%= pasillo.total %></a>

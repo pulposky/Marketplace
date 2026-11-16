@@ -9,31 +9,31 @@
 const TIPOS = Object.freeze({
     supermercado: {
         nombre: 'Supermercado o tienda de barrio',
-        seccion: 'Pasillo', secciones: 'Pasillos', numerar: true, mostrarStock: true,
+        seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar arroz, leche, huevos…',
         destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, paca, cubeta…',
     },
     comida_rapida: {
         nombre: 'Comida rápida o restaurante',
-        seccion: 'Sección', secciones: 'Secciones del menú', numerar: false, mostrarStock: false,
+        seccion: 'Sección', secciones: 'Secciones del menú', mostrarStock: false,
         catalogo: 'Menú', buscar: 'Buscar hamburguesas, combos, bebidas…',
         destacados: 'Lo más pedido', ejemplosPresentacion: 'personal, combo, familiar…',
     },
     ferreteria: {
         nombre: 'Ferretería',
-        seccion: 'Sección', secciones: 'Secciones', numerar: true, mostrarStock: true,
+        seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar tornillos, pintura, cables…',
         destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, caja, metro…',
     },
     drogueria: {
         nombre: 'Droguería',
-        seccion: 'Sección', secciones: 'Secciones', numerar: false, mostrarStock: true,
+        seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar medicamentos, cuidado personal…',
         destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, caja, blíster…',
     },
     general: {
         nombre: 'Otro tipo de negocio',
-        seccion: 'Categoría', secciones: 'Categorías', numerar: false, mostrarStock: true,
+        seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar productos',
         destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, caja, paquete…',
     },
@@ -46,7 +46,4 @@ const esTipoValido = (tipo) => Object.prototype.hasOwnProperty.call(TIPOS, tipo)
 // Vocabulario del tipo; si el valor no es válido, el del tipo por defecto
 const vocabulario = (tipo) => ({ tipo: esTipoValido(tipo) ? tipo : TIPO_POR_DEFECTO, ...TIPOS[esTipoValido(tipo) ? tipo : TIPO_POR_DEFECTO] });
 
-// Etiqueta de una categoría numerada: "Pasillo 3", o null si el tipo no numera
-const etiquetaSeccion = (vocab, numero) => (vocab.numerar ? `${vocab.seccion} ${numero}` : null);
-
-module.exports = { TIPOS, TIPO_POR_DEFECTO, esTipoValido, vocabulario, etiquetaSeccion };
+module.exports = { TIPOS, TIPO_POR_DEFECTO, esTipoValido, vocabulario };

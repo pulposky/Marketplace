@@ -1,4 +1,4 @@
-<%# Franja de pasillos (categorías con productos activos). Recibe pasillos y,
+<%# Franja de categorías con productos activos). Recibe pasillos y,
     opcional, activas: nombres de categorías seleccionadas en el catálogo. %>
 <% const _activas = (typeof activas !== 'undefined' && Array.isArray(activas)) ? activas : []; %>
 <% if (Array.isArray(pasillos) && pasillos.length) { %>
@@ -7,7 +7,6 @@
         <% pasillos.forEach((p) => { const _on = _activas.includes(p.nombre); %>
             <a class="pasillo<%= _on ? ' activo' : '' %>" style="--k:<%= p.color %>"
                 href="/catalogo?categoria=<%= encodeURIComponent(p.nombre) %>"<%- _on ? ' aria-current="page"' : '' %>>
-                <% if (vocab.numerar) { %><small><%= vocab.seccion %> <%= p.numero %></small><% } %>
                 <b><%= p.nombre %></b>
                 <span><%= p.total %> producto<%= p.total === 1 ? '' : 's' %></span>
             </a>
