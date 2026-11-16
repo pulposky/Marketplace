@@ -195,6 +195,7 @@ router.delete('/api/admin/categorias/:id', verificarPermiso('categorias'), Categ
 router.get('/api/admin/tienda', verificarRol([ROL_SUPERADMIN]), TiendaApiController.obtener);
 router.put('/api/admin/tienda', verificarRol([ROL_SUPERADMIN]), TiendaApiController.guardar);
 router.post('/api/admin/tienda/logo', verificarRol([ROL_SUPERADMIN]), TiendaApiController.subirLogo);
+router.post('/api/admin/tienda/imagen', verificarRol([ROL_SUPERADMIN]), TiendaApiController.subirImagenBloque);
 
 // -----------------------------------------------
 // API DE AUDITORÍA (permiso 'auditoria')
