@@ -658,6 +658,7 @@ button, input, select { font: inherit; color: inherit; }
 .bloque-ofertas .producto { color: var(--tinta); }
 .bloque-ofertas .repisa { opacity: .5; }
 .reloj { display: flex; gap: 6px; font-variant-numeric: tabular-nums; }
+.reloj[hidden] { display: none; } /* el script lo esconde cuando la oferta termina */
 .reloj span { display: grid; justify-items: center; min-width: 54px; padding: 6px 8px; border-radius: 10px; background: rgba(255, 255, 255, .1); }
 .reloj b { font: 800 22px/1 var(--f-titulo); }
 .reloj small { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
