@@ -26,7 +26,7 @@
     --f-texto: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
 
     --radio: 10px;
-    --ancho: 1200px;
+    --ancho: 1680px;
     --gutter: max(16px, env(safe-area-inset-left, 0px));
     color-scheme: light;
 }
@@ -171,12 +171,7 @@ button, input, select { font: inherit; color: inherit; }
 .pasillo.activo { background: color-mix(in srgb, var(--k) 12%, var(--superficie)); }
 
 /* ---------- Portada del inicio ---------- */
-.portada { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 40px; flex-wrap: wrap; padding-top: 12px; }
-.portada h1 { font-size: clamp(32px, 5.2vw, 56px); font-weight: 700; letter-spacing: -0.035em; max-width: 17ch; }
-.portada > p { color: var(--suave); max-width: 36ch; font-size: 15px; }
-.portada-saludo { font-weight: 600; color: var(--suave); margin-bottom: 8px; }
-
-.portada > .btn { flex: none; }
+/* (ver "Inicio por bloques" al final) */
 
 /* Beneficios de apartar */
 .beneficios {
@@ -194,17 +189,7 @@ button, input, select { font: inherit; color: inherit; }
     .beneficios li:first-child { border-top: 0; }
 }
 
-/* Vitrina de ofertas: banda con fondo del color secundario de la tienda */
-.vitrina-ofertas {
-    --acento: var(--secundario, #f2a33a);
-    background: color-mix(in srgb, var(--acento) 14%, var(--superficie));
-    border-radius: var(--radio);
-    padding: 22px;
-}
-.vitrina-ofertas h2::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--oferta); margin-right: 10px; vertical-align: middle; }
 .seccion-ver { font-weight: 600; font-size: 14px; text-underline-offset: 3px; white-space: nowrap; }
-.seccion-pasillo .seccion-cabeza { border-left: 6px solid var(--k); padding-left: 12px; }
-.seccion-pasillo h2 small { display: block; font: 700 12px/1.2 var(--f-titulo); letter-spacing: .1em; text-transform: uppercase; color: var(--k); margin-bottom: 4px; }
 .producto-ahorro { font-size: 13px; font-weight: 600; color: var(--oferta); }
 
 /* Carrusel de avisos: solo ocupa espacio si la tienda subió imágenes */
@@ -587,3 +572,143 @@ button, input, select { font: inherit; color: inherit; }
     *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
 .anuncio { background: var(--marca); color: var(--sobre-marca); text-align: center; font-size: 14px; font-weight: 600; padding: 8px 16px; }
+
+/* =============================================
+   INICIO POR BLOQUES ("ESTANTERÍA")
+   Cada bloque ocupa todo el ancho; su contenido va
+   en .bloque-interior. Las categorías son franjas de
+   su color con una repisa de productos que se desliza.
+   ============================================= */
+@keyframes sube { from { transform: translateY(18px); opacity: .25; } to { transform: none; opacity: 1; } }
+@keyframes entraLado { from { transform: translateX(36px); opacity: .25; } to { transform: none; opacity: 1; } }
+@keyframes flota { 0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-10px) rotate(var(--rot, 0deg)); } }
+@keyframes late { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+
+/* Menú de categorías fijo bajo la barra */
+/* En celular la barra ya ocupa bastante: ahí el menú no queda fijo */
+@media (min-width: 761px) {
+    .pasillos { position: sticky; top: calc(var(--alto-barra, 64px) + env(safe-area-inset-top, 0px)); z-index: 25; background: color-mix(in srgb, var(--superficie) 94%, transparent); backdrop-filter: blur(8px); }
+}
+.pasillos-fila { scrollbar-width: none; }
+.pasillo { transition: background-color .2s, box-shadow .2s; }
+.pasillo.activo { box-shadow: inset 0 -3px 0 var(--k); }
+
+.inicio { display: grid; padding-bottom: 24px; }
+.bloque { position: relative; padding-block: 28px; }
+.bloque-interior {
+    width: 100%; max-width: var(--ancho); margin: 0 auto;
+    padding-left: var(--gutter); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid; gap: 18px; position: relative;
+}
+.bloque-cabeza { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px 20px; flex-wrap: wrap; }
+.bloque-cabeza > div:first-child { display: grid; gap: 4px; min-width: 0; }
+.bloque-cabeza h2 { font-size: clamp(26px, 3vw, 40px); font-weight: 800; letter-spacing: -0.03em; }
+.bloque-cabeza small { font: 700 12px/1.3 var(--f-titulo); letter-spacing: .1em; text-transform: uppercase; color: var(--k, var(--marca)); }
+.bloque-cabeza small a { color: inherit; text-underline-offset: 3px; }
+.bloque-ver { font-weight: 600; font-size: 14px; text-underline-offset: 3px; }
+
+/* Flechas de las repisas (en pantallas táctiles se desliza con el dedo) */
+.flechas { display: flex; gap: 8px; margin-left: auto; }
+.flecha {
+    width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 18px; font-weight: 700;
+    border: 1.5px solid color-mix(in srgb, var(--k, var(--tinta)) 35%, var(--superficie));
+    background: var(--superficie); color: var(--k, var(--tinta)); transition: background-color .2s, color .2s, transform .2s;
+}
+.flecha:hover { background: var(--k, var(--tinta)); color: #fff; transform: scale(1.06); }
+@media (hover: none) { .flechas { display: none; } }
+
+/* Repisa */
+.estante-marco { min-width: 0; }
+.estante {
+    display: grid; grid-auto-flow: column; gap: 18px;
+    grid-auto-columns: minmax(190px, calc((100% - 5 * 18px) / 6));
+    overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+    padding: 6px 2px 18px; margin: -6px -2px 0;
+}
+.estante::-webkit-scrollbar { display: none; }
+.estante-item { scroll-snap-align: start; min-width: 0; display: flex; animation: entraLado .7s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.estante-item > .producto { flex: 1; background: var(--superficie); border-radius: calc(var(--radio) + 6px); padding: 10px; border-bottom: 4px solid color-mix(in srgb, var(--k, var(--marca)) 45%, var(--superficie)); }
+.repisa { height: 10px; margin-top: -14px; border-radius: 0 0 8px 8px; background: linear-gradient(color-mix(in srgb, var(--k, var(--tinta)) 30%, var(--superficie)), color-mix(in srgb, var(--k, var(--tinta)) 14%, var(--superficie))); box-shadow: 0 10px 16px -10px color-mix(in srgb, var(--k, var(--tinta)) 70%, #000); }
+@media (max-width: 1100px) { .estante { grid-auto-columns: minmax(180px, calc((100% - 3 * 18px) / 4)); } }
+@media (max-width: 600px) { .estante { grid-auto-columns: 46%; gap: 12px; } }
+.estante .producto-precio { white-space: normal; flex-wrap: wrap; }
+
+/* Tarjetas con más vida */
+.producto { transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s; }
+.producto:hover { transform: translateY(-5px); box-shadow: 0 18px 30px -22px rgba(0, 0, 0, .45); }
+.producto:hover .producto-foto img { transform: scale(1.06); }
+.producto-oferta { animation: late 1.4s ease-in-out .6s 3; }
+
+/* Franja de categoría con su nombre gigante de fondo */
+.bloque-categoria { background: color-mix(in srgb, var(--k) 9%, var(--base)); overflow: hidden; padding-block: 34px; }
+.bloque-categoria + .bloque-categoria { border-top: 1px solid color-mix(in srgb, var(--k) 18%, var(--base)); }
+.bloque-fondo {
+    position: absolute; top: -0.12em; right: 0; max-width: 100%; overflow: hidden; white-space: nowrap; pointer-events: none;
+    font: 800 clamp(64px, 11vw, 190px)/1 var(--f-titulo); letter-spacing: -0.05em;
+    color: color-mix(in srgb, var(--k) 14%, transparent); padding-right: var(--gutter);
+}
+
+/* Ofertas: banda oscura con reloj */
+.bloque-ofertas { background: #17201c; color: #fff; padding-block: 38px; --k: var(--secundario, #f2a33a); }
+.bloque-ofertas h2 { color: #fff; }
+.bloque-ofertas .bloque-ver { color: color-mix(in srgb, var(--k) 70%, #fff); }
+.bloque-ofertas .flecha { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .3); }
+.bloque-ofertas .flecha:hover { background: #fff; color: #17201c; }
+.bloque-ofertas .producto { color: var(--tinta); }
+.bloque-ofertas .repisa { opacity: .5; }
+.reloj { display: flex; gap: 6px; font-variant-numeric: tabular-nums; }
+.reloj span { display: grid; justify-items: center; min-width: 54px; padding: 6px 8px; border-radius: 10px; background: rgba(255, 255, 255, .1); }
+.reloj b { font: 800 22px/1 var(--f-titulo); }
+.reloj small { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
+
+/* Portada: título que entra palabra por palabra y productos que flotan */
+.bloque-portada { padding-block: 36px 24px; }
+.portada { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center; gap: 32px; }
+.portada-texto { display: grid; gap: 18px; justify-items: start; }
+.portada-saludo { font-weight: 600; color: var(--suave); }
+.titulo-palabras { font-size: clamp(38px, 6vw, 92px); line-height: .94; letter-spacing: -0.045em; font-weight: 800; max-width: 14ch; }
+.titulo-palabras span { display: inline-block; animation: sube .8s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i) * 80ms); }
+.titulo-palabras span:last-of-type { color: var(--marca); }
+.portada-bajada { font-size: 17px; color: var(--suave); max-width: 42ch; }
+.portada-imagen { width: 100%; aspect-ratio: 4 / 3; max-width: 100%; object-fit: cover; border-radius: calc(var(--radio) * 2); animation: sube .9s .2s both; }
+.pila { position: relative; aspect-ratio: 1.25; max-width: 100%; }
+.pila-item {
+    position: absolute; width: 42%; aspect-ratio: 1; max-width: 100%; border-radius: calc(var(--radio) + 8px); overflow: hidden;
+    background: color-mix(in srgb, var(--k, var(--marca)) 16%, var(--superficie)); display: grid; place-items: center; text-decoration: none;
+    box-shadow: 0 24px 40px -24px rgba(0, 0, 0, .45); animation: flota 6s ease-in-out infinite;
+}
+.pila-item:nth-child(1) { left: 3%; top: 14%; --rot: -6deg; }
+.pila-item:nth-child(2) { left: 30%; top: 0; width: 46%; z-index: 2; --rot: 3deg; animation-delay: -2s; }
+.pila-item:nth-child(3) { left: 56%; top: 24%; --rot: 7deg; animation-delay: -4s; }
+.pila-item img { width: 100%; height: 100%; object-fit: cover; }
+.pila-item span { font: 800 64px/1 var(--f-titulo); color: color-mix(in srgb, var(--k, var(--marca)) 55%, var(--superficie)); }
+.pila-item i { position: absolute; left: 10px; right: 10px; bottom: 10px; padding: 7px 10px; border-radius: 10px; background: var(--superficie); font: 600 12px/1.25 var(--f-texto); font-style: normal; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 760px) {
+    .portada { grid-template-columns: minmax(0, 1fr); }
+    .pila { max-width: 440px; width: 100%; justify-self: center; }
+}
+
+/* Banner con imagen del dueño */
+.banner { position: relative; border-radius: calc(var(--radio) * 2); overflow: hidden; background: var(--borde); }
+.banner img { width: 100%; aspect-ratio: 16 / 5; max-width: 100%; object-fit: cover; }
+.banner-texto { position: absolute; inset: auto 0 0 0; padding: clamp(18px, 3vw, 40px); display: grid; gap: 10px; justify-items: start; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, .62)); }
+.banner-texto h2 { font-size: clamp(24px, 3.4vw, 46px); font-weight: 800; color: #fff; max-width: 20ch; }
+.banner-texto p { max-width: 52ch; }
+@media (max-width: 600px) { .banner img { aspect-ratio: 4 / 3; } }
+
+.bloque-texto .bloque-interior { max-width: min(var(--ancho), 900px); }
+.bloque-texto h2 { font-size: clamp(24px, 3vw, 36px); font-weight: 800; }
+.bloque-texto p { color: var(--suave); font-size: 17px; max-width: 65ch; }
+.bloque-pasos .pasos { border-top: 0; padding-top: 0; }
+
+/* Revelar al bajar: solo los bloques que estaban fuera de pantalla al cargar */
+.revelar { transition: transform .8s cubic-bezier(.2, .8, .2, 1), opacity .8s; }
+.revelar.por-revelar { transform: translateY(36px); opacity: .45; }
+
+/* Entrada suave del resto de páginas y del catálogo */
+main.contenedor > *, .rejilla > * { animation: sube .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 50ms); }
+
+@media (prefers-reduced-motion: reduce) {
+    .revelar.por-revelar { transform: none; opacity: 1; }
+    .pila-item, .producto-oferta { animation: none; }
+}
