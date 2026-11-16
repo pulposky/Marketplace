@@ -14,7 +14,7 @@ const pool = conexion.promise();
 const COLUMNAS = [
     'nombre', 'eslogan', 'descripcion', 'logo_url', 'color_primario', 'color_secundario',
     'telefono', 'whatsapp', 'correo', 'direccion', 'horario', 'moneda',
-    'minutos_expiracion_apartado', 'facebook', 'instagram', 'tiktok', 'productos_ocultos', 'tipo_negocio', 'apariencia'
+    'minutos_expiracion_apartado', 'facebook', 'instagram', 'tiktok', 'productos_ocultos', 'tipo_negocio', 'apariencia', 'bloques_inicio'
 ];
 
 const TiendaModel = {
@@ -45,6 +45,7 @@ const TiendaModel = {
                 productos_ocultos VARCHAR(500) NOT NULL DEFAULT 'COMODIN',
                 tipo_negocio VARCHAR(20) NOT NULL DEFAULT 'supermercado',
                 apariencia TEXT DEFAULT NULL,
+                bloques_inicio TEXT DEFAULT NULL,
                 actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
@@ -63,6 +64,14 @@ const TiendaModel = {
         );
         if (!colApar.length) {
             await pool.query('ALTER TABLE configuracion_tienda ADD COLUMN apariencia TEXT DEFAULT NULL AFTER tipo_negocio');
+        }
+        // Bloques del inicio (JSON) añadidos después
+        const [colBloques] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'configuracion_tienda' AND COLUMN_NAME = 'bloques_inicio'`
+        );
+        if (!colBloques.length) {
+            await pool.query('ALTER TABLE configuracion_tienda ADD COLUMN bloques_inicio TEXT DEFAULT NULL AFTER apariencia');
         }
         await pool.query('INSERT IGNORE INTO configuracion_tienda (id) VALUES (1)');
     },

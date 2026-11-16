@@ -12,6 +12,7 @@
 const TiendaModel = require('../models/tiendaModel');
 const { esTipoValido } = require('../utils/tipoNegocio');
 const { validarApariencia, normalizarApariencia, POR_DEFECTO: APARIENCIA_DEFECTO } = require('../utils/apariencia');
+const { validarBloques, normalizarBloques, bloquesPorDefecto } = require('../utils/bloques');
 
 const POR_DEFECTO = Object.freeze({
     nombre: 'Mi Tienda',
@@ -32,7 +33,8 @@ const POR_DEFECTO = Object.freeze({
     tiktok: '',
     productos_ocultos: 'COMODIN',
     tipo_negocio: 'supermercado',
-    apariencia: APARIENCIA_DEFECTO
+    apariencia: APARIENCIA_DEFECTO,
+    bloques_inicio: bloquesPorDefecto(APARIENCIA_DEFECTO)
 });
 
 let actual = { ...POR_DEFECTO };
@@ -72,6 +74,11 @@ function validarConfiguracion(entrada) {
         if (error) return { error };
         datos.apariencia = JSON.stringify(apariencia); // se guarda como texto JSON
     }
+    if (entrada.bloques_inicio !== undefined) {
+        const { datos: bloques, error } = validarBloques(entrada.bloques_inicio);
+        if (error) return { error };
+        datos.bloques_inicio = JSON.stringify(bloques);
+    }
     for (const [campo, [max, valido]] of Object.entries(REGLAS)) {
         if (entrada[campo] === undefined) continue;
         let valor = String(entrada[campo] ?? '').trim();
@@ -99,6 +106,7 @@ function normalizar(fila) {
         if (fila[clave] !== undefined && fila[clave] !== null) resultado[clave] = fila[clave];
     });
     resultado.apariencia = normalizarApariencia(fila.apariencia);
+    resultado.bloques_inicio = normalizarBloques(fila.bloques_inicio, resultado.apariencia);
     resultado.minutos_expiracion_apartado = Number(resultado.minutos_expiracion_apartado) || POR_DEFECTO.minutos_expiracion_apartado;
     return resultado;
 }

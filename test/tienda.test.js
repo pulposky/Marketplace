@@ -53,3 +53,19 @@ test('normalizar rellena con los valores por defecto', () => {
     assert.strictEqual(r.minutos_expiracion_apartado, 30);
     assert.strictEqual(r.moneda, 'COP');
 });
+
+test('validarConfiguracion guarda bloques como JSON', () => {
+    const { datos, error } = validarConfiguracion({ bloques_inicio: [{ tipo: 'texto', titulo: 'Hola' }] });
+    assert.strictEqual(error, undefined);
+    assert.strictEqual(JSON.parse(datos.bloques_inicio)[0].tipo, 'texto');
+});
+
+test('validarConfiguracion devuelve el error de bloques', () => {
+    assert.ok(validarConfiguracion({ bloques_inicio: [{ tipo: 'video' }] }).error);
+});
+
+test('normalizar siempre entrega la lista de bloques', () => {
+    assert.ok(Array.isArray(normalizar(null).bloques_inicio));
+    assert.strictEqual(normalizar(null).bloques_inicio[0].tipo, 'portada');
+    assert.deepStrictEqual(normalizar({ bloques_inicio: '[{"tipo":"carrusel"}]' }).bloques_inicio, [{ tipo: 'carrusel' }]);
+});
