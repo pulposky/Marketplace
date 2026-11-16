@@ -15,86 +15,9 @@
     <%- include('partials/encabezado', { conModalLogin: !usuario }) %>
     <%- include('partials/categorias', { pasillos }) %>
 
-    <main class="contenedor">
-        <section class="portada">
-            <div>
-                <% if (usuario) { %><p class="portada-saludo">Hola, <%= String(usuario.nombre || '').split(' ')[0] %></p><% } %>
-                <h1><%= tienda.eslogan || 'Lo de todos los días, apartado en un minuto' %></h1>
-            </div>
-            <a href="/catalogo" class="btn btn-grande"><%= tienda.apariencia.texto_boton_portada || 'Ver el ' + vocab.catalogo.toLowerCase() %></a>
-        </section>
-
-        <%# Beneficios de apartar: lo que el cliente necesita saber antes de empezar %>
-        <% if (tienda.apariencia.mostrar_beneficios) { %>
-        <ul class="beneficios">
-            <li><b>Te lo guardamos <%- include('partials/duracionApartado') %></b><span>Apartas en línea, sin filas</span></li>
-            <li><b>Pagas al recoger</b><span><%= tienda.direccion || 'En el punto de venta' %></span></li>
-            <% if (tienda.horario) { %><li><b>Horario</b><span><%= tienda.horario %></span></li><% } %>
-            <% if (String(tienda.whatsapp || '').replace(/\D/g, '')) { %>
-                <li><b>¿Dudas?</b><span><a href="https://wa.me/<%= String(tienda.whatsapp).replace(/\D/g, '') %>" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a></span></li>
-            <% } %>
-        </ul>
-        <% } %>
-
-        <div class="carrusel" id="carrusel" aria-label="Avisos de la tienda">
-            <div class="carrusel-contenedor" id="carruselContenedor"></div>
-        </div>
-
-        <% if (vitrinaOfertas.length && tienda.apariencia.mostrar_ofertas) { %>
-        <section class="seccion vitrina-ofertas" aria-labelledby="tituloOfertas">
-            <div class="seccion-cabeza">
-                <h2 id="tituloOfertas">Ofertas de la semana</h2>
-                <a class="seccion-ver" href="/catalogo?soloOferta=1">Ver las <%= ofertas.length %> ofertas</a>
-            </div>
-            <div class="rejilla">
-                <% vitrinaOfertas.forEach((producto) => { %>
-                    <%- include('partials/tarjetaProducto', { producto, pasillos, modo: 'ver' }) %>
-                <% }) %>
-            </div>
-        </section>
-        <% } %>
-
-        <% if (destacados.length && tienda.apariencia.mostrar_destacados) { %>
-        <section class="seccion seccion-productos" aria-labelledby="tituloDestacados">
-            <div class="seccion-cabeza">
-                <h2 id="tituloDestacados"><%= vocab.destacados %></h2>
-                <a class="seccion-ver" href="/catalogo">Ver todo el <%= vocab.catalogo.toLowerCase() %></a>
-            </div>
-            <div class="rejilla">
-                <% destacados.forEach((producto) => { %>
-                    <%- include('partials/tarjetaProducto', { producto, pasillos, modo: 'ver' }) %>
-                <% }) %>
-            </div>
-        </section>
-        <% } %>
-
-        <% secciones.forEach(({ pasillo, productos: lista }) => { %>
-        <section class="seccion seccion-pasillo" style="--k:<%= pasillo.color %>" aria-labelledby="sec-<%= pasillo.numero %>">
-            <div class="seccion-cabeza">
-                <h2 id="sec-<%= pasillo.numero %>">
-                    <%= pasillo.nombre %>
-                </h2>
-                <a class="seccion-ver" href="/catalogo?categoria=<%= encodeURIComponent(pasillo.nombre) %>">Ver los <%= pasillo.total %></a>
-            </div>
-            <div class="rejilla">
-                <% lista.forEach((producto) => { %>
-                    <%- include('partials/tarjetaProducto', { producto, pasillos, modo: 'ver' }) %>
-                <% }) %>
-            </div>
-        </section>
-        <% }) %>
-
-        <% if (tienda.apariencia.mostrar_pasos) { %>
-        <section class="seccion pasos" aria-labelledby="tituloPasos">
-            <h2 id="tituloPasos">Cómo apartar</h2>
-            <ol>
-                <li><b>Elige</b><span>Busca o entra por <%= vocab.seccion.toLowerCase() %> y escoge la presentación: <%= vocab.ejemplosPresentacion %></span></li>
-                <li><b>Aparta</b><span>Con tu cuenta lo reservas y te lo guardamos <%- include('partials/duracionApartado') %>.</span></li>
-                <li><b>Paga en la tienda</b><span><% if (tienda.direccion) { %>En <%= tienda.direccion %>, al momento de recoger.<% } else { %>En el punto de venta, al momento de recoger.<% } %></span></li>
-                <li><b>Recoge</b><span>Muestra tu apartado y llévate tus productos.</span></li>
-            </ol>
-        </section>
-        <% } %>
+    <main class="inicio">
+        <%# Cada bloque lo eligió el dueño en el panel; los tipos son de una lista cerrada (utils/bloques.js) %>
+        <% bloques.forEach((b, n) => { %><%- include('partials/bloques/' + b.tipo, { b, n }) %><% }) %>
     </main>
 
     <%- include('partials/pie') %>

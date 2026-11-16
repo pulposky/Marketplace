@@ -13,6 +13,7 @@ const { normalizarCategorias } = require('../../utils/helpers');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const { armarPasillos } = require('../../utils/pasillos');
+const { armarInicio } = require('../../utils/inicio');
 const tiendaService = require('../../services/tiendaService');
 
 // Descuento porcentual vigente según sus fechas
@@ -64,18 +65,15 @@ const SitioVistasController = {
                         ProductoModel.obtenerConOfertas((errorOfertas, ofertas) => {
                             const listaOfertas = (errorOfertas || !Array.isArray(ofertas)) ? [] : ofertas;
 
-                            // Inicio estilo vitrina: ofertas con mayor descuento primero y
-                            // las categorías con más productos, cuatro de cada una
+                            // Inicio por bloques: ofertas con mayor descuento primero;
+                            // cada bloque toma lo suyo (utils/inicio.js)
                             const activos = todosConImagen.filter((p) => p.estado === 'activo');
                             const pasillos = armarPasillos(todosConImagen);
                             const vitrinaOfertas = activos.filter(estaEnOferta)
-                                .sort((a, b) => Number(b.descuento) - Number(a.descuento))
-                                .slice(0, 8);
-                            const secciones = [...pasillos].sort((a, b) => b.total - a.total).slice(0, tiendaService.obtener().apariencia.secciones_inicio)
-                                .map((pasillo) => ({
-                                    pasillo,
-                                    productos: activos.filter((p) => String(p.categoria || '').trim() === pasillo.nombre).slice(0, 4)
-                                }));
+                                .sort((a, b) => Number(b.descuento) - Number(a.descuento));
+                            const bloques = armarInicio(tiendaService.obtener().bloques_inicio, {
+                                pasillos, productos: activos, destacados: destacadosConImagen, ofertas: vitrinaOfertas, ahora: new Date()
+                            });
 
                             // Presentaciones de venta (si falla, las vistas muestran solo la unidad)
                             Promise.all([PresentacionModel.adjuntar(destacadosConImagen), PresentacionModel.adjuntar(activos)])
@@ -84,8 +82,7 @@ const SitioVistasController = {
                                     destacados: destacadosConImagen,
                                     productos: todosConImagen,
                                     pasillos,
-                                    vitrinaOfertas,
-                                    secciones,
+                                    bloques,
                                     ofertas: listaOfertas,
                                     usuario: req.session?.usuario || null
                                 }));

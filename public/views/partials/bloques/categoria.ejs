@@ -1,0 +1,14 @@
+<% const _slug = String(b.pasillo.nombre).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-'); %>
+<section class="bloque bloque-categoria revelar" id="cat-<%= _slug %>" style="--k:<%= b.pasillo.color %>" aria-labelledby="bloque-<%= n %>">
+    <span class="bloque-fondo" aria-hidden="true"><%= b.pasillo.nombre %></span>
+    <div class="bloque-interior">
+        <div class="bloque-cabeza">
+            <div>
+                <small><%= b.pasillo.total %> producto<%= b.pasillo.total === 1 ? '' : 's' %> · <a href="/catalogo?categoria=<%= encodeURIComponent(b.pasillo.nombre) %>">Ver todos</a></small>
+                <h2 id="bloque-<%= n %>"><%= b.titulo || b.pasillo.nombre %></h2>
+            </div>
+            <%- include('flechas') %>
+        </div>
+        <%- include('estante', { productos: b.productos, etiqueta: b.pasillo.nombre }) %>
+    </div>
+</section>

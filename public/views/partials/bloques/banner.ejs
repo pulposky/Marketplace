@@ -1,0 +1,14 @@
+<section class="bloque bloque-banner revelar">
+    <div class="bloque-interior">
+        <div class="banner">
+            <img src="<%= b.imagen %>" alt="<%= b.titulo || '' %>" loading="lazy">
+            <% if (b.titulo || b.texto || (b.texto_boton && b.enlace)) { %>
+                <div class="banner-texto">
+                    <% if (b.titulo) { %><h2><%= b.titulo %></h2><% } %>
+                    <% if (b.texto) { %><p><%= b.texto %></p><% } %>
+                    <% if (b.texto_boton && b.enlace) { %><a class="btn" href="<%= b.enlace %>"><%= b.texto_boton %></a><% } %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>

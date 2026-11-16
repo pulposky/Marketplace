@@ -1,0 +1,8 @@
+<section class="bloque bloque-pasos revelar" aria-labelledby="bloque-<%= n %>">
+    <div class="bloque-interior pasos">
+        <h2 id="bloque-<%= n %>"><%= b.titulo || 'Cómo apartar' %></h2>
+        <ol>
+            <% b.pasos.forEach((paso) => { %><li><b><%= paso.titulo %></b><% if (paso.texto) { %><span><%= paso.texto %></span><% } %></li><% }) %>
+        </ol>
+    </div>
+</section>

@@ -1,0 +1,12 @@
+<section class="bloque bloque-destacados revelar" aria-labelledby="bloque-<%= n %>">
+    <div class="bloque-interior">
+        <div class="bloque-cabeza">
+            <div>
+                <h2 id="bloque-<%= n %>"><%= b.titulo || vocab.destacados %></h2>
+                <a class="bloque-ver" href="/catalogo">Ver todo el <%= vocab.catalogo.toLowerCase() %></a>
+            </div>
+            <%- include('flechas') %>
+        </div>
+        <%- include('estante', { productos: b.productos, etiqueta: b.titulo || vocab.destacados }) %>
+    </div>
+</section>

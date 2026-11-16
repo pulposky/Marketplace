@@ -1,0 +1,13 @@
+<section class="bloque bloque-ofertas revelar" aria-labelledby="bloque-<%= n %>">
+    <div class="bloque-interior">
+        <div class="bloque-cabeza">
+            <div>
+                <h2 id="bloque-<%= n %>"><%= b.titulo || 'Ofertas de la semana' %></h2>
+                <a class="bloque-ver" href="/catalogo?soloOferta=1">Ver las <%= ofertas.length %> ofertas</a>
+            </div>
+            <% if (b.finOferta) { %><div class="reloj" data-fin="<%= b.finOferta %>" role="timer" aria-label="Tiempo que le queda a la oferta"></div><% } %>
+            <%- include('flechas') %>
+        </div>
+        <%- include('estante', { productos: b.productos, etiqueta: b.titulo || 'Ofertas' }) %>
+    </div>
+</section>

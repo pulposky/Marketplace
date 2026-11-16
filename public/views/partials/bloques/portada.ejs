@@ -1,0 +1,23 @@
+<% const _titulo = b.titulo || tienda.eslogan || 'Lo de todos los días, apartado en un minuto'; %>
+<section class="bloque bloque-portada">
+    <div class="bloque-interior portada">
+        <div class="portada-texto">
+            <% if (usuario) { %><p class="portada-saludo">Hola, <%= String(usuario.nombre || '').split(' ')[0] %></p><% } %>
+            <h1 class="titulo-palabras"><% _titulo.split(/\s+/).forEach((palabra, i) => { %><span style="--i:<%= i %>"><%= palabra %></span> <% }) %></h1>
+            <% if (b.texto) { %><p class="portada-bajada"><%= b.texto %></p><% } %>
+            <a href="<%= b.enlace_boton || '/catalogo' %>" class="btn btn-grande"><%= b.texto_boton || 'Ver el ' + vocab.catalogo.toLowerCase() %></a>
+        </div>
+        <% if (b.imagen) { %>
+            <img class="portada-imagen" src="<%= b.imagen %>" alt="" fetchpriority="high">
+        <% } else if (b.productos.length) { %>
+            <div class="pila" aria-hidden="true">
+                <% b.productos.forEach((p, i) => { const _k = (pasillos.find((x) => x.nombre === String(p.categoria || '').trim()) || {}).color; %>
+                    <a class="pila-item" href="/producto/<%= p.id_producto %>" tabindex="-1" style="--n:<%= i %><%= _k ? ';--k:' + _k : '' %>">
+                        <% if (p.imagenUpload) { %><img src="<%= p.imagenUpload %>" alt=""><% } else { %><span><%= String(p.nombre || '?').charAt(0) %></span><% } %>
+                        <i><%= p.nombre %></i>
+                    </a>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+</section>

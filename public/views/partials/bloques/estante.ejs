@@ -1,0 +1,9 @@
+<%# Repisa deslizable de productos. Recibe productos, pasillos y etiqueta (para lectores de pantalla). %>
+<div class="estante-marco">
+    <div class="estante" role="list" aria-label="<%= etiqueta %>" tabindex="0">
+        <% productos.forEach((producto, i) => { %>
+            <div role="listitem" class="estante-item" style="--i:<%= i %>"><%- include('../tarjetaProducto', { producto, pasillos, modo: 'ver' }) %></div>
+        <% }) %>
+    </div>
+    <div class="repisa" aria-hidden="true"></div>
+</div>

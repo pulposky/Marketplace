@@ -1,0 +1,12 @@
+<section class="bloque bloque-beneficios revelar">
+    <div class="bloque-interior">
+        <ul class="beneficios">
+            <li><b>Te lo guardamos <%- include('../duracionApartado') %></b><span>Apartas en línea, sin filas</span></li>
+            <li><b>Pagas al recoger</b><span><%= tienda.direccion || 'En el punto de venta' %></span></li>
+            <% if (tienda.horario) { %><li><b>Horario</b><span><%= tienda.horario %></span></li><% } %>
+            <% if (String(tienda.whatsapp || '').replace(/\D/g, '')) { %>
+                <li><b>¿Dudas?</b><span><a href="https://wa.me/<%= String(tienda.whatsapp).replace(/\D/g, '') %>" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a></span></li>
+            <% } %>
+        </ul>
+    </div>
+</section>

@@ -1,0 +1,6 @@
+<section class="bloque bloque-texto revelar"<%- b.titulo ? ` aria-labelledby="bloque-${n}"` : '' %>>
+    <div class="bloque-interior">
+        <% if (b.titulo) { %><h2 id="bloque-<%= n %>"><%= b.titulo %></h2><% } %>
+        <% if (b.texto) { %><p><%= b.texto %></p><% } %>
+    </div>
+</section>
