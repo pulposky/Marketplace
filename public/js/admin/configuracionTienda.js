@@ -133,14 +133,8 @@
             esquinas: valor('ap_esquinas'),
             mostrar_stock: valor('ap_mostrar_stock'),
             nombre_seccion: valor('ap_nombre_seccion'),
-            secciones_inicio: Number(valor('ap_secciones_inicio')),
-            texto_boton_portada: valor('ap_texto_boton_portada'),
             anuncio_activo: marcado('ap_anuncio_activo'),
-            anuncio: valor('ap_anuncio'),
-            mostrar_beneficios: marcado('ap_mostrar_beneficios'),
-            mostrar_ofertas: marcado('ap_mostrar_ofertas'),
-            mostrar_destacados: marcado('ap_mostrar_destacados'),
-            mostrar_pasos: marcado('ap_mostrar_pasos')
+            anuncio: valor('ap_anuncio')
         };
     }
 
@@ -149,6 +143,7 @@
         e.preventDefault();
         const { datos, primerInvalido } = recogerYValidar();
         datos.apariencia = recogerApariencia();
+        if (window.bloquesInicio) datos.bloques_inicio = window.bloquesInicio.recoger();
         if (primerInvalido) {
             anunciar('Revisa los campos marcados en rojo.', 'error');
             primerInvalido.focus();

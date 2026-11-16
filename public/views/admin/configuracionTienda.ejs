@@ -232,27 +232,32 @@
                         <input type="text" id="ap_nombre_seccion" maxlength="30" value="<%= c.apariencia.nombre_seccion %>" placeholder="<%= vocab.seccion %>">
                         <span class="ayuda-campo">Déjalo vacío para usar el nombre del tipo de negocio.</span>
                     </div>
-                    <div class="campo">
-                        <label for="ap_secciones_inicio">Categorías en el inicio</label>
-                        <input type="number" id="ap_secciones_inicio" min="0" max="8" step="1" value="<%= c.apariencia.secciones_inicio %>">
-                    </div>
-                    <div class="campo">
-                        <label for="ap_texto_boton_portada">Texto del botón de portada</label>
-                        <input type="text" id="ap_texto_boton_portada" maxlength="40" value="<%= c.apariencia.texto_boton_portada %>" placeholder="Ver el catálogo">
-                    </div>
                 </div>
                 <div class="campo">
                     <label for="ap_anuncio">Barra de anuncio</label>
                     <label><input type="checkbox" id="ap_anuncio_activo" <%= c.apariencia.anuncio_activo ? 'checked' : '' %>> Mostrar la barra de anuncio arriba de la tienda</label>
                     <input type="text" id="ap_anuncio" maxlength="140" value="<%= c.apariencia.anuncio %>" placeholder="Ej.: Domicilios los sábados">
                 </div>
-                <fieldset class="campo">
-                    <legend>Secciones del inicio</legend>
-                    <label><input type="checkbox" id="ap_mostrar_beneficios" <%= c.apariencia.mostrar_beneficios ? 'checked' : '' %>> Beneficios de apartar</label>
-                    <label><input type="checkbox" id="ap_mostrar_ofertas" <%= c.apariencia.mostrar_ofertas ? 'checked' : '' %>> Ofertas</label>
-                    <label><input type="checkbox" id="ap_mostrar_destacados" <%= c.apariencia.mostrar_destacados ? 'checked' : '' %>> Destacados</label>
-                    <label><input type="checkbox" id="ap_mostrar_pasos" <%= c.apariencia.mostrar_pasos ? 'checked' : '' %>> Cómo apartar</label>
-                </fieldset>
+            </section>
+
+            <!-- INICIO POR BLOQUES (public/js/admin/bloquesInicio.js) -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloBloques">
+                <div class="bloques-cabeza">
+                    <h2 id="tituloBloques">Inicio de la tienda</h2>
+                    <a href="/" target="_blank" rel="noopener">Ver la tienda</a>
+                </div>
+                <p class="ayuda-campo">Arma la página de inicio con bloques: agrégalos, cámbialos de orden y edita sus textos. Los cambios se ven al guardar.</p>
+                <ol class="bloques-lista" id="listaBloques" aria-live="polite"></ol>
+                <div class="bloques-agregar">
+                    <label for="tipoNuevoBloque" class="solo-lector">Tipo de bloque</label>
+                    <select id="tipoNuevoBloque">
+                        <% Object.entries(editorBloques.tipos).forEach(function ([clave, t]) { %>
+                        <option value="<%= clave %>"><%= t.nombre %></option>
+                        <% }) %>
+                    </select>
+                    <button type="button" class="btn btn-secundario" id="btnAgregarBloque">Agregar bloque</button>
+                </div>
+                <div id="datosBloques" hidden data-json="<%= JSON.stringify(editorBloques) %>"></div>
             </section>
 
             <!-- AVANZADO -->
@@ -280,6 +285,7 @@
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
+    <script src="/js/admin/bloquesInicio.js"></script>
     <script src="/js/admin/configuracionTienda.js"></script>
 </body>
 </html>
