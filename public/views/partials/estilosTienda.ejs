@@ -6,9 +6,11 @@
     const _luz = (0.299 * (_n >> 16) + 0.587 * ((_n >> 8) & 255) + 0.114 * (_n & 255)) / 255;
     const _secundario = /^#[0-9a-fA-F]{6}$/.test(tienda.color_secundario || '') ? tienda.color_secundario : '#F2A33A';
 %>
+<% if (estilo.google) { %>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?<%= estilo.google %>&display=swap">
+<% } %>
 <link rel="stylesheet" href="/css/tienda.css">
 <link rel="stylesheet" href="/css/toast.css">
-<style>:root{--marca:<%= _marca %>;--sobre-marca:<%= _luz > 0.62 ? '#1d2321' : '#ffffff' %>;--secundario:<%= _secundario %>}</style>
+<style>:root{--marca:<%= _marca %>;--sobre-marca:<%= _luz > 0.62 ? '#1d2321' : '#ffffff' %>;--secundario:<%= _secundario %>;--f-titulo:<%- estilo.titulo %>, system-ui, sans-serif;--f-texto:<%- estilo.texto %>, system-ui, sans-serif;--radio:<%- estilo.radio %>}</style>

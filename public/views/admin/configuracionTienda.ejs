@@ -199,6 +199,62 @@
                 </div>
             </section>
 
+            <!-- APARIENCIA -->
+            <section class="tarjeta-form config-seccion" aria-labelledby="tituloApariencia">
+                <h2 id="tituloApariencia">Apariencia de la tienda</h2>
+                <div class="config-grid">
+                    <div class="campo">
+                        <label for="ap_tipografia">Tipografía</label>
+                        <select id="ap_tipografia">
+                            <% Object.entries(TIPOGRAFIAS).forEach(function ([clave, t]) { %>
+                            <option value="<%= clave %>" <%= c.apariencia.tipografia === clave ? 'selected' : '' %>><%= t.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="ap_esquinas">Esquinas</label>
+                        <select id="ap_esquinas">
+                            <% Object.entries(ESQUINAS).forEach(function ([clave, nombre]) { %>
+                            <option value="<%= clave %>" <%= c.apariencia.esquinas === clave ? 'selected' : '' %>><%= nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="ap_mostrar_stock">Mostrar existencias</label>
+                        <select id="ap_mostrar_stock">
+                            <% Object.entries(STOCK).forEach(function ([clave, nombre]) { %>
+                            <option value="<%= clave %>" <%= c.apariencia.mostrar_stock === clave ? 'selected' : '' %>><%= nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="ap_nombre_seccion">Nombre de las secciones</label>
+                        <input type="text" id="ap_nombre_seccion" maxlength="30" value="<%= c.apariencia.nombre_seccion %>" placeholder="<%= vocab.seccion %>">
+                        <span class="ayuda-campo">Déjalo vacío para usar el nombre del tipo de negocio.</span>
+                    </div>
+                    <div class="campo">
+                        <label for="ap_secciones_inicio">Categorías en el inicio</label>
+                        <input type="number" id="ap_secciones_inicio" min="0" max="8" step="1" value="<%= c.apariencia.secciones_inicio %>">
+                    </div>
+                    <div class="campo">
+                        <label for="ap_texto_boton_portada">Texto del botón de portada</label>
+                        <input type="text" id="ap_texto_boton_portada" maxlength="40" value="<%= c.apariencia.texto_boton_portada %>" placeholder="Ver el catálogo">
+                    </div>
+                </div>
+                <div class="campo">
+                    <label for="ap_anuncio">Barra de anuncio</label>
+                    <label><input type="checkbox" id="ap_anuncio_activo" <%= c.apariencia.anuncio_activo ? 'checked' : '' %>> Mostrar la barra de anuncio arriba de la tienda</label>
+                    <input type="text" id="ap_anuncio" maxlength="140" value="<%= c.apariencia.anuncio %>" placeholder="Ej.: Domicilios los sábados">
+                </div>
+                <fieldset class="campo">
+                    <legend>Secciones del inicio</legend>
+                    <label><input type="checkbox" id="ap_mostrar_beneficios" <%= c.apariencia.mostrar_beneficios ? 'checked' : '' %>> Beneficios de apartar</label>
+                    <label><input type="checkbox" id="ap_mostrar_ofertas" <%= c.apariencia.mostrar_ofertas ? 'checked' : '' %>> Ofertas</label>
+                    <label><input type="checkbox" id="ap_mostrar_destacados" <%= c.apariencia.mostrar_destacados ? 'checked' : '' %>> Destacados</label>
+                    <label><input type="checkbox" id="ap_mostrar_pasos" <%= c.apariencia.mostrar_pasos ? 'checked' : '' %>> Cómo apartar</label>
+                </fieldset>
+            </section>
+
             <!-- AVANZADO -->
             <section class="tarjeta-form config-seccion" aria-labelledby="tituloAvanzado">
                 <h2 id="tituloAvanzado">Avanzado</h2>

@@ -11,6 +11,7 @@
 
 const TiendaModel = require('../models/tiendaModel');
 const { esTipoValido } = require('../utils/tipoNegocio');
+const { validarApariencia, normalizarApariencia, POR_DEFECTO: APARIENCIA_DEFECTO } = require('../utils/apariencia');
 
 const POR_DEFECTO = Object.freeze({
     nombre: 'Mi Tienda',
@@ -30,7 +31,8 @@ const POR_DEFECTO = Object.freeze({
     instagram: '',
     tiktok: '',
     productos_ocultos: 'COMODIN',
-    tipo_negocio: 'supermercado'
+    tipo_negocio: 'supermercado',
+    apariencia: APARIENCIA_DEFECTO
 });
 
 let actual = { ...POR_DEFECTO };
@@ -65,6 +67,11 @@ const REGLAS = {
 // Devuelve { datos } o { error }.
 function validarConfiguracion(entrada) {
     const datos = {};
+    if (entrada.apariencia !== undefined) {
+        const { datos: apariencia, error } = validarApariencia(entrada.apariencia);
+        if (error) return { error };
+        datos.apariencia = JSON.stringify(apariencia); // se guarda como texto JSON
+    }
     for (const [campo, [max, valido]] of Object.entries(REGLAS)) {
         if (entrada[campo] === undefined) continue;
         let valor = String(entrada[campo] ?? '').trim();
@@ -91,6 +98,7 @@ function normalizar(fila) {
     Object.keys(POR_DEFECTO).forEach((clave) => {
         if (fila[clave] !== undefined && fila[clave] !== null) resultado[clave] = fila[clave];
     });
+    resultado.apariencia = normalizarApariencia(fila.apariencia);
     resultado.minutos_expiracion_apartado = Number(resultado.minutos_expiracion_apartado) || POR_DEFECTO.minutos_expiracion_apartado;
     return resultado;
 }

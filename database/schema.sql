@@ -332,6 +332,7 @@ CREATE TABLE IF NOT EXISTS `configuracion_tienda` (
   `tiktok` VARCHAR(255) NOT NULL DEFAULT '',
   `productos_ocultos` VARCHAR(500) NOT NULL DEFAULT 'COMODIN',
   `tipo_negocio` VARCHAR(20) NOT NULL DEFAULT 'supermercado',
+  `apariencia` TEXT DEFAULT NULL,
   `actualizado_en` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

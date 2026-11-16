@@ -20,6 +20,7 @@ const { esRolAdmin, esRolPanel, esRolMantenimiento, puedeGestionarCarrusel, esSu
 const permisosService = require('./services/permisosService');
 const tiendaService = require('./services/tiendaService');
 const { vocabulario } = require('./utils/tipoNegocio');
+const { aplicarApariencia, estiloApariencia } = require('./utils/apariencia');
 
 const app = express();
 
@@ -65,7 +66,8 @@ app.use((req, res, next) => {
     // Configuración del negocio (nombre, logo, colores, contacto...) para todas las vistas
     res.locals.tienda = tiendaService.obtener();
     // Palabras según el tipo de negocio (Pasillo, Sección, Menú...)
-    res.locals.vocab = vocabulario(res.locals.tienda.tipo_negocio);
+    res.locals.vocab = aplicarApariencia(vocabulario(res.locals.tienda.tipo_negocio), res.locals.tienda.apariencia);
+    res.locals.estilo = estiloApariencia(res.locals.tienda.apariencia);
     // Ruta actual, para marcar el módulo activo en el menú del panel
     res.locals.rutaActual = req.path;
     res.locals.esRolAdmin = esRolAdmin;

@@ -21,10 +21,11 @@
                 <% if (usuario) { %><p class="portada-saludo">Hola, <%= String(usuario.nombre || '').split(' ')[0] %></p><% } %>
                 <h1><%= tienda.eslogan || 'Lo de todos los días, apartado en un minuto' %></h1>
             </div>
-            <a href="/catalogo" class="btn btn-grande">Ver el <%= vocab.catalogo.toLowerCase() %></a>
+            <a href="/catalogo" class="btn btn-grande"><%= tienda.apariencia.texto_boton_portada || 'Ver el ' + vocab.catalogo.toLowerCase() %></a>
         </section>
 
         <%# Beneficios de apartar: lo que el cliente necesita saber antes de empezar %>
+        <% if (tienda.apariencia.mostrar_beneficios) { %>
         <ul class="beneficios">
             <li><b>Te lo guardamos <%- include('partials/duracionApartado') %></b><span>Apartas en línea, sin filas</span></li>
             <li><b>Pagas al recoger</b><span><%= tienda.direccion || 'En el punto de venta' %></span></li>
@@ -33,12 +34,13 @@
                 <li><b>¿Dudas?</b><span><a href="https://wa.me/<%= String(tienda.whatsapp).replace(/\D/g, '') %>" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a></span></li>
             <% } %>
         </ul>
+        <% } %>
 
         <div class="carrusel" id="carrusel" aria-label="Avisos de la tienda">
             <div class="carrusel-contenedor" id="carruselContenedor"></div>
         </div>
 
-        <% if (vitrinaOfertas.length) { %>
+        <% if (vitrinaOfertas.length && tienda.apariencia.mostrar_ofertas) { %>
         <section class="seccion vitrina-ofertas" aria-labelledby="tituloOfertas">
             <div class="seccion-cabeza">
                 <h2 id="tituloOfertas">Ofertas de la semana</h2>
@@ -52,7 +54,7 @@
         </section>
         <% } %>
 
-        <% if (destacados.length) { %>
+        <% if (destacados.length && tienda.apariencia.mostrar_destacados) { %>
         <section class="seccion seccion-productos" aria-labelledby="tituloDestacados">
             <div class="seccion-cabeza">
                 <h2 id="tituloDestacados"><%= vocab.destacados %></h2>
@@ -83,6 +85,7 @@
         </section>
         <% }) %>
 
+        <% if (tienda.apariencia.mostrar_pasos) { %>
         <section class="seccion pasos" aria-labelledby="tituloPasos">
             <h2 id="tituloPasos">Cómo apartar</h2>
             <ol>
@@ -92,6 +95,7 @@
                 <li><b>Recoge</b><span>Muestra tu apartado y llévate tus productos.</span></li>
             </ol>
         </section>
+        <% } %>
     </main>
 
     <%- include('partials/pie') %>

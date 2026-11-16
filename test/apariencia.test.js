@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { validarApariencia, normalizarApariencia, aplicarApariencia, plural, POR_DEFECTO } = require('../utils/apariencia');
+const { validarApariencia, normalizarApariencia, aplicarApariencia, estiloApariencia, plural, POR_DEFECTO } = require('../utils/apariencia');
 
 test('validarApariencia acepta valores válidos y completa con los por defecto', () => {
     const { datos } = validarApariencia({ anuncio_activo: true, anuncio: ' Domicilios gratis ', secciones_inicio: 2, tipografia: 'clasica' });
@@ -33,4 +33,13 @@ test('aplicarApariencia cambia el nombre de las categorías y el stock', () => {
     assert.strictEqual(v.mostrarStock, false);
     assert.strictEqual(plural('Sección'), 'Secciones');
     assert.strictEqual(plural('Estante'), 'Estantes');
+});
+
+test('estiloApariencia da fuentes y radio; la tipografía simple no carga Google Fonts', () => {
+    const clasica = estiloApariencia({ ...POR_DEFECTO, tipografia: 'clasica', esquinas: 'rectas' });
+    assert.ok(clasica.google.includes('Fraunces'));
+    assert.strictEqual(clasica.radio, '2px');
+    const simple = estiloApariencia({ ...POR_DEFECTO, tipografia: 'simple' });
+    assert.strictEqual(simple.google, '');
+    assert.strictEqual(simple.radio, '10px');
 });

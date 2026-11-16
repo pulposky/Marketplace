@@ -8,12 +8,16 @@
 
 const tiendaService = require('../../services/tiendaService');
 const { TIPOS } = require('../../utils/tipoNegocio');
+const { TIPOGRAFIAS, ESQUINAS, STOCK } = require('../../utils/apariencia');
 
 const TiendaVistasController = {
     mostrarConfiguracion: (req, res) => res.render('admin/configuracionTienda', {
         usuario: req.session.usuario,
         configuracion: tiendaService.obtener(),
-        tiposNegocio: TIPOS
+        tiposNegocio: TIPOS,
+        TIPOGRAFIAS,
+        ESQUINAS,
+        STOCK
     })
 };
 

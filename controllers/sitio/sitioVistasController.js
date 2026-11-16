@@ -13,6 +13,7 @@ const { normalizarCategorias } = require('../../utils/helpers');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const { armarPasillos } = require('../../utils/pasillos');
+const tiendaService = require('../../services/tiendaService');
 
 // Descuento porcentual vigente según sus fechas
 const estaEnOferta = (producto) => {
@@ -70,7 +71,7 @@ const SitioVistasController = {
                             const vitrinaOfertas = activos.filter(estaEnOferta)
                                 .sort((a, b) => Number(b.descuento) - Number(a.descuento))
                                 .slice(0, 8);
-                            const secciones = [...pasillos].sort((a, b) => b.total - a.total).slice(0, 4)
+                            const secciones = [...pasillos].sort((a, b) => b.total - a.total).slice(0, tiendaService.obtener().apariencia.secciones_inicio)
                                 .map((pasillo) => ({
                                     pasillo,
                                     productos: activos.filter((p) => String(p.categoria || '').trim() === pasillo.nombre).slice(0, 4)

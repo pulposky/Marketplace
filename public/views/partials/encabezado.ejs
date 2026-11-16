@@ -7,6 +7,9 @@
     const _busqueda = typeof busqueda !== 'undefined' ? busqueda : '';
     const _conModal = typeof conModalLogin !== 'undefined' && conModalLogin;
 %>
+<% if (tienda.apariencia.anuncio_activo && tienda.apariencia.anuncio) { %>
+<div class="anuncio"><%= tienda.apariencia.anuncio %></div>
+<% } %>
 <header class="barra">
     <div class="barra-interior">
         <a href="/" class="barra-marca">

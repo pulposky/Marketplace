@@ -104,4 +104,10 @@ function aplicarApariencia(vocab, apariencia) {
     return resultado;
 }
 
-module.exports = { TIPOGRAFIAS, ESQUINAS, STOCK, POR_DEFECTO, validarApariencia, normalizarApariencia, aplicarApariencia, plural };
+// Lo que necesita la hoja de estilos: fuentes de Google (si aplica) y radio de esquinas
+function estiloApariencia(apariencia) {
+    const tip = TIPOGRAFIAS[apariencia.tipografia] || TIPOGRAFIAS[POR_DEFECTO.tipografia];
+    return { google: tip.google, titulo: tip.titulo, texto: tip.texto, radio: apariencia.esquinas === 'rectas' ? '2px' : '10px' };
+}
+
+module.exports = { TIPOGRAFIAS, ESQUINAS, STOCK, POR_DEFECTO, validarApariencia, normalizarApariencia, aplicarApariencia, estiloApariencia, plural };
