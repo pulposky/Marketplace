@@ -43,7 +43,7 @@ tipografía, imágenes, agregar secciones y cambiar los textos que vienen por de
 
 - Express 5 + EJS, CSS propio en `public/css/tienda.css`, sin framework de front. No agregar dependencias.
 - CSP con nonce (helmet): todo script inline lleva `nonce="<%= cspNonce %>"`; mejor archivos en `public/js`.
-- Probar solo contra `tienda_db`, nunca `sena_pdv`.
+- Probar solo contra `tienda_db`.
 - La subida de imágenes reutiliza el patrón existente (dataURL base64, `utils/imagenValida.tipoRealImagen`,
   máximo 3 MB, jpeg/png/webp).
 - La configuración se guarda en `configuracion_tienda`, igual que `apariencia` (columna TEXT con JSON,

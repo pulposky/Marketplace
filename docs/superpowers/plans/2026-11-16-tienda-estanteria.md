@@ -14,7 +14,7 @@
 
 - No agregar dependencias de npm ni librerías de front.
 - Scripts inline llevan `nonce="<%= cspNonce %>"`; preferir archivos en `public/js`.
-- Probar solo contra `tienda_db` (`DB_DATABASE=tienda_db PORT=3000 node server.js`), nunca `sena_pdv`.
+- Probar solo contra `tienda_db` (`DB_DATABASE=tienda_db PORT=3000 node server.js`).
 - Imágenes: dataURL base64 jpeg/png/webp, `tipoRealImagen` debe coincidir, máximo 3 MB.
 - Textos de bloques sin `<` ni `>`; máximo 20 bloques.
 - En vistas del cliente no aparece "Pasillo" ni número de categoría.
