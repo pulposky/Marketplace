@@ -38,8 +38,8 @@ function cancelarApartadosExpirados() {
                 // Aviso al cliente que su apartado se canceló por vencimiento
                 const avisar = (idCliente) => NotificacionClienteModel.crear(
                     idCliente,
-                    'Apartado vencido',
-                    `Tu apartado #${apartado.id_apartado} se canceló por vencer el tiempo de reserva.`,
+                    'Pedido vencido',
+                    `Tu pedido #${apartado.id_apartado} se canceló porque venció el tiempo de reserva.`,
                     () => {}
                 );
                 if (apartado.id_cliente) {

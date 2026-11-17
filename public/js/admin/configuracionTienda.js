@@ -46,7 +46,9 @@
         instagram: [255, ...opcional(URL_RED, 'Debe ser un enlace que empiece por https://')],
         tiktok: [255, ...opcional(URL_RED, 'Debe ser un enlace que empiece por https://')],
         productos_ocultos: [500, ...SIN_HTML],
-        tipo_negocio: [20, (v) => /^[a-z_]+$/.test(v), 'Elige un tipo de negocio de la lista.']
+        tipo_negocio: [20, (v) => /^[a-z_]+$/.test(v), 'Elige un tipo de negocio de la lista.'],
+        entrega: [10, (v) => ['recoger', 'domicilio', 'ambos'].includes(v), 'Elige cómo entregas los pedidos.'],
+        nota_entrega: [160, ...SIN_HTML]
     };
 
     function anunciar(texto, tipo) {

@@ -680,3 +680,9 @@ body {
 .barra-busqueda-pedidos label { display: inline-flex; align-items: center; gap: 6px; }
 .barra-busqueda-pedidos input:focus { outline: 2px solid var(--marca); outline-offset: 1px; }
 .conteo-pedidos { font-weight: 600; }
+
+/* FORMA DE ENTREGA */
+.chip-entrega { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: #eef1ef; color: var(--tinta-2); }
+.chip-entrega.domicilio { background: color-mix(in srgb, var(--marca) 14%, #fff); color: var(--marca); }
+.fila-envio { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--marca) 7%, #fff); font-size: 0.82rem; color: var(--tinta); }
+.fila-envio a { color: inherit; }

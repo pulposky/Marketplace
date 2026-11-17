@@ -58,3 +58,11 @@ test('describir: con y sin presentación', () => {
     assert.strictEqual(describir(3, 'kg'), '3 kg');
     assert.strictEqual(describir(5, ''), '5 unidad(es)');
 });
+
+test('nombreUnidad: códigos del inventario a palabras', () => {
+    const { nombreUnidad } = require('../utils/presentaciones');
+    assert.strictEqual(nombreUnidad('UND'), 'unidad');
+    assert.strictEqual(nombreUnidad('kg'), 'kg');
+    assert.strictEqual(nombreUnidad('Bulto'), 'bulto');
+    assert.strictEqual(nombreUnidad(''), 'unidad');
+});

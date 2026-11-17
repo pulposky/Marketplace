@@ -135,6 +135,8 @@ const loginUsuarioController = async (req, res) => {
             id: clienteBD.id_cliente ?? clienteBD.id,
             documento: clienteBD.documento,
             nombre: clienteBD.nombre,
+            direccion: clienteBD.direccion || '',
+            telefono: clienteBD.telefono || '',
             role: 'cliente'
         });
 

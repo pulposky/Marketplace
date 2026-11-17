@@ -120,10 +120,11 @@
                 <span id="carritoTotalUnidades">0 artículos</span>
                 <b id="carritoTotalPrecio">$0</b>
             </div>
-            <button type="button" class="btn btn-ancho" id="btnConfirmarCarrito">Confirmar apartado</button>
+            <%- include('partials/opcionesEntrega') %>
+            <button type="button" class="btn btn-ancho" id="btnConfirmarCarrito">Hacer pedido</button>
             <button type="button" class="btn btn-ancho btn-texto" id="btnVaciarCarrito">Vaciar carrito</button>
-            <p class="carrito-nota">Pagas al recoger.<% if (tienda.minutos_expiracion_apartado > 0) { %> Te lo guardamos <%- include('partials/duracionApartado') %>.<% } %></p>
-            <a href="/verApartados" class="carrito-link">Ver mis apartados</a>
+            <p class="carrito-nota">Pagas al recibir tu pedido.</p>
+            <a href="/verApartados" class="carrito-link">Ver mis pedidos</a>
         </div>
     </aside>
 
@@ -131,8 +132,8 @@
     <% if (tienda.minutos_expiracion_apartado > 0) { %>
     <div class="alerta-fondo" id="alertaApartado">
         <div class="alerta-contenido" role="alertdialog" aria-labelledby="tituloAlertaApartado">
-            <h2 id="tituloAlertaApartado">Antes de apartar</h2>
-            <p>Lo que apartes te lo guardamos <strong><%- include('partials/duracionApartado') %></strong>. Si no lo recoges en ese tiempo, vuelve a quedar disponible.</p>
+            <h2 id="tituloAlertaApartado">Antes de pedir</h2>
+            <p>Tu pedido se reserva por <strong><%- include('partials/duracionApartado') %></strong>. Si no se confirma en ese tiempo, se cancela.</p>
             <button type="button" class="btn btn-ancho" id="cerrarAlertaApartado">Entendido</button>
         </div>
     </div>

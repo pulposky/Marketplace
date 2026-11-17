@@ -14,7 +14,7 @@
 <body>
     <%
         // Misma lógica de precios que el catálogo; el stock está en la unidad mínima
-        const unidad = producto.unidad || 'unidad';
+        const unidad = nombreUnidad(producto.unidad);
         const presentaciones = Array.isArray(producto.presentaciones) ? producto.presentaciones : [];
         const pasillo = (pasillos || []).find((p) => p.nombre === String(producto.categoria || '').trim()) || null;
 
@@ -68,7 +68,7 @@
                     <% if (presentaciones.length) { %>
                         <p class="ficha-se-vende">Se vende por: <%= presentaciones.map((p) => `${p.nombre} (${p.factor} ${unidad})`).join(', ') %></p>
                     <% } %>
-                    <a href="/catalogo?login=1&amp;desde=producto" class="btn btn-grande">Entra para apartar</a>
+                    <a href="/catalogo?login=1&amp;desde=producto" class="btn btn-grande">Entra para hacer tu pedido</a>
                 <% } else if (stock < factor) { %>
                     <p class="ficha-agotado">Agotado por ahora.</p>
                 <% } else { %>
@@ -88,6 +88,7 @@
                             </fieldset>
                         <% } %>
 
+                        <%- include('partials/opcionesEntrega') %>
                         <div class="ficha-cantidad">
                             <div class="campo">
                                 <label for="cantidadDetalle">Cantidad</label>
@@ -97,18 +98,20 @@
                                 data-id="<%= producto.id_producto %>"
                                 data-precio-unitario="<%= precioUnidad %>"
                                 data-unidad="<%= unidad %>"
-                                data-limite="<%= stock %>">Apartar</button>
+                                data-limite="<%= stock %>">Pedir ahora</button>
                         </div>
-                        <p class="ficha-disponibles" id="textoDisponiblesDetalle"<%- vocab.mostrarStock ? '' : ' hidden' %>>
-                            Disponibles: <span id="cantDisponiblesDetalle"><%= Math.floor(stock / factor) %></span>
-                            <span id="unidadDisponiblesDetalle"><%= etiqueta %></span>
+                        <%# Solo avisa cuando quedan pocas (productoDetalle.js lo recalcula por presentación) %>
+                        <p class="ficha-disponibles" id="textoDisponiblesDetalle" data-mostrar="<%= vocab.mostrarStock ? '1' : '' %>"<%- vocab.mostrarStock && Math.floor(stock / factor) <= 5 ? '' : ' hidden' %>>
+                            ¡Quedan <span id="cantDisponiblesDetalle"><%= Math.floor(stock / factor) %></span>
+                            <span id="unidadDisponiblesDetalle"><%= etiqueta %></span>!
                         </p>
                     </div>
                 <% } %>
 
                 <dl class="ficha-datos">
                     <% if (tienda.minutos_expiracion_apartado > 0) { %><div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div><% } %>
-                    <div><dt>Pagas y recoges en</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div>
+                    <% if (tienda.entrega !== 'domicilio') { %><div><dt>Recoges en</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div><% } %>
+                    <div><dt>Pago</dt><dd>Al recibir tu pedido</dd></div>
                     <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
                 </dl>
             </div>

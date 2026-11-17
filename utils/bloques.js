@@ -15,9 +15,9 @@ const RE_ENLACE = /^(\/(?!\/)[^\s<>"]*|https:\/\/[^\s<>"]+)$/;
 
 const PASOS_DEFECTO = Object.freeze([
     { titulo: 'Elige', texto: 'Busca o entra por categoría y escoge la presentación que necesitas.' },
-    { titulo: 'Aparta', texto: 'Con tu cuenta lo reservas y te lo guardamos.' },
-    { titulo: 'Paga en la tienda', texto: 'Al momento de recoger, en el punto de venta.' },
-    { titulo: 'Recoge', texto: 'Muestra tu apartado y llévate tus productos.' },
+    { titulo: 'Agrega al carrito', texto: 'Suma todo lo que necesites en un solo pedido.' },
+    { titulo: 'Haz tu pedido', texto: 'Con tu cuenta, en un clic. Te avisamos cuando lo confirmemos.' },
+    { titulo: 'Recíbelo', texto: 'Según lo que ofrezca la tienda, lo recoges o te llega a casa. Pagas al recibir.' },
 ]);
 
 const texto = (max, defecto = '') => ({ clase: 'texto', max, defecto });
@@ -32,8 +32,7 @@ const TIPOS_BLOQUE = Object.freeze({
     destacados: { nombre: 'Destacados', campos: { titulo: texto(80), cantidad: entero(4, 12, 6) } },
     banner: { nombre: 'Banner con imagen', campos: { imagen: { clase: 'imagen', requerido: true }, titulo: texto(80), texto: texto(280), texto_boton: texto(40), enlace: { clase: 'enlace', defecto: '' } } },
     carrusel: { nombre: 'Carrusel de avisos', campos: {} },
-    beneficios: { nombre: 'Beneficios', campos: {} },
-    pasos: { nombre: 'Cómo apartar', campos: { titulo: texto(80, 'Cómo apartar'), pasos: { clase: 'pasos' } } },
+    pasos: { nombre: 'Cómo comprar', campos: { titulo: texto(80, 'Cómo comprar'), pasos: { clase: 'pasos' } } },
     texto: { nombre: 'Texto', campos: { titulo: texto(80), texto: texto(280) } },
 });
 
@@ -117,7 +116,6 @@ function validarBloques(entrada) {
 function bloquesPorDefecto(apariencia) {
     const ap = apariencia || {};
     const lista = [{ tipo: 'portada', texto_boton: ap.texto_boton_portada || '' }];
-    if (ap.mostrar_beneficios !== false) lista.push({ tipo: 'beneficios' });
     lista.push({ tipo: 'carrusel' });
     if (ap.mostrar_ofertas !== false) lista.push({ tipo: 'ofertas' });
     if (ap.mostrar_destacados !== false) lista.push({ tipo: 'destacados' });

@@ -11,7 +11,7 @@ const TIPOS = Object.freeze({
         nombre: 'Supermercado o tienda de barrio',
         seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar arroz, leche, huevos…',
-        destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, paca, cubeta…',
+        destacados: 'Lo más pedido', ejemplosPresentacion: 'unidad, paca, cubeta…',
     },
     comida_rapida: {
         nombre: 'Comida rápida o restaurante',
@@ -23,19 +23,19 @@ const TIPOS = Object.freeze({
         nombre: 'Ferretería',
         seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar tornillos, pintura, cables…',
-        destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, caja, metro…',
+        destacados: 'Lo más pedido', ejemplosPresentacion: 'unidad, caja, metro…',
     },
     drogueria: {
         nombre: 'Droguería',
         seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar medicamentos, cuidado personal…',
-        destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, caja, blíster…',
+        destacados: 'Lo más pedido', ejemplosPresentacion: 'unidad, caja, blíster…',
     },
     general: {
         nombre: 'Otro tipo de negocio',
         seccion: 'Categoría', secciones: 'Categorías', mostrarStock: true,
         catalogo: 'Catálogo', buscar: 'Buscar productos',
-        destacados: 'Lo más apartado', ejemplosPresentacion: 'unidad, caja, paquete…',
+        destacados: 'Lo más pedido', ejemplosPresentacion: 'unidad, caja, paquete…',
     },
 });
 

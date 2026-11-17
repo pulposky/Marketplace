@@ -14,7 +14,8 @@ const pool = conexion.promise();
 const COLUMNAS = [
     'nombre', 'eslogan', 'descripcion', 'logo_url', 'color_primario', 'color_secundario',
     'telefono', 'whatsapp', 'correo', 'direccion', 'horario', 'moneda',
-    'minutos_expiracion_apartado', 'facebook', 'instagram', 'tiktok', 'productos_ocultos', 'tipo_negocio', 'apariencia', 'bloques_inicio'
+    'minutos_expiracion_apartado', 'facebook', 'instagram', 'tiktok', 'productos_ocultos', 'tipo_negocio', 'apariencia', 'bloques_inicio',
+    'entrega', 'nota_entrega'
 ];
 
 const TiendaModel = {
@@ -46,6 +47,8 @@ const TiendaModel = {
                 tipo_negocio VARCHAR(20) NOT NULL DEFAULT 'supermercado',
                 apariencia TEXT DEFAULT NULL,
                 bloques_inicio TEXT DEFAULT NULL,
+                entrega VARCHAR(10) NOT NULL DEFAULT 'recoger',
+                nota_entrega VARCHAR(160) NOT NULL DEFAULT '',
                 actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
@@ -72,6 +75,18 @@ const TiendaModel = {
         );
         if (!colBloques.length) {
             await pool.query('ALTER TABLE configuracion_tienda ADD COLUMN bloques_inicio TEXT DEFAULT NULL AFTER apariencia');
+        }
+        // Forma de entrega (recoger / domicilio / ambos) y su nota, añadidas después
+        const [colEntrega] = await pool.query(
+            `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'configuracion_tienda' AND COLUMN_NAME IN ('entrega', 'nota_entrega')`
+        );
+        const hayEntrega = new Set(colEntrega.map((c) => c.COLUMN_NAME));
+        if (!hayEntrega.has('entrega')) {
+            await pool.query("ALTER TABLE configuracion_tienda ADD COLUMN entrega VARCHAR(10) NOT NULL DEFAULT 'recoger'");
+        }
+        if (!hayEntrega.has('nota_entrega')) {
+            await pool.query("ALTER TABLE configuracion_tienda ADD COLUMN nota_entrega VARCHAR(160) NOT NULL DEFAULT ''");
         }
         await pool.query('INSERT IGNORE INTO configuracion_tienda (id) VALUES (1)');
     },

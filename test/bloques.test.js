@@ -46,12 +46,12 @@ test('validarBloques valida los cuatro pasos', () => {
     assert.ok(validarBloques([{ tipo: 'pasos', pasos: [{ titulo: '<x>', texto: '' }] }]).error);
     const otro = validarBloques([{ tipo: 'pasos', pasos: [{ titulo: 'Pide', texto: 'Por WhatsApp' }] }]).datos[0];
     assert.strictEqual(otro.pasos[0].titulo, 'Pide');
-    assert.strictEqual(otro.pasos[1].titulo, 'Aparta');
+    assert.strictEqual(otro.pasos[1].titulo, 'Agrega al carrito');
 });
 
 test('bloquesPorDefecto respeta la apariencia vieja', () => {
     const lista = bloquesPorDefecto({ ...AP, mostrar_pasos: false, secciones_inicio: 2, texto_boton_portada: 'Ir' });
-    assert.deepStrictEqual(lista.map((b) => b.tipo), ['portada', 'beneficios', 'carrusel', 'ofertas', 'destacados', 'categorias_auto']);
+    assert.deepStrictEqual(lista.map((b) => b.tipo), ['portada', 'carrusel', 'ofertas', 'destacados', 'categorias_auto']);
     assert.strictEqual(lista.find((b) => b.tipo === 'categorias_auto').cantidad_categorias, 2);
     assert.strictEqual(lista[0].texto_boton, 'Ir');
     assert.deepStrictEqual(bloquesPorDefecto(AP).map((b) => b.tipo).slice(-1), ['pasos']);
@@ -67,6 +67,6 @@ test('normalizarBloques usa los por defecto si no hay nada o el JSON está roto'
 });
 
 test('TIPOS_BLOQUE trae nombre para el panel', () => {
-    assert.strictEqual(Object.keys(TIPOS_BLOQUE).length, 10);
+    assert.strictEqual(Object.keys(TIPOS_BLOQUE).length, 9);
     assert.ok(Object.values(TIPOS_BLOQUE).every((t) => t.nombre));
 });

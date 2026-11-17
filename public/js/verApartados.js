@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Pregunto si está seguro antes de cancelar
-        const confirmar = confirm(`¿Deseas cancelar el apartado?`);
+        const confirmar = confirm('¿Deseas cancelar este pedido?');
         if (!confirmar) return;
 
         try {
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (respuesta.ok) {
-                toast('exito', data.mensaje || 'Apartado cancelado correctamente.');
+                toast('exito', data.mensaje || 'Pedido cancelado.');
                 window.location.reload(); // Recargo para que se actualice la lista
             } else {
                 toast('error', `Error ${respuesta.status}: ${data.error || data.mensaje || 'No se pudo procesar la solicitud en el servidor.'}`);
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 procesados.add(expiraStr);
 
                 el.classList.add('expirado');
-                el.querySelector('.texto-temporizador').textContent = 'Apartado expirado';
+                el.querySelector('.texto-temporizador').textContent = 'Pedido vencido';
 
                 const tarjeta = el.closest('.tarjeta-producto');
                 const idApartado = tarjeta ? tarjeta.id.replace('apartado-', '') : null;

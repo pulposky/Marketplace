@@ -2,7 +2,7 @@
 <html lang="es">
 
 <head>
-    <%- include('partials/headMeta', { titulo: 'Mis apartados' }) %>
+    <%- include('partials/headMeta', { titulo: 'Mis pedidos' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
             if (e.persisted) window.location.reload();
@@ -27,7 +27,7 @@
         const resumen = (item) => {
             const factor = Number(item.presentacion_factor) || 0;
             const conPres = !!item.presentacion_nombre && factor > 0;
-            const unidad = item.unidad || 'unidad';
+            const unidad = nombreUnidad(item.unidad);
             const unidades = Number(item.cantidad) || 0;
             const precioUnidad = Number(item.precio_aplicado) > 0 ? Number(item.precio_aplicado) : Number(item.precio) || 0;
             return {
@@ -45,8 +45,8 @@
     <main class="contenedor contenedor-angosto">
         <%- include('partials/volver', { destino: '/catalogo' }) %>
         <header class="pagina-cabeza">
-            <h1>Mis apartados</h1>
-            <p>Lo que tienes guardado en la tienda y lo que ya recogiste.</p>
+            <h1>Mis pedidos</h1>
+            <p>Sigue tus pedidos en curso y revisa los anteriores.</p>
         </header>
 
         <% if (usuario) { %>
@@ -63,15 +63,15 @@
 
         <% if (!activos.length && !historial.length) { %>
             <div class="vacio vacio-grande">
-                <h2>Aún no has apartado nada</h2>
-                <p>Recorre el <%= vocab.catalogo.toLowerCase() %> y aparta lo que necesites<% if (tienda.minutos_expiracion_apartado > 0) { %>; te lo guardamos <%- include('partials/duracionApartado') %><% } %>.</p>
+                <h2>Aún no tienes pedidos</h2>
+                <p>Recorre el <%= vocab.catalogo.toLowerCase() %> y pide lo que necesites.</p>
                 <a href="/catalogo" class="btn">Ir al <%= vocab.catalogo.toLowerCase() %></a>
             </div>
         <% } %>
 
         <% if (activos.length) { %>
         <section class="seccion" aria-labelledby="tituloActivos">
-            <h2 id="tituloActivos" class="seccion-subtitulo">Por recoger</h2>
+            <h2 id="tituloActivos" class="seccion-subtitulo">En curso</h2>
             <ul class="apartados">
                 <% activos.forEach((item) => {
                     const r = resumen(item);
@@ -99,7 +99,7 @@
                         <% } %>
                     </div>
                     <div class="apartado-lado">
-                        <span class="estado estado-<%= estado %>"><%= confirmado ? 'Listo para recoger' : 'Pendiente' %></span>
+                        <span class="estado estado-<%= estado %>"><%= confirmado ? (item.entrega === 'domicilio' ? 'Confirmado' : 'Listo para recoger') : 'Pendiente' %></span>
                         <b class="apartado-total"><%= cop(r.total) %></b>
                         <% if (confirmado) { %>
                             <button type="button" class="btn-texto btn-dismiss" data-id="<%= item.id_apartado %>">Ocultar</button>

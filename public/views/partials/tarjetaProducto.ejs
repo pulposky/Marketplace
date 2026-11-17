@@ -5,7 +5,7 @@
     const _p = producto;
     const _pasillo = (pasillos || []).find((x) => x.nombre === String(_p.categoria || '').trim()) || null;
     const _presentaciones = Array.isArray(_p.presentaciones) ? _p.presentaciones : [];
-    const _unidad = _p.unidad || 'unidad';
+    const _unidad = nombreUnidad(_p.unidad);
 
     const _precioBase = Number(_p.precio) || 0;
     const _descuento = Number(_p.descuento) || 0;
@@ -50,10 +50,11 @@
             <% _presentaciones.forEach((pr) => { %><span><%= pr.nombre %> · <%= pr.factor %></span><% }) %>
         </p>
     <% } %>
-    <% if (_disponibles < 1 || vocab.mostrarStock) { %>
-        <p class="producto-stock<%= _disponibles < 1 ? ' agotado' : '' %>">
-            <%= _disponibles < 1 ? 'Agotado' : _disponibles + ' disponibles' %>
-        </p>
+    <%# Sin inventario exacto: solo avisos que le sirven al cliente %>
+    <% if (_disponibles < 1) { %>
+        <p class="producto-stock agotado">Agotado</p>
+    <% } else if (vocab.mostrarStock && _disponibles <= 5) { %>
+        <p class="producto-stock">¡Quedan <%= _disponibles %>!</p>
     <% } %>
 
     <% if (modo === 'agregar') { %>
@@ -69,6 +70,6 @@
             data-descripcion="<%= _p.descripcion || '' %>"
             data-limite="<%= _stock %>">Agregar</button>
     <% } else { %>
-        <a class="btn btn-ancho btn-suave" href="/producto/<%= _p.id_producto %>">Ver y apartar</a>
+        <a class="btn btn-ancho btn-suave" href="/producto/<%= _p.id_producto %>">Ver producto</a>
     <% } %>
 </article>

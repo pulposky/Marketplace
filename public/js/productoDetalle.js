@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inputCantidad.max = maximo;
         if (Number(inputCantidad.value) > maximo) inputCantidad.value = Math.max(1, maximo);
         if (textoCantidad) textoCantidad.textContent = maximo;
+        const linea = document.getElementById('textoDisponiblesDetalle');
+        if (linea) linea.hidden = !(linea.dataset.mostrar && maximo <= 5);
         if (textoUnidad) textoUnidad.textContent = nombre;
         if (textoPrecio) textoPrecio.textContent = `$${(precioUnitario * factor).toLocaleString('es-CO')}`;
         if (textoEtiqueta) textoEtiqueta.textContent = `/ ${nombre}`;
@@ -48,12 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const cantidad = Math.max(1, Math.floor(Number(inputCantidad.value) || 1));
 
         if (maximo > 0 && cantidad > maximo) {
-            toast('advertencia', `Solo hay ${maximo} disponibles para apartar.`);
+            toast('advertencia', `Solo hay ${maximo} disponibles.`);
+            return;
+        }
+        const envio = window.leerEntrega ? window.leerEntrega() : {};
+        if (envio.error) {
+            toast('advertencia', envio.error);
+            if (envio.campo) envio.campo.focus();
             return;
         }
 
         botonApartar.disabled = true;
-        botonApartar.textContent = 'Apartando...';
+        botonApartar.textContent = 'Enviando...';
 
         try {
             const respuesta = await fetch('/api/apartar-producto', {
@@ -62,7 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     productoId: botonApartar.dataset.id,
                     cantidad,
-                    presentacionId: elegida() ? Number(elegida().value) : undefined
+                    presentacionId: elegida() ? Number(elegida().value) : undefined,
+                    entrega: envio.entrega,
+                    domicilio: envio.domicilio
                 })
             });
 
@@ -74,19 +84,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (respuesta.ok) {
-                toast('exito', data.mensaje || '¡Producto apartado con éxito!');
+                toast('exito', data.mensaje || '¡Pedido recibido!');
                 setTimeout(() => {
                     window.location.href = '/verApartados';
                 }, 1600);
             } else {
                 botonApartar.disabled = false;
-                botonApartar.textContent = 'Apartar';
-                toast('error', data.error || data.mensaje || 'No se pudo apartar el producto.');
+                botonApartar.textContent = 'Pedir ahora';
+                toast('error', data.error || data.mensaje || 'No se pudo hacer el pedido.');
             }
         } catch (error) {
             console.error('Error al apartar:', error);
             botonApartar.disabled = false;
-            botonApartar.textContent = 'Apartar';
+            botonApartar.textContent = 'Pedir ahora';
             toast('error', 'Error de conexión con el servidor.');
         }
     });

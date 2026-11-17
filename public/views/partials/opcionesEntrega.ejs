@@ -1,0 +1,39 @@
+<%# Cómo recibe el pedido el cliente. Con 'ambos' se elige (radio name="entrega"); los datos de
+    envío se muestran al elegir domicilio (CSS :has) y salen prellenados con los de su cuenta.
+    tiendaAnimaciones.js (window.leerEntrega) los lee y valida antes de enviar. %>
+<%
+    const _dir = tienda.direccion || 'el punto de venta';
+    const _u = typeof usuario !== 'undefined' && usuario ? usuario : {};
+    const _hayDomicilio = tienda.entrega !== 'recoger';
+%>
+<div class="entrega-bloque" data-entrega-tienda="<%= tienda.entrega %>">
+    <% if (tienda.entrega === 'ambos') { %>
+        <fieldset class="entrega-opciones">
+            <legend>¿Cómo lo recibes?</legend>
+            <label><input type="radio" name="entrega" value="recoger" checked>
+                <span><b>Recoger en la tienda</b><small><%= _dir %></small></span></label>
+            <label><input type="radio" name="entrega" value="domicilio">
+                <span><b>Envío a domicilio</b><small>Te lo llevamos a donde nos digas</small></span></label>
+        </fieldset>
+    <% } else if (tienda.entrega === 'recoger') { %>
+        <p class="entrega-info">Lo recoges en <%= _dir %>.</p>
+    <% } %>
+
+    <% if (_hayDomicilio) { %>
+        <fieldset class="datos-domicilio">
+            <legend>Datos de envío</legend>
+            <label>Dirección
+                <input type="text" name="domicilio_direccion" maxlength="200" autocomplete="street-address"
+                    placeholder="Calle 10 # 5-20, barrio Centro" value="<%= _u.direccion || '' %>">
+            </label>
+            <label>Teléfono de contacto
+                <input type="tel" name="domicilio_telefono" maxlength="20" autocomplete="tel" inputmode="tel"
+                    placeholder="300 000 0000" value="<%= _u.telefono || '' %>">
+            </label>
+            <label>Indicaciones <small>(opcional)</small>
+                <input type="text" name="domicilio_indicaciones" maxlength="200" placeholder="Apto 301, portería, casa de rejas verdes…">
+            </label>
+        </fieldset>
+    <% } %>
+    <% if (tienda.nota_entrega && _hayDomicilio) { %><p class="entrega-nota"><%= tienda.nota_entrega %></p><% } %>
+</div>

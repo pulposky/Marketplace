@@ -13,6 +13,7 @@ const TiendaModel = require('../models/tiendaModel');
 const { esTipoValido } = require('../utils/tipoNegocio');
 const { validarApariencia, normalizarApariencia, POR_DEFECTO: APARIENCIA_DEFECTO } = require('../utils/apariencia');
 const { validarBloques, normalizarBloques, bloquesPorDefecto } = require('../utils/bloques');
+const { OPCIONES_TIENDA } = require('../utils/entrega');
 
 const POR_DEFECTO = Object.freeze({
     nombre: 'Mi Tienda',
@@ -33,6 +34,8 @@ const POR_DEFECTO = Object.freeze({
     tiktok: '',
     productos_ocultos: 'COMODIN',
     tipo_negocio: 'supermercado',
+    entrega: 'recoger', // recoger | domicilio | ambos (utils/entrega.js)
+    nota_entrega: '',
     apariencia: APARIENCIA_DEFECTO,
     bloques_inicio: bloquesPorDefecto(APARIENCIA_DEFECTO)
 });
@@ -61,7 +64,9 @@ const REGLAS = {
     instagram: [255, (v) => v === '' || URL_RED.test(v)],
     tiktok: [255, (v) => v === '' || URL_RED.test(v)],
     productos_ocultos: [500, SIN_HTML],
-    tipo_negocio: [20, esTipoValido]
+    tipo_negocio: [20, esTipoValido],
+    entrega: [10, (v) => OPCIONES_TIENDA.includes(v)],
+    nota_entrega: [160, SIN_HTML]
 };
 
 // Valida y normaliza lo que llega del panel. Solo devuelve los campos

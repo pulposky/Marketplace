@@ -187,22 +187,6 @@ button, input, select { font: inherit; color: inherit; }
 /* ---------- Portada del inicio ---------- */
 /* (ver "Inicio por bloques" al final) */
 
-/* Beneficios de apartar */
-.beneficios {
-    list-style: none; margin: 0; padding: 0;
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
-    border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie);
-}
-.beneficios li { display: grid; gap: 2px; padding: 14px 18px; border-left: 1px solid var(--borde); min-width: 0; }
-.beneficios li:first-child { border-left: 0; }
-.beneficios b { font-weight: 600; font-size: 14px; }
-.beneficios span { font-size: 13px; color: var(--suave); }
-.beneficios a { color: var(--tinta); text-underline-offset: 3px; }
-@media (max-width: 600px) {
-    .beneficios li { border-left: 0; border-top: 1px solid var(--borde); }
-    .beneficios li:first-child { border-top: 0; }
-}
-
 .seccion-ver { font-weight: 600; font-size: 14px; text-underline-offset: 3px; white-space: nowrap; }
 .producto-ahorro { font-size: 13px; font-weight: 600; color: var(--oferta); }
 
@@ -740,3 +724,42 @@ main.contenedor > *, .rejilla > * { animation: sube .6s cubic-bezier(.2, .8, .2,
 .volver { display: inline-flex; align-items: center; gap: 4px; justify-self: start; align-self: start; width: max-content; margin-bottom: 4px; padding: 6px 12px 6px 8px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--suave); text-decoration: none; }
 .volver svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .volver:hover, .volver:focus-visible { color: var(--tinta); background: color-mix(in srgb, var(--tinta) 6%, transparent); }
+
+/* ---------- WhatsApp flotante ---------- */
+.whatsapp-flotante {
+    position: fixed; z-index: 39;
+    right: max(20px, calc(env(safe-area-inset-right, 0px) + 16px));
+    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+    display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 18px 0 14px;
+    border-radius: 999px; background: #25D366; color: #0b3d20; font-weight: 700; text-decoration: none;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .2); transition: transform .15s, bottom .2s;
+}
+.whatsapp-flotante svg { width: 26px; height: 26px; }
+.whatsapp-flotante:hover { transform: translateY(-2px); }
+.whatsapp-flotante:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+/* con el carrito visible, sube para no taparlo */
+body:has(.carrito-fijo.visible) .whatsapp-flotante { bottom: calc(max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px)) + 64px); }
+@media (max-width: 600px) { .whatsapp-flotante span { display: none; } .whatsapp-flotante { width: 52px; padding: 0; justify-content: center; } }
+
+/* ---------- Entrega (ficha y carrito) ---------- */
+.entrega-opciones { margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
+.entrega-opciones legend { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.entrega-opciones label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1.5px solid var(--borde); border-radius: var(--radio); cursor: pointer; background: var(--superficie); }
+.entrega-opciones label:has(input:checked) { border-color: var(--marca); background: color-mix(in srgb, var(--marca) 6%, var(--superficie)); }
+.entrega-opciones input { margin-top: 3px; accent-color: var(--marca); }
+.entrega-opciones span { display: grid; gap: 2px; font-size: 14px; }
+.entrega-opciones small { color: var(--suave); }
+.entrega-info, .entrega-nota { font-size: 14px; color: var(--suave); margin: 0; }
+.entrega-bloque { display: grid; gap: 10px; }
+.datos-domicilio { margin: 0; padding: 12px; border: 1.5px solid var(--borde); border-radius: var(--radio); display: grid; gap: 10px; background: var(--superficie); }
+.datos-domicilio legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
+.datos-domicilio label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.datos-domicilio small { font-weight: 400; color: var(--suave); }
+.datos-domicilio input { height: 40px; padding: 0 10px; border: 1.5px solid var(--borde-fuerte); border-radius: var(--radio); background: var(--superficie); font: inherit; font-weight: 400; }
+.datos-domicilio input:focus { outline: 2px solid var(--marca); outline-offset: 1px; }
+/* con "ambos", los datos de envío solo aparecen al elegir domicilio */
+.entrega-bloque[data-entrega-tienda="ambos"] .datos-domicilio, .entrega-bloque[data-entrega-tienda="ambos"] .entrega-nota { display: none; }
+.entrega-bloque[data-entrega-tienda="ambos"]:has(input[value="domicilio"]:checked) .datos-domicilio { display: grid; }
+.entrega-bloque[data-entrega-tienda="ambos"]:has(input[value="domicilio"]:checked) .entrega-nota { display: block; }
+/* con los datos de envío el pie crece: que no se salga de la pantalla */
+.carrito-pie { max-height: 72vh; overflow-y: auto; }

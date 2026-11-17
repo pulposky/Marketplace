@@ -21,6 +21,7 @@ const permisosService = require('./services/permisosService');
 const tiendaService = require('./services/tiendaService');
 const { vocabulario } = require('./utils/tipoNegocio');
 const { aplicarApariencia, estiloApariencia } = require('./utils/apariencia');
+const { nombreUnidad } = require('./utils/presentaciones');
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use((req, res, next) => {
     res.locals.esRolMantenimiento = esRolMantenimiento;
     res.locals.puedeGestionarCarrusel = puedeGestionarCarrusel;
     res.locals.esSuperAdmin = esSuperAdmin;
+    res.locals.nombreUnidad = nombreUnidad;
     next();
 });
 

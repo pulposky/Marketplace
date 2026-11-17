@@ -90,6 +90,8 @@ const ClienteApiController = {
             // Actualizo la sesión para que el resto del sitio
             // muestre el nuevo nombre de una vez
             req.session.usuario.nombre = String(nombre).trim();
+            req.session.usuario.direccion = String(direccion || '').trim(); // prellenan el envío a domicilio
+            req.session.usuario.telefono = String(telefono).trim();
 
             if (cambioPassword) {
                 mensaje = 'Perfil y contraseña actualizados correctamente.';

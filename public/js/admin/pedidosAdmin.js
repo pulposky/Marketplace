@@ -160,7 +160,7 @@
                         <div class="grupo-cabecera">
                             <div class="grupo-cliente">
                                 <span class="grupo-nombre">${escaparHTML(grupo.nombre)}</span>
-                                <span class="grupo-meta">${grupo.items.length} producto(s)</span>
+                                <span class="grupo-meta">${grupo.items.length} producto(s)${grupo.items.some((i) => i.entrega === 'domicilio') ? ' · <b class="chip-entrega domicilio">A domicilio</b>' : ''}</span>
                             </div>
                             <span class="grupo-total">Total: $${totalGrupo.toLocaleString('es-CO')}</span>
                             <button class="btn-ver-grupo">Ver</button>
@@ -223,8 +223,15 @@
                         <span>Cant: <strong>${escaparHTML(textoCantidad(item))}</strong></span>
                         <span>$${Number(item.precio || 0).toLocaleString('es-CO')} c/u</span>
                         <span class="campo-fecha">${formatearFecha(item.fecha)}</span>
+                        ${item.entrega ? `<span class="chip-entrega ${item.entrega}">${item.entrega === 'domicilio' ? 'Domicilio' : 'Recoge en tienda'}</span>` : ''}
                         ${infoCancelacion}
                     </div>
+                    ${item.entrega === 'domicilio' && item.direccion_entrega ? `
+                    <div class="fila-envio">
+                        <span><b>Enviar a:</b> ${escaparHTML(item.direccion_entrega)}</span>
+                        <span><b>Tel.:</b> <a href="tel:${escaparHTML(String(item.telefono_entrega || '').replace(/[^\d+]/g, ''))}">${escaparHTML(item.telefono_entrega || '')}</a></span>
+                        ${item.indicaciones_entrega ? `<span><b>Indicaciones:</b> ${escaparHTML(item.indicaciones_entrega)}</span>` : ''}
+                    </div>` : ''}
                     ${btnCancelar}
                 </div>
             `;

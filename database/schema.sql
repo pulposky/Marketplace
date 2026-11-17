@@ -34,6 +34,10 @@ CREATE TABLE IF NOT EXISTS `apartados` (
   `precio_aplicado` decimal(12,2) NOT NULL DEFAULT '0.00',
   `confirmado_por` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `id_cliente` int DEFAULT NULL,
+  `entrega` varchar(10) DEFAULT NULL,
+  `direccion_entrega` varchar(200) DEFAULT NULL,
+  `telefono_entrega` varchar(30) DEFAULT NULL,
+  `indicaciones_entrega` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id_apartado`),
   KEY `idx_apartados_estado` (`estado`),
   KEY `idx_apartados_cliente` (`nombre_cliente`),
@@ -334,6 +338,8 @@ CREATE TABLE IF NOT EXISTS `configuracion_tienda` (
   `tipo_negocio` VARCHAR(20) NOT NULL DEFAULT 'supermercado',
   `apariencia` TEXT DEFAULT NULL,
   `bloques_inicio` TEXT DEFAULT NULL,
+  `entrega` VARCHAR(10) NOT NULL DEFAULT 'recoger',
+  `nota_entrega` VARCHAR(160) NOT NULL DEFAULT '',
   `actualizado_en` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

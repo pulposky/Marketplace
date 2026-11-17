@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (parametrosUrl.get('login') === '1') {
         irApartadosTrasLogin = true;
         if (ventanaLogin) ventanaLogin.style.display = 'flex';
-        toast('advertencia', 'Inicia sesión para ver tus apartados.');
+        toast('advertencia', 'Inicia sesión para ver tus pedidos.');
         window.history.replaceState({}, '', '/catalogo');
     }
 
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (existente) {
             existente.cantidad = Math.min(limite, existente.cantidad + cantidad);
             if (existente.cantidad > limite) {
-                toast('advertencia', `No puedes apartar más de la cantidad disponible (${limite} ${infoProducto.unidad.toLowerCase()}).`);
+                toast('advertencia', `No puedes pedir más de la cantidad disponible (${limite} ${infoProducto.unidad.toLowerCase()}).`);
             }
         } else {
             carrito.push({
@@ -541,7 +541,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!estadoSesion.login) {
             confirmarCarritoPendiente = true;
             if (ventanaLogin) ventanaLogin.style.display = 'flex';
-            toast('info', 'Inicia sesión para confirmar tu apartado.');
+            toast('info', 'Inicia sesión para hacer tu pedido.');
+            return;
+        }
+
+        const envio = window.leerEntrega ? window.leerEntrega() : {};
+        if (envio.error) {
+            toast('advertencia', envio.error);
+            if (envio.campo) envio.campo.focus();
             return;
         }
 
@@ -556,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify({ items })
+                body: JSON.stringify({ items, entrega: envio.entrega, domicilio: envio.domicilio })
             });
 
             let datos = {};
@@ -570,12 +577,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 guardarCarrito([]);
                 renderizarCarrito();
                 cerrarCarrito();
-                toast('exito', datos.mensaje || '¡Productos apartados con éxito!');
+                toast('exito', datos.mensaje || '¡Pedido recibido!');
                 setTimeout(() => window.location.reload(), 1400);
             } else if (respuesta.status === 401) {
                 confirmarCarritoPendiente = true;
                 if (ventanaLogin) ventanaLogin.style.display = 'flex';
-                toast('advertencia', datos.error || 'Debes iniciar sesión para apartar estos productos.');
+                toast('advertencia', datos.error || 'Debes iniciar sesión para hacer tu pedido.');
             } else {
                 toast('error', datos.error || 'Error al procesar el carrito. Revisa el stock disponible.');
                 setTimeout(() => window.location.reload(), 1800);
@@ -676,12 +683,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (cantidadVal > limiteMax) {
-                toast('advertencia', `No puedes apartar más de la cantidad disponible (${limiteMax}).`);
+                toast('advertencia', `No puedes pedir más de la cantidad disponible (${limiteMax}).`);
                 return;
             }
 
             if (cantidadVal <= 0 || !Number.isFinite(cantidadVal)) {
-                toast('advertencia', 'La cantidad a apartar debe ser mayor a 0.');
+                toast('advertencia', 'La cantidad debe ser mayor a 0.');
                 return;
             }
 

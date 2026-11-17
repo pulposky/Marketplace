@@ -33,7 +33,7 @@
                     <div class="campo campo-ancho">
                         <label for="perfilNombre">Nombre completo</label>
                         <input type="text" id="perfilNombre" name="nombre" value="<%= cliente.nombre %>" required maxlength="255">
-                        <small>También se actualiza en tus apartados.</small>
+                        <small>Es la dirección a la que enviamos tus pedidos.</small>
                     </div>
                     <div class="campo">
                         <label for="perfilTelefono">Teléfono</label>
@@ -67,13 +67,13 @@
             </section>
 
             <aside class="panel panel-suave" aria-labelledby="tituloRecoger">
-                <h2 id="tituloRecoger">Dónde recoger</h2>
+                <h2 id="tituloRecoger">Entrega</h2>
                 <dl class="ficha-datos">
-                    <div><dt>Dirección</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div>
+                    <div><dt>La tienda</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div>
                     <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
                     <% if (tienda.minutos_expiracion_apartado > 0) { %><div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div><% } %>
                 </dl>
-                <a href="/verApartados" class="btn btn-suave btn-ancho">Ver mis apartados</a>
+                <a href="/verApartados" class="btn btn-suave btn-ancho">Ver mis pedidos</a>
             </aside>
         </div>
     </main>

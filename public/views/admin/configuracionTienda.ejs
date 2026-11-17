@@ -191,9 +191,23 @@
                         <p class="error-campo" id="error-moneda"></p>
                     </div>
                     <div class="campo">
-                        <label for="minutos_expiracion_apartado">Expiración de apartados (minutos)</label>
+                        <label for="entrega">Entrega de los pedidos</label>
+                        <select id="entrega" name="entrega" aria-describedby="error-entrega">
+                            <option value="recoger" <%= c.entrega === 'recoger' ? 'selected' : '' %>>Solo recoger en la tienda</option>
+                            <option value="domicilio" <%= c.entrega === 'domicilio' ? 'selected' : '' %>>Solo envío a domicilio</option>
+                            <option value="ambos" <%= c.entrega === 'ambos' ? 'selected' : '' %>>Ambos: el cliente elige</option>
+                        </select>
+                        <p class="error-campo" id="error-entrega"></p>
+                    </div>
+                    <div class="campo">
+                        <label for="nota_entrega">Nota de entrega (opcional)</label>
+                        <input type="text" id="nota_entrega" name="nota_entrega" maxlength="160" value="<%= c.nota_entrega %>" placeholder="Ej.: Domicilio gratis en el centro; resto de la ciudad $5.000" aria-describedby="error-nota_entrega">
+                        <p class="error-campo" id="error-nota_entrega"></p>
+                    </div>
+                    <div class="campo">
+                        <label for="minutos_expiracion_apartado">Expiración de pedidos sin confirmar (minutos)</label>
                         <input type="number" id="minutos_expiracion_apartado" name="minutos_expiracion_apartado" min="0" max="10080" step="1" value="<%= c.minutos_expiracion_apartado %>" aria-describedby="ayuda-minutos error-minutos_expiracion_apartado">
-                        <span class="ayuda-campo" id="ayuda-minutos">Pon 0 para que los apartados no venzan (lo normal en una tienda web). Si quieres que se cancelen solos, usa entre 5 y 10080 minutos.</span>
+                        <span class="ayuda-campo" id="ayuda-minutos">Pon 0 para que los pedidos no venzan (lo normal en una tienda web). Si quieres que se cancelen solos, usa entre 5 y 10080 minutos.</span>
                         <p class="error-campo" id="error-minutos_expiracion_apartado"></p>
                     </div>
                 </div>

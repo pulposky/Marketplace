@@ -52,6 +52,21 @@
         if (estante) estante.scrollBy({ left: Number(boton.dataset.mover) * estante.clientWidth * 0.8, behavior: sinMovimiento ? 'auto' : 'smooth' });
     });
 
+    // Forma de entrega y datos de envío del pedido (partials/opcionesEntrega.ejs).
+    // Devuelve { entrega, domicilio } o { error, campo } para avisar antes de enviar; el servidor vuelve a validar.
+    window.leerEntrega = () => {
+        const bloque = document.querySelector('.entrega-bloque');
+        if (!bloque) return {};
+        const elegida = bloque.querySelector('input[name="entrega"]:checked');
+        const entrega = elegida ? elegida.value : bloque.dataset.entregaTienda;
+        if (entrega !== 'domicilio') return { entrega };
+        const campo = (n) => bloque.querySelector(`[name="domicilio_${n}"]`);
+        const domicilio = { direccion: campo('direccion').value.trim(), telefono: campo('telefono').value.trim(), indicaciones: campo('indicaciones').value.trim() };
+        if (domicilio.direccion.length < 5) return { error: 'Escribe la dirección de entrega.', campo: campo('direccion') };
+        if (!/^\+?[\d\s()-]{7,20}$/.test(domicilio.telefono)) return { error: 'Escribe un teléfono de contacto válido.', campo: campo('telefono') };
+        return { entrega, domicilio };
+    };
+
     // Botón "Volver": atrás en el historial solo si se vino de esta misma tienda
     document.addEventListener('click', (ev) => {
         const volver = ev.target.closest('[data-volver]');

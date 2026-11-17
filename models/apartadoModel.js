@@ -40,12 +40,17 @@ const ApartadoModel = {
         const [columnas] = await pool.query(
             `SELECT COLUMN_NAME FROM information_schema.COLUMNS
              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'apartados'
-               AND COLUMN_NAME IN ('presentacion_nombre', 'presentacion_factor')`
+               AND COLUMN_NAME IN ('presentacion_nombre', 'presentacion_factor', 'entrega', 'direccion_entrega', 'telefono_entrega', 'indicaciones_entrega')`
         );
         const existentes = new Set(columnas.map((c) => c.COLUMN_NAME));
         const faltan = [];
         if (!existentes.has('presentacion_nombre')) faltan.push('ADD COLUMN presentacion_nombre VARCHAR(50) NULL');
         if (!existentes.has('presentacion_factor')) faltan.push('ADD COLUMN presentacion_factor INT NULL');
+        if (!existentes.has('entrega')) faltan.push('ADD COLUMN entrega VARCHAR(10) NULL'); // recoger | domicilio
+        // Datos de envío a domicilio (copia al pedir: el cliente puede cambiar su perfil después)
+        if (!existentes.has('direccion_entrega')) faltan.push('ADD COLUMN direccion_entrega VARCHAR(200) NULL');
+        if (!existentes.has('telefono_entrega')) faltan.push('ADD COLUMN telefono_entrega VARCHAR(30) NULL');
+        if (!existentes.has('indicaciones_entrega')) faltan.push('ADD COLUMN indicaciones_entrega VARCHAR(200) NULL');
         if (faltan.length) await pool.query(`ALTER TABLE apartados ${faltan.join(', ')}`);
     },
 
@@ -60,8 +65,8 @@ const ApartadoModel = {
     crearApartado: (datosApartado, callback) => {
         const sql = `
             INSERT INTO apartados (nombre_cliente, id_cliente, producto, cantidad, precio_aplicado,
-                presentacion_nombre, presentacion_factor)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                presentacion_nombre, presentacion_factor, entrega, direccion_entrega, telefono_entrega, indicaciones_entrega)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const valores = [
             datosApartado.nombreCliente,
@@ -70,7 +75,11 @@ const ApartadoModel = {
             datosApartado.cantidad,
             Number(datosApartado.precioAplicado) || 0,
             datosApartado.presentacionNombre || null,
-            datosApartado.presentacionFactor || null
+            datosApartado.presentacionFactor || null,
+            datosApartado.entrega || null,
+            datosApartado.domicilio ? datosApartado.domicilio.direccion : null,
+            datosApartado.domicilio ? datosApartado.domicilio.telefono : null,
+            datosApartado.domicilio ? datosApartado.domicilio.indicaciones || null : null
         ];
 
         conexion.query(sql, valores, callback);
@@ -92,6 +101,10 @@ const ApartadoModel = {
                 a.precio_aplicado,
                 a.presentacion_nombre,
                 a.presentacion_factor,
+                a.entrega,
+                a.direccion_entrega,
+                a.telefono_entrega,
+                a.indicaciones_entrega,
                 a.estado AS estado_apartado,
                 a.cancelado_por,
                 a.fecha,
@@ -155,6 +168,10 @@ const ApartadoModel = {
                 a.precio_aplicado,
                 a.presentacion_nombre,
                 a.presentacion_factor,
+                a.entrega,
+                a.direccion_entrega,
+                a.telefono_entrega,
+                a.indicaciones_entrega,
                 a.fecha,
                 a.estado,
                 a.cancelado_por,

@@ -25,6 +25,8 @@ const { esRolPanel } = require('../utils/roles');
 const { idClienteDeSesion, esDuenoApartado } = require('../utils/apartados');
 const PresentacionModel = require('../models/presentacionModel');
 const { calcularUnidades, describir } = require('../utils/presentaciones');
+const { resolverEntrega, validarDomicilio } = require('../utils/entrega');
+const tiendaService = require('../services/tiendaService');
 
 // Convierte la cantidad pedida a unidades mínimas según la presentación
 // (opcional). La presentación debe ser del mismo producto y estar activa.
@@ -57,13 +59,18 @@ const ApartadoController = {
     apartarProducto: (req, res) => {
         // Primero verifico que esté logueado
         if (!req.session || !req.session.usuario) {
-            return res.status(401).json({ error: 'Debe iniciar sesión para apartar un producto.' });
+            return res.status(401).json({ error: 'Debes iniciar sesión para hacer un pedido.' });
         }
 
         const { productoId, cantidad, presentacionId } = req.body;
+        const { entrega, error: errorEntrega } = resolverEntrega(tiendaService.obtener().entrega, req.body.entrega);
+        if (errorEntrega) return res.status(400).json({ error: errorEntrega });
+        const envio = entrega === 'domicilio' ? validarDomicilio(req.body.domicilio) : { datos: null };
+        if (envio.error) return res.status(400).json({ error: envio.error });
+        const domicilio = envio.datos;
 
         if (!productoId || !cantidad) {
-            return res.status(400).json({ error: 'Faltan datos obligatorios para apartar.' });
+            return res.status(400).json({ error: 'Faltan datos obligatorios del pedido.' });
         }
 
         const idProducto = Number(productoId);
@@ -122,28 +129,30 @@ const ApartadoController = {
                 cantidad: unidadesARestar,
                 precioAplicado,
                 presentacionNombre: presentacion ? presentacion.nombre : null,
-                presentacionFactor: presentacion ? presentacion.factor : null
+                presentacionFactor: presentacion ? presentacion.factor : null,
+                entrega,
+                domicilio
             };
 
             // 2. Creo el registro del apartado en la BD
             ApartadoModel.crearApartado(datosApartado, (errorApartado, resultado) => {
                 if (errorApartado) {
                     console.error('Error al registrar apartado:', errorApartado);
-                    return res.status(500).json({ error: 'Error al procesar el apartado en la BD.' });
+                    return res.status(500).json({ error: 'No se pudo registrar el pedido.' });
                 }
 
                 // Creo la notificación para que el admin se entere del nuevo apartado
                 const textoCantidad = describir(unidadesARestar, producto.unidad, presentacion);
                 NotificacionModel.crearNotificacion({
-                    titulo: 'Nuevo apartado',
-                    mensaje: `${nombreCliente} apartó ${textoCantidad} de ${producto.nombre}`
+                    titulo: 'Nuevo pedido',
+                    mensaje: `${nombreCliente} pidió ${textoCantidad} de ${producto.nombre} (${entrega === 'domicilio' ? 'domicilio' : 'recoge en tienda'})`
                 }, () => {});
 
                 // Notifico al cliente que su apartado quedó creado
                 NotificacionClienteModel.crear(
                     req.session.usuario.id,
-                    'Apartado creado',
-                    `Tu apartado de ${producto.nombre} (${textoCantidad}) está pendiente por 1 hora.`,
+                    'Pedido recibido',
+                    `Recibimos tu pedido de ${producto.nombre} (${textoCantidad}). Te avisaremos cuando lo confirmemos.`,
                     () => {}
                 );
 
@@ -164,7 +173,7 @@ const ApartadoController = {
                     }
 
                     return res.status(200).json({
-                        mensaje: '¡Producto apartado con éxito!',
+                        mensaje: '¡Pedido recibido!',
                         idInsertado: resultado.insertId,
                         unidadesRestantes: stockDisponible - unidadesARestar,
                         estado: (stockDisponible - unidadesARestar) > 0 ? 'activo' : 'inactivo'
@@ -181,10 +190,15 @@ const ApartadoController = {
     // por ítem y descuenta el stock de cada uno.
     apartarLote: (req, res) => {
         if (!req.session || !req.session.usuario) {
-            return res.status(401).json({ error: 'Debe iniciar sesión para apartar productos.' });
+            return res.status(401).json({ error: 'Debes iniciar sesión para hacer un pedido.' });
         }
 
         const { items } = req.body;
+        const { entrega, error: errorEntrega } = resolverEntrega(tiendaService.obtener().entrega, req.body.entrega);
+        if (errorEntrega) return res.status(400).json({ error: errorEntrega });
+        const envio = entrega === 'domicilio' ? validarDomicilio(req.body.domicilio) : { datos: null };
+        if (envio.error) return res.status(400).json({ error: envio.error });
+        const domicilio = envio.datos;
 
         if (!Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: 'El carrito está vacío.' });
@@ -251,6 +265,8 @@ const ApartadoController = {
                     precioAplicado,
                     presentacionNombre: presentacion ? presentacion.nombre : null,
                     presentacionFactor: presentacion ? presentacion.factor : null,
+                    entrega,
+                    domicilio,
                     nombreProducto: producto.nombre
                 });
 
@@ -274,20 +290,20 @@ const ApartadoController = {
                     // 3. Notifico al admin del lote nuevo
                     const totalUnidades = listaValidada.reduce((suma, d) => suma + d.cantidad, 0);
                     NotificacionModel.crearNotificacion({
-                        titulo: 'Nuevos apartados',
-                        mensaje: `${nombreCliente} apartó ${listaValidada.length} producto(s) (${totalUnidades} unidades en total).`
+                        titulo: 'Nuevo pedido',
+                        mensaje: `${nombreCliente} hizo un pedido de ${listaValidada.length} producto(s) (${entrega === 'domicilio' ? 'domicilio' : 'recoge en tienda'}).`
                     }, () => {});
 
                     // Notifico al cliente que sus apartados quedaron creados
                     NotificacionClienteModel.crear(
                         req.session.usuario.id,
-                        'Apartados creados',
-                        `Se apartaron ${listaValidada.length} producto(s). Están pendientes por 1 hora.`,
+                        'Pedido recibido',
+                        `Recibimos tu pedido de ${listaValidada.length} producto(s). Te avisaremos cuando lo confirmemos.`,
                         () => {}
                     );
 
                     return res.status(200).json({
-                        mensaje: '¡Productos apartados con éxito!',
+                        mensaje: '¡Pedido recibido!',
                         ids: idsCreados,
                         total: listaValidada.length
                     });
@@ -412,8 +428,8 @@ const ApartadoController = {
             }
             ApartadoController.notificarClientePorApartado(
                 id,
-                'Apartado confirmado',
-                `Tu apartado #${id} fue confirmado. Puedes pasar a pagarlo en el punto de venta.`
+                'Pedido confirmado',
+                `Tu pedido #${id} fue confirmado y lo estamos preparando.`
             );
             auditoriaService.registrar(req, 'pedido_confirmar', `Confirmó el apartado #${id} (${nombreAdmin}).`);
             return res.status(200).json({ mensaje: 'Pedido confirmado correctamente.' });
@@ -454,8 +470,8 @@ const ApartadoController = {
 
             ApartadoController.notificarClientePorApartado(
                 id,
-                'Apartado entregado',
-                `Tu apartado #${id} fue entregado en el punto de venta. ¡Gracias por comprar con nosotros!`
+                'Pedido entregado',
+                `Tu pedido #${id} fue entregado. ¡Gracias por comprar con nosotros!`
             );
             auditoriaService.registrar(req, 'pedido_entregar', `Marcó como entregado el apartado #${id}.`);
             return res.status(200).json({ mensaje: 'Pedido marcado como entregado correctamente.' });
@@ -495,8 +511,8 @@ const ApartadoController = {
 
                 ApartadoController.notificarClientePorApartado(
                     id,
-                    'Apartado cancelado',
-                    `Tu apartado #${id} fue cancelado por el administrador. El stock vuelve a estar disponible.`
+                    'Pedido cancelado',
+                    `Tu pedido #${id} fue cancelado por la tienda.`
                 );
 
                 // Devuelvo las unidades al stock del producto

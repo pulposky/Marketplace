@@ -63,4 +63,11 @@ const describir = (cantidadUnidades, unidad, presentacion) => {
     return `${unidades} ${textoUnidad}`;
 };
 
-module.exports = { MAX_PRESENTACIONES, MAX_FACTOR, validarPresentaciones, calcularUnidades, describir };
+// Código de unidad del inventario ("UND", "KG", "M") -> palabra para el cliente
+const NOMBRES_UNIDAD = { UND: 'unidad', UN: 'unidad', KG: 'kg', G: 'g', LB: 'libra', L: 'litro', ML: 'ml', M: 'metro', CM: 'cm' };
+const nombreUnidad = (unidad) => {
+    const codigo = String(unidad || '').trim();
+    return NOMBRES_UNIDAD[codigo.toUpperCase()] || codigo.toLowerCase() || 'unidad';
+};
+
+module.exports = { MAX_PRESENTACIONES, MAX_FACTOR, validarPresentaciones, calcularUnidades, describir, nombreUnidad };

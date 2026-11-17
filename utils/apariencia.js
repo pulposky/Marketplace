@@ -25,7 +25,6 @@ const POR_DEFECTO = Object.freeze({
     anuncio_activo: false,
     anuncio: '',
     texto_boton_portada: '',
-    mostrar_beneficios: true,
     mostrar_ofertas: true,
     mostrar_destacados: true,
     mostrar_pasos: true,
@@ -36,7 +35,7 @@ const POR_DEFECTO = Object.freeze({
     esquinas: 'redondeadas',
 });
 
-const BOOLEANOS = ['anuncio_activo', 'mostrar_beneficios', 'mostrar_ofertas', 'mostrar_destacados', 'mostrar_pasos'];
+const BOOLEANOS = ['anuncio_activo', 'mostrar_ofertas', 'mostrar_destacados', 'mostrar_pasos'];
 const TEXTOS = { anuncio: 140, texto_boton_portada: 40, nombre_seccion: 30 };
 const OPCIONES = { mostrar_stock: STOCK, tipografia: TIPOGRAFIAS, esquinas: ESQUINAS };
 

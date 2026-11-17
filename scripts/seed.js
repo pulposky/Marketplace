@@ -110,6 +110,8 @@ const TIENDA = {
     tiktok: '',
     productos_ocultos: 'COMODIN',
     tipo_negocio: 'ferreteria',
+    entrega: 'ambos',
+    nota_entrega: 'Domicilio gratis en el centro; resto de la ciudad $6.000.',
     bloques_inicio: null, // inicio por defecto: bloques guardados podían apuntar a categorías de la demo anterior
 };
 
@@ -223,14 +225,14 @@ async function main() {
         ])]);
 
         await db.query('INSERT INTO notificaciones (titulo, mensaje, leido, fecha) VALUES ?', [[
-            ['Nuevo apartado', `${cli[0].nombre} apartó 1 Caja x10 de Bisagra cierre lento 110°.`, 0, diasAtras(0, 9)],
-            ['Nuevo apartado', `${cli[1].nombre} apartó 8 x Manija barra 160 mm negra mate.`, 0, diasAtras(0, 11)],
-            ['Apartado cancelado', `${cli[2].nombre} canceló su apartado de Botón redondo acabado madera 35 mm.`, 1, diasAtras(5, 15)],
+            ['Nuevo pedido', `${cli[0].nombre} pidió 1 Caja x10 de Bisagra cierre lento 110°.`, 0, diasAtras(0, 9)],
+            ['Nuevo pedido', `${cli[1].nombre} pidió 8 x Manija barra 160 mm negra mate.`, 0, diasAtras(0, 11)],
+            ['Pedido cancelado', `${cli[2].nombre} canceló su pedido de Botón redondo acabado madera 35 mm.`, 1, diasAtras(5, 15)],
         ]]);
         await db.query('INSERT INTO notificaciones_cliente (id_cliente, titulo, mensaje, leido, fecha) VALUES ?', [[
-            [cli[2].id_cliente, 'Apartado confirmado', 'Tu apartado de Corredera telescópica 45 cm está listo para recoger.', 0, diasAtras(1, 12)],
-            [cli[3].id_cliente, 'Apartado confirmado', 'Tu apartado de Canto PVC blanco 19 mm está listo para recoger.', 1, diasAtras(2, 10)],
-            [cli[0].id_cliente, 'Apartado entregado', 'Gracias por tu compra de Tornillo para madera 8 x 1 pulgada.', 1, diasAtras(3, 18)],
+            [cli[2].id_cliente, 'Pedido confirmado', 'Tu pedido de Corredera telescópica 45 cm está listo para recoger.', 0, diasAtras(1, 12)],
+            [cli[3].id_cliente, 'Pedido confirmado', 'Tu pedido de Canto PVC blanco 19 mm está listo para recoger.', 1, diasAtras(2, 10)],
+            [cli[0].id_cliente, 'Pedido entregado', 'Gracias por tu compra de Tornillo para madera 8 x 1 pulgada.', 1, diasAtras(3, 18)],
         ]]);
 
         // Visitas (~60) para el panel de analítica. IPs de loopback distintas para que cuenten como visitantes.
