@@ -3,7 +3,7 @@
 /* ============================================= */
 /* Job en segundo plano que cada 60 segundos      */
 /* revisa si hay apartados pendientes con más de  */
-/* 1 hora de antigüedad. Si los encuentra, los    */
+/* el tiempo configurado (0 = nunca). Si hay, los */
 /* cancela y devuelve el stock al producto.       */
 /*                                                */
 /* Se arranca desde server.js con:                */
@@ -39,7 +39,7 @@ function cancelarApartadosExpirados() {
                 const avisar = (idCliente) => NotificacionClienteModel.crear(
                     idCliente,
                     'Apartado vencido',
-                    `Tu apartado #${apartado.id_apartado} se canceló por vencer el tiempo de reserva (1 hora).`,
+                    `Tu apartado #${apartado.id_apartado} se canceló por vencer el tiempo de reserva.`,
                     () => {}
                 );
                 if (apartado.id_cliente) {

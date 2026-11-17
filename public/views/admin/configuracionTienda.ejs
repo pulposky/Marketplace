@@ -192,8 +192,8 @@
                     </div>
                     <div class="campo">
                         <label for="minutos_expiracion_apartado">Expiración de apartados (minutos)</label>
-                        <input type="number" id="minutos_expiracion_apartado" name="minutos_expiracion_apartado" min="5" max="10080" step="1" value="<%= c.minutos_expiracion_apartado %>" aria-describedby="ayuda-minutos error-minutos_expiracion_apartado">
-                        <span class="ayuda-campo" id="ayuda-minutos">Tiempo que se guarda un apartado antes de cancelarse (entre 5 y 10080 minutos).</span>
+                        <input type="number" id="minutos_expiracion_apartado" name="minutos_expiracion_apartado" min="0" max="10080" step="1" value="<%= c.minutos_expiracion_apartado %>" aria-describedby="ayuda-minutos error-minutos_expiracion_apartado">
+                        <span class="ayuda-campo" id="ayuda-minutos">Pon 0 para que los apartados no venzan (lo normal en una tienda web). Si quieres que se cancelen solos, usa entre 5 y 10080 minutos.</span>
                         <p class="error-campo" id="error-minutos_expiracion_apartado"></p>
                     </div>
                 </div>

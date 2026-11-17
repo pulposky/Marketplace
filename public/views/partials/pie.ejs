@@ -1,29 +1,62 @@
-<%# Pie de la tienda pública: solo muestra los datos configurados. %>
+<%# Pie de la tienda pública: navegación fija + los datos de contacto que el dueño haya configurado. %>
 <%
     const _wa = String(tienda.whatsapp || '').replace(/\D/g, '');
     const _redes = [['Facebook', tienda.facebook], ['Instagram', tienda.instagram], ['TikTok', tienda.tiktok]].filter((r) => r[1]);
+    const _usuarioPie = typeof usuario !== 'undefined' ? usuario : null;
+    const _cats = (typeof pasillos !== 'undefined' && Array.isArray(pasillos)) ? pasillos.slice(0, 6) : [];
+    const _hayContacto = tienda.direccion || tienda.horario || tienda.telefono || _wa || tienda.correo;
 %>
-<footer class="pie">
+<footer class="pie" id="contacto">
     <div class="pie-interior">
         <div class="pie-marca">
-            <b><%= tienda.nombre %></b>
-            <% if (tienda.descripcion) { %><p><%= tienda.descripcion %></p><% } %>
+            <a href="/" class="pie-nombre"><%= tienda.nombre %></a>
+            <% if (tienda.eslogan || tienda.descripcion) { %><p><%= tienda.eslogan || tienda.descripcion %></p><% } %>
+            <% if (_wa) { %>
+                <a class="pie-whatsapp" href="https://wa.me/<%= _wa %>" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+            <% } %>
         </div>
 
-        <dl class="pie-datos">
-            <% if (tienda.direccion) { %><div><dt>Dirección</dt><dd><%= tienda.direccion %></dd></div><% } %>
-            <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
-            <% if (tienda.telefono) { %><div><dt>Teléfono</dt><dd><a href="tel:<%= String(tienda.telefono).replace(/[^\d+]/g, '') %>"><%= tienda.telefono %></a></dd></div><% } %>
-            <% if (_wa) { %><div><dt>WhatsApp</dt><dd><a href="https://wa.me/<%= _wa %>" target="_blank" rel="noopener noreferrer">Escríbenos</a></dd></div><% } %>
-            <% if (tienda.correo) { %><div><dt>Correo</dt><dd><a href="mailto:<%= tienda.correo %>"><%= tienda.correo %></a></dd></div><% } %>
-        </dl>
+        <nav class="pie-col" aria-labelledby="pieTienda">
+            <h2 id="pieTienda">Compra</h2>
+            <ul>
+                <li><a href="/catalogo">Todo el <%= vocab.catalogo.toLowerCase() %></a></li>
+                <% _cats.forEach((c) => { %><li><a href="/catalogo?categoria=<%= encodeURIComponent(c.nombre) %>"><%= c.nombre %></a></li><% }) %>
+            </ul>
+        </nav>
 
+        <nav class="pie-col" aria-labelledby="pieCuenta">
+            <h2 id="pieCuenta">Tu cuenta</h2>
+            <ul>
+                <% if (_usuarioPie) { %>
+                    <li><a href="/verApartados">Mis apartados</a></li>
+                    <li><a href="/perfil">Mi perfil</a></li>
+                <% } else { %>
+                    <li><a href="/catalogo?login=1">Entrar</a></li>
+                    <li><a href="/verApartados">Mis apartados</a></li>
+                <% } %>
+            </ul>
+        </nav>
+
+        <% if (_hayContacto) { %>
+        <div class="pie-col">
+            <h2>Contacto</h2>
+            <ul>
+                <% if (tienda.direccion) { %><li><%= tienda.direccion %></li><% } %>
+                <% if (tienda.horario) { %><li><%= tienda.horario %></li><% } %>
+                <% if (tienda.telefono) { %><li><a href="tel:<%= String(tienda.telefono).replace(/[^\d+]/g, '') %>"><%= tienda.telefono %></a></li><% } %>
+                <% if (tienda.correo) { %><li><a href="mailto:<%= tienda.correo %>"><%= tienda.correo %></a></li><% } %>
+            </ul>
+        </div>
+        <% } %>
+    </div>
+
+    <div class="pie-base">
+        <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %></p>
         <% if (_redes.length) { %>
             <ul class="pie-redes" aria-label="Redes sociales">
                 <% _redes.forEach((r) => { %><li><a href="<%= r[1] %>" target="_blank" rel="noopener noreferrer"><%= r[0] %></a></li><% }) %>
             </ul>
         <% } %>
     </div>
-    <p class="pie-legal">&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %></p>
 </footer>
 <script src="/js/tiendaAnimaciones.js" defer></script>

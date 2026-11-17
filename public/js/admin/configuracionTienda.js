@@ -115,9 +115,9 @@
         });
 
         const minutos = Number(form.elements.minutos_expiracion_apartado.value);
-        const minutosOk = Number.isInteger(minutos) && minutos >= 5 && minutos <= 10080;
+        const minutosOk = Number.isInteger(minutos) && (minutos === 0 || minutos >= 5) && minutos <= 10080;
         const inputMin = marcarError('minutos_expiracion_apartado',
-            minutosOk ? '' : 'Debe ser un número entero entre 5 y 10080.');
+            minutosOk ? '' : 'Usa 0 (no vencen) o un número entero entre 5 y 10080.');
         if (!minutosOk && !primerInvalido) primerInvalido = inputMin;
         datos.minutos_expiracion_apartado = minutos;
 

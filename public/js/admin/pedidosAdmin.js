@@ -231,6 +231,48 @@
         }
 
         // -----------------------------------------------
+        // BÚSQUEDA Y FECHAS (sobre lo ya cargado)
+        // -----------------------------------------------
+        let pedidosCargados = [];
+        const inputBuscar = document.getElementById('buscarPedido');
+        const inputDesde = document.getElementById('pedidoDesde');
+        const inputHasta = document.getElementById('pedidoHasta');
+        const conteo = document.getElementById('conteoPedidos');
+        const sinTildes = (t) => String(t ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+        const diaLocal = (f) => {
+            const d = new Date(f);
+            return isNaN(d) ? '' : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        };
+
+        function mostrarFiltrados() {
+            const palabras = sinTildes(inputBuscar?.value).replace(/#/g, '').split(/\s+/).filter(Boolean);
+            const desde = inputDesde?.value || '';
+            const hasta = inputHasta?.value || '';
+            const lista = pedidosCargados.filter((p) => {
+                const dia = diaLocal(p.fecha);
+                if (desde && dia < desde) return false;
+                if (hasta && dia > hasta) return false;
+                const texto = sinTildes([p.id_apartado, p.nombre_cliente, p.cliente_documento, p.cliente_telefono, p.nombre_producto].join(' '));
+                return palabras.every((w) => texto.includes(w));
+            });
+            const filtrando = palabras.length || desde || hasta;
+            if (conteo) conteo.textContent = filtrando ? `${lista.length} de ${pedidosCargados.length} productos pedidos` : '';
+            if (filtrando && !lista.length && pedidosCargados.length) {
+                contenedorPedidos.innerHTML = '<div class="estado-vacio"><h3>Ningún pedido coincide</h3><p>Prueba con otro nombre, producto o rango de fechas.</p></div>';
+                return;
+            }
+            renderizarPedidos(lista);
+        }
+
+        inputBuscar?.addEventListener('input', mostrarFiltrados);
+        inputDesde?.addEventListener('change', mostrarFiltrados);
+        inputHasta?.addEventListener('change', mostrarFiltrados);
+        document.getElementById('limpiarBusquedaPedidos')?.addEventListener('click', () => {
+            inputBuscar.value = ''; inputDesde.value = ''; inputHasta.value = '';
+            mostrarFiltrados();
+        });
+
+        // -----------------------------------------------
         // CARGAR PEDIDOS DESDE LA API
         // -----------------------------------------------
         async function cargarPedidos() {
@@ -241,8 +283,8 @@
                 const respuesta = await fetch(`/api/admin/apartados?estado=${encodeURIComponent(estadoFiltro)}`);
                 if (!respuesta.ok) throw new Error('Error al cargar pedidos');
 
-                const pedidos = await respuesta.json();
-                renderizarPedidos(pedidos);
+                pedidosCargados = await respuesta.json();
+                mostrarFiltrados();
             } catch (error) {
                 console.error('Error:', error);
                 contenedorPedidos.innerHTML = `

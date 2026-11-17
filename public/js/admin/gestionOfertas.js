@@ -9,6 +9,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const inputBuscar = document.getElementById('busqueda-oferta');
+    const sinTildes = (t) => String(t || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
     const tarjetas = document.querySelectorAll('.tarjeta-producto');
     const paginacion = window.crearPaginacionProductos('.tarjeta-producto', '#paginacionProductos');
 
@@ -16,15 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // FILTROS: BÚSQUEDA + SOLO EN OFERTA
     // -----------------------------------------------
     function aplicarFiltros() {
-        const texto = (inputBuscar?.value || '').trim().toLowerCase();
+        const palabras = sinTildes(inputBuscar?.value).split(/\s+/).filter(Boolean);
         const soloOferta = filtroSoloOferta?.checked;
+        const categoria = filtroCategoria?.value || '';
 
         const coincidencias = [];
         tarjetas.forEach((tarjeta) => {
-            const nombre = tarjeta.dataset.nombre || '';
+            const texto = sinTildes(`${tarjeta.dataset.nombre} ${tarjeta.dataset.categoria}`);
             const enOferta = tarjeta.dataset.enOferta === 'true';
 
-            let visible = nombre.includes(texto);
+            let visible = palabras.every((p) => texto.includes(p))
+                && (!categoria || tarjeta.dataset.categoria === categoria);
             // Si está activo el filtro de ofertas, solo se muestran las que están en oferta
             if (visible && soloOferta) {
                 visible = enOferta;
@@ -36,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const filtroSoloOferta = document.getElementById('filtro-solo-oferta');
+    const filtroCategoria = document.getElementById('filtro-categoria-oferta');
+    filtroCategoria?.addEventListener('change', aplicarFiltros);
 
     if (inputBuscar) {
         inputBuscar.addEventListener('input', aplicarFiltros);

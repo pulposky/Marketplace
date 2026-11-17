@@ -41,7 +41,7 @@
 
             <div class="barra-superior">
                 <div class="campo-busqueda">
-                    <input type="text" id="busqueda-producto" placeholder="Buscar producto por nombre...">
+                    <input type="text" id="busqueda-producto" placeholder="Buscar por nombre o categoría...">
                 </div>
             </div>
         </div>
@@ -55,13 +55,30 @@
                 <div class="linea-divisora"></div>
 
                 <div class="lista-filtros">
-                    <div class="item-filtro">
-                        <input type="checkbox" id="filtro-disponibles">
-                        <label for="filtro-disponibles">Solo habilitados</label>
-                    </div>
+                    <label class="filtro-select">Categoría
+                        <select id="filtro-categoria">
+                            <option value="">Todas</option>
+                            <% [...new Set((productos || []).map((p) => p.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')).forEach((c) => { %>
+                                <option value="<%= c %>"><%= c %></option>
+                            <% }) %>
+                        </select>
+                    </label>
+                    <label class="filtro-select">Estado
+                        <select id="filtro-estado">
+                            <option value="">Todos</option>
+                            <option value="activo">Habilitados</option>
+                            <option value="inactivo">Deshabilitados</option>
+                        </select>
+                    </label>
+                    <label class="filtro-select">Existencias
+                        <select id="filtro-stock">
+                            <option value="">Todas</option>
+                            <option value="agotado">Agotados</option>
+                            <option value="bajo">Poco stock (10 o menos)</option>
+                            <option value="con">Con stock</option>
+                        </select>
+                    </label>
                 </div>
-
-                <div class="boton-filtrar">Aplicar Filtros</div>
             </div>
 
             <!-- REJILLA DE PRODUCTOS -->

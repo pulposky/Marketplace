@@ -52,17 +52,22 @@
         if (estante) estante.scrollBy({ left: Number(boton.dataset.mover) * estante.clientWidth * 0.8, behavior: sinMovimiento ? 'auto' : 'smooth' });
     });
 
-    // Categoría que se está viendo en el inicio
-    const enlaces = Array.from(document.querySelectorAll('.pasillos .pasillo[data-categoria]'));
-    const bandas = document.querySelectorAll('.bloque-categoria[data-categoria]');
-    if (enlaces.length && bandas.length && hayObserver) {
-        const vigia = new IntersectionObserver((entradas) => {
-            entradas.forEach((e) => {
-                if (!e.isIntersecting) return;
-                enlaces.forEach((a) => a.classList.toggle('activo', a.dataset.categoria === e.target.dataset.categoria));
-            });
-        }, { rootMargin: '-45% 0px -50% 0px' });
-        bandas.forEach((b) => vigia.observe(b));
+    // Botón "Volver": atrás en el historial solo si se vino de esta misma tienda
+    document.addEventListener('click', (ev) => {
+        const volver = ev.target.closest('[data-volver]');
+        if (!volver) return;
+        let mismaTienda = false;
+        try { mismaTienda = new URL(document.referrer).origin === location.origin; } catch (e) { /* sin referrer */ }
+        if (mismaTienda && history.length > 1) { ev.preventDefault(); history.back(); }
+    });
+
+    // Desplegable de categorías del menú: se cierra al tocar fuera o con Esc
+    const desplegable = document.querySelector('.menu-desplegable');
+    if (desplegable) {
+        document.addEventListener('click', (ev) => { if (!desplegable.contains(ev.target)) desplegable.open = false; });
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape' && desplegable.open) { desplegable.open = false; desplegable.querySelector('summary').focus(); }
+        });
     }
 
     // Reloj de las ofertas: hasta la fecha de fin; al llegar a cero se esconde

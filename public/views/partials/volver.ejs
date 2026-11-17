@@ -1,0 +1,5 @@
+<%# Botón "Volver": regresa a la página anterior de la tienda (tiendaAnimaciones.js);
+    si se llegó desde fuera, sigue el enlace "destino" (por defecto el inicio). %>
+<a href="<%= typeof destino !== 'undefined' && destino ? destino : '/' %>" class="volver" data-volver>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Volver
+</a>

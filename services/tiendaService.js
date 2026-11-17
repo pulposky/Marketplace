@@ -27,7 +27,7 @@ const POR_DEFECTO = Object.freeze({
     direccion: '',
     horario: '',
     moneda: 'COP',
-    minutos_expiracion_apartado: 60,
+    minutos_expiracion_apartado: 0, // 0 = los apartados no vencen (tienda web)
     facebook: '',
     instagram: '',
     tiktok: '',
@@ -90,8 +90,8 @@ function validarConfiguracion(entrada) {
     }
     if (entrada.minutos_expiracion_apartado !== undefined) {
         const minutos = Number(entrada.minutos_expiracion_apartado);
-        if (!Number.isInteger(minutos) || minutos < 5 || minutos > 10080) {
-            return { error: 'El tiempo de expiración debe ser un número entero entre 5 y 10080 minutos.' };
+        if (!Number.isInteger(minutos) || (minutos !== 0 && minutos < 5) || minutos > 10080) {
+            return { error: 'El tiempo de expiración debe ser 0 (no vencen) o un número entero entre 5 y 10080 minutos.' };
         }
         datos.minutos_expiracion_apartado = minutos;
     }
@@ -107,7 +107,7 @@ function normalizar(fila) {
     });
     resultado.apariencia = normalizarApariencia(fila.apariencia);
     resultado.bloques_inicio = normalizarBloques(fila.bloques_inicio, resultado.apariencia);
-    resultado.minutos_expiracion_apartado = Number(resultado.minutos_expiracion_apartado) || POR_DEFECTO.minutos_expiracion_apartado;
+    resultado.minutos_expiracion_apartado = Math.max(0, Number(resultado.minutos_expiracion_apartado) || 0);
     return resultado;
 }
 
@@ -141,7 +141,7 @@ const obtener = () => ({ ...actual });
 const productosOcultos = () => String(actual.productos_ocultos || '')
     .split(',').map((s) => s.trim()).filter(Boolean);
 
-const minutosExpiracion = () => Number(actual.minutos_expiracion_apartado) || POR_DEFECTO.minutos_expiracion_apartado;
+const minutosExpiracion = () => Math.max(0, Number(actual.minutos_expiracion_apartado) || 0);
 
 module.exports = {
     POR_DEFECTO,

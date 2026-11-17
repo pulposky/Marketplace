@@ -14,17 +14,17 @@
 
 <body>
     <%- include('partials/encabezado', { buscadorId: 'inputBuscar', busqueda, conModalLogin: !usuario }) %>
-    <%- include('partials/categorias', { pasillos, activas: categoriasSeleccionadas }) %>
 
     <%
         const _unaCategoria = categoriasSeleccionadas.length === 1
             ? pasillos.find((p) => p.nombre === categoriasSeleccionadas[0]) : null;
-        const _filtrado = categoriasSeleccionadas.length > 0 || soloOferta || busqueda;
+        const _filtrado = categoriasSeleccionadas.length > 0 || soloOferta || busqueda || soloDisponibles || precioMin || precioMax;
     %>
     <main class="contenedor">
+        <%- include('partials/volver', { destino: '/' }) %>
         <div class="catalogo-cabeza"<%- _unaCategoria ? ` style="--k:${_unaCategoria.color}"` : '' %>>
             <div>
-                <h1><%= _unaCategoria ? _unaCategoria.nombre : (busqueda ? `Resultados para “${busqueda}”` : `Todo el ${vocab.catalogo.toLowerCase()}`) %></h1>
+                <h1><%= _unaCategoria ? _unaCategoria.nombre : (busqueda ? `Resultados para “${busqueda}”` : (soloOferta ? 'Ofertas' : `Todo el ${vocab.catalogo.toLowerCase()}`)) %></h1>
                 <p class="catalogo-total"><%= productos.length %> producto<%= productos.length === 1 ? '' : 's' %>
                     <% if (_filtrado) { %> · <a href="/catalogo">Quitar filtros</a><% } %></p>
             </div>
@@ -36,6 +36,16 @@
                     <input type="checkbox" name="soloOferta" value="1" <%= soloOferta ? 'checked' : '' %>>
                     <span>Solo ofertas</span>
                 </label>
+                <label class="interruptor">
+                    <input type="checkbox" name="disponibles" value="1" <%= soloDisponibles ? 'checked' : '' %>>
+                    <span>Solo disponibles</span>
+                </label>
+                <fieldset class="filtro-precio">
+                    <legend>Precio</legend>
+                    <input type="number" name="min" min="0" step="1" inputmode="numeric" placeholder="Desde" aria-label="Precio desde" value="<%= precioMin || '' %>">
+                    <span aria-hidden="true">–</span>
+                    <input type="number" name="max" min="0" step="1" inputmode="numeric" placeholder="Hasta" aria-label="Precio hasta" value="<%= precioMax || '' %>">
+                </fieldset>
                 <label class="solo-lector" for="ordenProductos">Ordenar</label>
                 <select name="orden" id="ordenProductos">
                     <option value="">Orden de la tienda</option>
@@ -112,12 +122,13 @@
             </div>
             <button type="button" class="btn btn-ancho" id="btnConfirmarCarrito">Confirmar apartado</button>
             <button type="button" class="btn btn-ancho btn-texto" id="btnVaciarCarrito">Vaciar carrito</button>
-            <p class="carrito-nota">Pagas al recoger. Te lo guardamos <%- include('partials/duracionApartado') %>.</p>
+            <p class="carrito-nota">Pagas al recoger.<% if (tienda.minutos_expiracion_apartado > 0) { %> Te lo guardamos <%- include('partials/duracionApartado') %>.<% } %></p>
             <a href="/verApartados" class="carrito-link">Ver mis apartados</a>
         </div>
     </aside>
 
-    <!-- AVISO DE DURACIÓN DEL APARTADO (una vez por pestaña) -->
+    <!-- AVISO DE DURACIÓN DEL APARTADO (una vez por pestaña; solo si los apartados vencen) -->
+    <% if (tienda.minutos_expiracion_apartado > 0) { %>
     <div class="alerta-fondo" id="alertaApartado">
         <div class="alerta-contenido" role="alertdialog" aria-labelledby="tituloAlertaApartado">
             <h2 id="tituloAlertaApartado">Antes de apartar</h2>
@@ -125,6 +136,7 @@
             <button type="button" class="btn btn-ancho" id="cerrarAlertaApartado">Entendido</button>
         </div>
     </div>
+    <% } %>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>

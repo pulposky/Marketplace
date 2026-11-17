@@ -1,7 +1,8 @@
 <section class="bloque bloque-beneficios revelar">
     <div class="bloque-interior">
         <ul class="beneficios">
-            <li><b>Te lo guardamos <%- include('../duracionApartado') %></b><span>Apartas en línea, sin filas</span></li>
+            <% if (tienda.minutos_expiracion_apartado > 0) { %><li><b>Te lo guardamos <%- include('../duracionApartado') %></b><span>Apartas en línea, sin filas</span></li>
+            <% } else { %><li><b>Pide en línea</b><span>Sin filas: lo separamos para ti</span></li><% } %>
             <li><b>Pagas al recoger</b><span><%= tienda.direccion || 'En el punto de venta' %></span></li>
             <% if (tienda.horario) { %><li><b>Horario</b><span><%= tienda.horario %></span></li><% } %>
             <% if (String(tienda.whatsapp || '').replace(/\D/g, '')) { %>

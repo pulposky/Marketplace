@@ -40,8 +40,14 @@
 
             <div class="barra-superior">
                 <div class="campo-busqueda">
-                    <input type="text" id="busqueda-oferta" placeholder="Buscar producto por nombre...">
+                    <input type="text" id="busqueda-oferta" placeholder="Buscar por nombre o categoría...">
                 </div>
+                <select id="filtro-categoria-oferta" class="filtro-categoria" aria-label="Categoría">
+                    <option value="">Todas las categorías</option>
+                    <% [...new Set((productos || []).map((p) => p.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')).forEach((c) => { %>
+                        <option value="<%= c %>"><%= c %></option>
+                    <% }) %>
+                </select>
                 <label class="filtro-oferta">
                     <input type="checkbox" id="filtro-solo-oferta">
                     <span>Solo en oferta</span>
@@ -91,6 +97,7 @@
                         %>
                         <div class="tarjeta-producto" data-id="<%= producto.id_producto %>"
                             data-nombre="<%= (nombreMostrar || '').toLowerCase() %>"
+                            data-categoria="<%= producto.categoria || '' %>"
                             data-en-oferta="<%= hayOferta %>">
 
                             <!-- Imagen del Producto -->

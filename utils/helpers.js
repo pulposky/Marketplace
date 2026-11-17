@@ -57,4 +57,15 @@ const calcularPrecioOferta = (producto) => {
     };
 };
 
-module.exports = { normalizarCategorias, calcularPrecioOferta };
+// Búsqueda tolerante: sin tildes ni mayúsculas, y cada palabra escrita debe
+// aparecer en el nombre, la categoría o la descripción ("bisagra lento" encuentra
+// "Bisagra cierre lento 110°").
+const sinTildes = (texto) => String(texto || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+const coincideBusqueda = (producto, busqueda) => {
+    const palabras = sinTildes(busqueda).split(/\s+/).filter(Boolean);
+    if (!palabras.length) return true;
+    const texto = sinTildes([producto.nombre, producto.categoria, producto.descripcion].filter(Boolean).join(' '));
+    return palabras.every((p) => texto.includes(p));
+};
+
+module.exports = { normalizarCategorias, calcularPrecioOferta, coincideBusqueda };

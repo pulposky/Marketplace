@@ -260,9 +260,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputHasta = document.getElementById('filtro-hasta');
     const btnLimpiar = document.getElementById('btn-limpiar-filtro');
 
+    const inputTexto = document.getElementById('filtro-texto');
+    const sinTildes = (t) => String(t || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
     function aplicarFiltroHistorial() {
         const desde = inputDesde.value;
         const hasta = inputHasta.value;
+        const palabras = sinTildes(inputTexto ? inputTexto.value : '').split(/\s+/).filter(Boolean);
 
         const tarjetas = document.querySelectorAll('.tarjeta-historial');
         tarjetas.forEach((tarjeta) => {
@@ -275,6 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hasta && fecha > hasta) visible = false;
             // Si la tarjeta no tiene fecha y hay filtro activo, se oculta
             if (!fecha && (desde || hasta)) visible = false;
+            const texto = sinTildes(tarjeta.dataset.texto);
+            if (!palabras.every((p) => texto.includes(p))) visible = false;
 
             tarjeta.style.display = visible ? '' : 'none';
         });
@@ -287,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    if (inputTexto) inputTexto.addEventListener('input', aplicarFiltroHistorial);
     if (inputDesde) {
         inputDesde.addEventListener('change', aplicarFiltroHistorial);
     }
@@ -297,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLimpiar.addEventListener('click', () => {
             inputDesde.value = '';
             inputHasta.value = '';
+            if (inputTexto) inputTexto.value = '';
             aplicarFiltroHistorial();
         });
     }

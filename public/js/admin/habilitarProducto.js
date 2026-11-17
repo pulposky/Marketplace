@@ -14,9 +14,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Referencias a los filtros del DOM
     const inputBuscar = document.querySelector('.campo-busqueda input');
-    const selectEstado = document.querySelector('.ordenar-por select');
-    const chkDisponibles = document.getElementById('filtro-disponibles');
-    const chkAgotados = document.getElementById('filtro-agotados');
+    const selectEstado = document.getElementById('filtro-estado');
+    const selectStock = document.getElementById('filtro-stock');
+    const selectCategoria = document.getElementById('filtro-categoria');
+    const sinTildes = (t) => String(t || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
     const btnFiltrar = document.querySelector('.boton-filtrar');
     const tarjetas = document.querySelectorAll('.tarjeta-producto');
     const paginacion = window.crearPaginacionProductos('.tarjeta-producto', '#paginacionProductos', 10);
@@ -27,29 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Filtra las tarjetas según la búsqueda, el estado
     // seleccionado y si se quieren disponibles/agotados
     function aplicarFiltros() {
-        const busqueda = inputBuscar ? inputBuscar.value.trim().toLowerCase() : '';
-        const estadoSeleccionado = selectEstado ? selectEstado.value : 'todos';
-        const soloDisponibles = chkDisponibles ? chkDisponibles.checked : false;
-        const soloAgotados = chkAgotados ? chkAgotados.checked : false;
+        const palabras = sinTildes(inputBuscar ? inputBuscar.value : '').split(/\s+/).filter(Boolean);
+        const estadoSeleccionado = selectEstado ? selectEstado.value : '';
+        const stockSeleccionado = selectStock ? selectStock.value : '';
+        const categoriaSeleccionada = selectCategoria ? selectCategoria.value : '';
 
         const coincidencias = [];
         tarjetas.forEach(tarjeta => {
-            const nombre = tarjeta.dataset.nombre || '';
+            const texto = sinTildes(`${tarjeta.dataset.nombre} ${tarjeta.dataset.categoria}`);
             const estado = tarjeta.dataset.estado; // 'activo' o 'inactivo'
             const cantidad = parseInt(tarjeta.dataset.cantidad, 10) || 0;
 
-            const coincideNombre = nombre.includes(busqueda);
-            let coincideEstado = estadoSeleccionado === 'todos' || estado === estadoSeleccionado;
+            const coincideNombre = palabras.every((p) => texto.includes(p));
+            const coincideEstado = !estadoSeleccionado || estado === estadoSeleccionado;
+            const coincideCategoria = !categoriaSeleccionada || tarjeta.dataset.categoria === categoriaSeleccionada;
+            const coincideCantidad = !stockSeleccionado
+                || (stockSeleccionado === 'agotado' && cantidad <= 0)
+                || (stockSeleccionado === 'bajo' && cantidad > 0 && cantidad <= 10)
+                || (stockSeleccionado === 'con' && cantidad > 0);
 
-            // Filtro por cantidad: disponibles (> 0) o agotados (=== 0)
-            let coincideCantidad = true;
-            if (soloDisponibles && !soloAgotados) {
-                coincideCantidad = cantidad > 0;
-            } else if (soloAgotados && !soloDisponibles) {
-                coincideCantidad = cantidad === 0;
-            }
-
-            if (coincideNombre && coincideEstado && coincideCantidad) {
+            if (coincideNombre && coincideEstado && coincideCategoria && coincideCantidad) {
                 coincidencias.push(tarjeta);
             } else {
                 tarjeta.style.display = 'none';
@@ -60,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Asigno los eventos de filtrado
     if (inputBuscar) inputBuscar.addEventListener('input', aplicarFiltros);
-    if (selectEstado) selectEstado.addEventListener('change', aplicarFiltros);
+    [selectEstado, selectStock, selectCategoria].forEach((s) => s && s.addEventListener('change', aplicarFiltros));
     if (btnFiltrar) btnFiltrar.addEventListener('click', aplicarFiltros);
 
     // -----------------------------------------------

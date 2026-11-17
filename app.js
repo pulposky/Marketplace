@@ -56,6 +56,10 @@ app.use(compression());
 // Los archivos estáticos (CSS, JS, imágenes) van directos desde /public
 app.use(express.static('public'));
 
+// Todo lo dinámico (páginas y API) sin caché: cada página muestra la sesión y lleva el token CSRF,
+// así que tras cerrar sesión el botón "atrás" no puede enseñar una copia vieja.
+app.use(require('./middleware/noCache'));
+
 // Configuro EJS como motor de plantillas, las vistas están en public/views
 app.set('views', path.join(__dirname, 'public', 'views'));
 app.set('view engine', 'ejs');

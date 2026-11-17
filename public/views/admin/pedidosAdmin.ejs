@@ -66,6 +66,15 @@
             <p class="descripcion-vista">Pedidos pendientes y confirmados que esperan entrega.</p>
         <% } %>
 
+        <!-- BÚSQUEDA Y FECHAS (filtran la lista ya cargada) -->
+        <div class="barra-busqueda-pedidos">
+            <input type="search" id="buscarPedido" placeholder="Buscar por cliente, documento, teléfono, producto o #pedido…" aria-label="Buscar pedidos">
+            <label>Desde <input type="date" id="pedidoDesde"></label>
+            <label>Hasta <input type="date" id="pedidoHasta"></label>
+            <button type="button" class="chip-filtro" id="limpiarBusquedaPedidos">Limpiar</button>
+            <span class="conteo-pedidos" id="conteoPedidos" aria-live="polite"></span>
+        </div>
+
         <!-- CONTENIDO -->
         <div id="contenedor-pedidos"></div>
     </div>

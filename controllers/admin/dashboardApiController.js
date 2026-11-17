@@ -64,12 +64,12 @@ const DashboardApiController = {
             }
 
             if (puede('pedidos')) {
-                const minutos = Number(tiendaService.obtener().minutos_expiracion_apartado) || 60;
+                const minutos = tiendaService.minutosExpiracion();
                 const [pendientes, ultimos] = await Promise.all([
                     DashboardModel.pendientes(minutos),
                     DashboardModel.ultimosApartados(),
                 ]);
-                respuesta.pendientes = { total: Number(pendientes.pendientes), porVencer: Number(pendientes.porVencer) };
+                respuesta.pendientes = { total: Number(pendientes.pendientes), porVencer: minutos ? Number(pendientes.porVencer) : 0 };
                 respuesta.ultimos = ultimos.map((f) => ({
                     id: f.id_apartado, cliente: f.nombre_cliente, producto: f.producto, estado: f.estado, fecha: f.fecha,
                     cantidad: Number(f.cantidad), unidad: f.unidad, total: Number(f.total) || 0,

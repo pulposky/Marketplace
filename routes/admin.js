@@ -37,10 +37,8 @@ const verificarAdmin = require('../middleware/verificarAdmin');
 const DashboardApiController = require('../controllers/admin/dashboardApiController');
 const verificarRol = require('../middleware/verificarRol');
 const verificarPermiso = require('../middleware/verificarPermiso');
-const noCache = require('../middleware/noCache');
 const { ROL_SUPERADMIN } = require('../utils/roles');
 
-router.use(noCache);
 
 // -----------------------------------------------
 // PÁGINAS DEL PANEL

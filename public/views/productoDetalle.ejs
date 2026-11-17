@@ -36,6 +36,7 @@
     <%- include('partials/encabezado') %>
 
     <main class="contenedor ficha"<%- pasillo ? ` style="--k:${pasillo.color}"` : '' %>>
+        <%- include('partials/volver', { destino: '/catalogo' }) %>
         <nav class="migas" aria-label="Ruta">
             <a href="/catalogo"><%= vocab.catalogo %></a>
             <% if (pasillo) { %><span aria-hidden="true">/</span><a href="/catalogo?categoria=<%= encodeURIComponent(pasillo.nombre) %>"><%= etiquetaPasillo %></a><% } %>
@@ -106,7 +107,7 @@
                 <% } %>
 
                 <dl class="ficha-datos">
-                    <div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div>
+                    <% if (tienda.minutos_expiracion_apartado > 0) { %><div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div><% } %>
                     <div><dt>Pagas y recoges en</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div>
                     <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
                 </dl>

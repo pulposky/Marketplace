@@ -11,3 +11,6 @@
 <meta name="theme-color" content="<%= tienda.color_primario %>">
 <link rel="icon" href="<%= _icono %>">
 <title><%= _tituloPagina %></title>
+<%# Si el navegador restaura la página desde su memoria de "atrás" (bfcache), la pido de nuevo al
+    servidor: así, tras cerrar sesión, retroceder no muestra la sesión anterior. %>
+<script nonce="<%= cspNonce %>">addEventListener('pageshow', function (e) { if (e.persisted) location.reload(); });</script>

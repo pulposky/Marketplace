@@ -9,7 +9,7 @@
 
 const ProductoModel = require('../../models/productoModel');
 const PresentacionModel = require('../../models/presentacionModel');
-const { normalizarCategorias } = require('../../utils/helpers');
+const { normalizarCategorias, coincideBusqueda } = require('../../utils/helpers');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const { armarPasillos } = require('../../utils/pasillos');
@@ -135,9 +135,13 @@ const SitioVistasController = {
     mostrarCatalogo: (req, res) => {
         const categoriasSeleccionadas = normalizarCategorias(req.query.categoria || req.query.categorias);
         const busqueda = String(req.query.busqueda || '').trim();
-        const busquedaLower = busqueda.toLowerCase();
         const soloOferta = req.query.soloOferta === '1' || req.query.oferta === '1';
+        const soloDisponibles = req.query.disponibles === '1';
         const orden = String(req.query.orden || '').trim();
+        // Rango de precio: solo enteros positivos; lo demás se ignora
+        const leerPrecio = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.floor(n) : null; };
+        const precioMin = leerPrecio(req.query.min);
+        const precioMax = leerPrecio(req.query.max);
 
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
@@ -150,10 +154,8 @@ const SitioVistasController = {
                 .sort((a, b) => a.localeCompare(b, 'es'));
 
             // Si escribió algo en el buscador, filtro por nombre
-            if (busquedaLower) {
-                productosActivos = productosActivos.filter((producto) =>
-                    producto.nombre && producto.nombre.toLowerCase().includes(busquedaLower)
-                );
+            if (busqueda) {
+                productosActivos = productosActivos.filter((producto) => coincideBusqueda(producto, busqueda));
             }
 
             // Si eligió categorías, filtro; si no, muestro todos los activos
@@ -175,6 +177,12 @@ const SitioVistasController = {
                 return calcularEnOferta(producto) ? precio * (1 - descuento / 100) : precio;
             };
 
+            if (soloDisponibles) {
+                productosFiltrados = productosFiltrados.filter((p) => (Number(p.limite_venta) || 0) > 0);
+            }
+            if (precioMin !== null) productosFiltrados = productosFiltrados.filter((p) => calcularPrecioEfectivo(p) >= precioMin);
+            if (precioMax !== null) productosFiltrados = productosFiltrados.filter((p) => calcularPrecioEfectivo(p) <= precioMax);
+
             if (orden === 'precio-asc') {
                 productosFiltrados.sort((a, b) => calcularPrecioEfectivo(a) - calcularPrecioEfectivo(b));
             } else if (orden === 'precio-desc') {
@@ -191,6 +199,9 @@ const SitioVistasController = {
                     categoriasSeleccionadas,
                     busqueda,
                     soloOferta,
+                    soloDisponibles,
+                    precioMin,
+                    precioMax,
                     orden,
                     usuario: req.session?.usuario || null
                 }));

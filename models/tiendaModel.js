@@ -38,7 +38,7 @@ const TiendaModel = {
                 direccion VARCHAR(200) NOT NULL DEFAULT '',
                 horario VARCHAR(200) NOT NULL DEFAULT '',
                 moneda CHAR(3) NOT NULL DEFAULT 'COP',
-                minutos_expiracion_apartado INT NOT NULL DEFAULT 60,
+                minutos_expiracion_apartado INT NOT NULL DEFAULT 0,
                 facebook VARCHAR(255) NOT NULL DEFAULT '',
                 instagram VARCHAR(255) NOT NULL DEFAULT '',
                 tiktok VARCHAR(255) NOT NULL DEFAULT '',

@@ -39,6 +39,8 @@ test('valida el rango de minutos de expiración', () => {
     assert.ok(validarConfiguracion({ minutos_expiracion_apartado: 2 }).error);
     assert.ok(validarConfiguracion({ minutos_expiracion_apartado: 'abc' }).error);
     assert.strictEqual(validarConfiguracion({ minutos_expiracion_apartado: 60 }).datos.minutos_expiracion_apartado, 60);
+    assert.strictEqual(validarConfiguracion({ minutos_expiracion_apartado: 0 }).datos.minutos_expiracion_apartado, 0);
+    assert.strictEqual(normalizar({ minutos_expiracion_apartado: 0 }).minutos_expiracion_apartado, 0);
 });
 
 test('ignora campos que no son configurables (mass assignment)', () => {

@@ -220,14 +220,15 @@ const ApartadoModel = {
     },
 
     // ------------------------------------------------
-    // EXPIRACIÓN AUTOMÁTICA DE APARTADOS (1 HORA)
+    // EXPIRACIÓN AUTOMÁTICA DE APARTADOS (OPCIONAL)
     // ------------------------------------------------
 
     // Busca apartados en estado 'pendiente' cuya fecha de creación ya superó el
-    // tiempo de reserva configurado en la tienda (por defecto 60 minutos).
+    // tiempo de reserva configurado en la tienda (0 = no vencen).
     // Se ejecuta periódicamente para cancelar reservas que el cliente no confirmó a tiempo.
     // Devuelve id, producto, cantidad y nombre_cliente para liberar stock después.
     obtenerApartadosExpirados: (callback) => {
+        if (!tiendaService.minutosExpiracion()) return callback(null, []); // 0 = no vencen
         const sql = `
             SELECT a.id_apartado, a.producto, a.cantidad, a.nombre_cliente, a.id_cliente
             FROM apartados a

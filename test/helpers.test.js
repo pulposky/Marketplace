@@ -7,7 +7,16 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { normalizarCategorias, calcularPrecioOferta } = require('../utils/helpers');
+const { normalizarCategorias, calcularPrecioOferta, coincideBusqueda } = require('../utils/helpers');
+
+test('coincideBusqueda: sin tildes, varias palabras y en categoría o descripción', () => {
+    const p = { nombre: 'Bisagra cierre lento 110°', categoria: 'Bisagras', descripcion: 'Para puertas de mueble.' };
+    assert.ok(coincideBusqueda(p, 'BISAGRA lento'));
+    assert.ok(coincideBusqueda(p, 'puertas mueble'));
+    assert.ok(coincideBusqueda({ nombre: 'Tira LED cálida' }, 'calida'));
+    assert.ok(coincideBusqueda(p, '   '));
+    assert.ok(!coincideBusqueda(p, 'bisagra negra'));
+});
 
 test('normalizarCategorias: devuelve array vacío si no hay valor', () => {
     assert.deepStrictEqual(normalizarCategorias(undefined), []);

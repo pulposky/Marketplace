@@ -17,7 +17,6 @@ const ProductoController = require('../controllers/productoController');
 const AuthController = require('../controllers/authController');
 const { limiteAuth } = require('../config/rateLimit');
 const { validarLogin, validarRegistro } = require('../middleware/validar');
-const noCache = require('../middleware/noCache');
 
 // Vista: página principal
 router.get('/', SitioVistasController.mostrarMain);
@@ -32,7 +31,7 @@ router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
 // límite estricto para frenar fuerza bruta + validación de inputs
 router.post('/login', limiteAuth, validarLogin, AuthController.loginUsuarioController);
 // POST (con token CSRF) para que un enlace externo no pueda cerrar la sesión
-router.post('/logout', noCache, AuthController.logoutUsuarioController);
+router.post('/logout', AuthController.logoutUsuarioController);
 router.post('/registro', limiteAuth, validarRegistro, AuthController.registroUsuarioController);
 
 // API: lista de productos en JSON (la usa el catálogo)

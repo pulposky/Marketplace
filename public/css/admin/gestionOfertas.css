@@ -430,3 +430,5 @@ body {
     font-weight: 400;
     color: var(--suave);
 }
+
+.barra-superior .filtro-categoria { height: 40px; padding: 0 10px; border: 1px solid var(--borde-fuerte); border-radius: 10px; background: #fff; font: inherit; font-size: 0.9rem; color: var(--tinta); }

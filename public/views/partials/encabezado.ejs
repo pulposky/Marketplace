@@ -23,8 +23,7 @@
             <input type="search" id="<%= _buscadorId %>" name="busqueda" value="<%= _busqueda %>" placeholder="<%= vocab.buscar %>" autocomplete="off">
         </form>
 
-        <nav class="barra-nav" aria-label="Principal">
-            <a href="/catalogo"><%= vocab.catalogo %></a>
+        <nav class="barra-nav" aria-label="Tu cuenta">
             <% if (_usuario && esRolPanel(_usuario.role)) { %>
                 <a href="/admin">Panel</a>
             <% } else if (_usuario) { %>
@@ -43,4 +42,37 @@
             <% } %>
         </nav>
     </div>
+
+    <%
+        // Menú principal: puntos clave de la tienda. Las categorías salen de "pasillos" cuando la página los trae.
+        const _cats = (typeof pasillos !== 'undefined' && Array.isArray(pasillos)) ? pasillos : [];
+        const _ofertas = typeof soloOferta !== 'undefined' && soloOferta;
+        const _actual = rutaActual === '/' ? 'inicio'
+            : (rutaActual === '/catalogo' || rutaActual.startsWith('/producto')) ? (_ofertas ? 'ofertas' : 'categorias') : '';
+        const _hayPasos = (tienda.bloques_inicio || []).some((b) => b.tipo === 'pasos');
+        const _marca = (clave) => _actual === clave ? ' aria-current="page"' : '';
+    %>
+    <nav class="menu" aria-label="Principal">
+        <ul class="menu-interior">
+            <li><a href="/"<%- _marca('inicio') %>>Inicio</a></li>
+            <li>
+                <% if (_cats.length) { %>
+                <details class="menu-desplegable">
+                    <summary<%- _actual === 'categorias' ? ' class="actual"' : '' %>><%= vocab.secciones %></summary>
+                    <ul>
+                        <% _cats.forEach((c) => { %>
+                            <li><a href="/catalogo?categoria=<%= encodeURIComponent(c.nombre) %>" style="--k:<%= c.color %>"><%= c.nombre %> <small><%= c.total %></small></a></li>
+                        <% }) %>
+                        <li><a href="/catalogo" class="menu-todas">Ver todo el <%= vocab.catalogo.toLowerCase() %></a></li>
+                    </ul>
+                </details>
+                <% } else { %>
+                <a href="/catalogo"<%- _actual === 'categorias' ? ' aria-current="page"' : '' %>><%= vocab.secciones %></a>
+                <% } %>
+            </li>
+            <li><a href="/catalogo?soloOferta=1"<%- _marca('ofertas') %>>Ofertas</a></li>
+            <% if (_hayPasos) { %><li><a href="/#como-comprar">Cómo comprar</a></li><% } %>
+            <li><a href="#contacto">Contacto</a></li>
+        </ul>
+    </nav>
 </header>

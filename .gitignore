@@ -36,3 +36,5 @@ database/backups/
 *.log
 logs/
 npm-debug.log*
+
+CREDENCIALES-DEMO.txt
