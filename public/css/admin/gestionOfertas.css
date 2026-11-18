@@ -83,56 +83,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-.barra-superior .campo-busqueda input {
-    width: 260px;
-    height: 40px;
-    padding: 0 16px;
-    border-radius: 20px;
-    border: 1px solid var(--borde-fuerte);
-    outline: none;
-    font-size: 0.9rem;
-    background-color: #ffffff;
-    transition: border-color 0.2s;
-}
-
-.barra-superior .campo-busqueda input:focus {
-    border-color: var(--marca);
-}
-
-.barra-superior {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-}
-
-.filtro-oferta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    background-color: #ffffff;
-    border: 1px solid var(--borde-fuerte);
-    padding: 9px 16px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--tinta-2);
-    user-select: none;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.filtro-oferta:hover {
-    border-color: var(--marca);
-}
-
-.filtro-oferta input {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--marca);
-    cursor: pointer;
-}
-
 .nota-instrucciones {
     background-color: var(--marca-suave);
     border: 1px solid var(--borde);
@@ -431,11 +381,12 @@ body {
     color: var(--suave);
 }
 
-.barra-superior .filtro-categoria { height: 40px; padding: 0 10px; border: 1px solid var(--borde-fuerte); border-radius: 10px; background: #fff; font: inherit; font-size: 0.9rem; color: var(--tinta); }
-
 /* Paginación y filtros por el servidor (enlaces en vez de botones) */
 .paginacion-productos a.boton-paginacion { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: inherit; }
 .paginacion-productos a.boton-paginacion[aria-current="page"] { color: #fff; }
 .paginacion-salto { color: var(--suave); padding: 0 2px; }
 .total-listado { display: block; margin-top: 4px; font-size: .8rem; font-weight: 600; color: var(--suave); }
 .limpiar-filtros { font-size: .85rem; font-weight: 600; color: var(--marca-oscuro, var(--marca)); }
+
+/* Alto del encabezado fijo de esta página (lo usa la barra de filtros, barraFiltros.css) */
+:root { --alto-encabezado: 41px; }

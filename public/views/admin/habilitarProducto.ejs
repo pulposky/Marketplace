@@ -9,6 +9,7 @@
         });
     </script>
     <link rel="stylesheet" href="/css/admin/habilitarProducto.css">
+    <link rel="stylesheet" href="/css/admin/barraFiltros.css">
     <link rel="stylesheet" href="/css/toast.css">
     <%- include('partials/estilosPanel') %>
 </head>
@@ -38,54 +39,47 @@
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="encabezado-seccion">
             <div class="titulo-catalogo">Productos de la tienda <small class="total-listado"><%= total.toLocaleString('es-CO') %> resultado<%= total === 1 ? '' : 's' %></small></div>
-
-            <%# Filtros por GET: el servidor filtra y pagina. Los selects se envían solos al cambiar (habilitarProducto.js). %>
-            <form class="barra-superior" id="filtrosPanel" method="get" action="/admin/habilitar-producto" role="search">
-                <div class="campo-busqueda">
-                    <input type="search" id="busqueda-producto" name="q" value="<%= filtros.q %>" placeholder="Buscar y presionar Enter...">
-                </div>
-            </form>
         </div>
 
-        <!-- CONTENIDO PRINCIPA-->
+        <%# Barra de filtros (GET): el servidor filtra y pagina. Los selects se envían solos al cambiar (habilitarProducto.js). %>
+        <form class="barra-filtros" method="get" action="/admin/habilitar-producto" role="search" aria-label="Filtrar productos">
+            <label class="filtro-buscar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <span class="solo-lector">Buscar</span>
+                <input type="search" id="busqueda-producto" name="q" value="<%= filtros.q %>" placeholder="Buscar productos…">
+            </label>
+            <label class="filtro-pildora<%= filtros.categoria ? ' activo' : '' %>">
+                <span>Categoría</span>
+                <select id="filtro-categoria" name="categoria" data-auto-envio>
+                    <option value="">Todas</option>
+                    <% categoriasFiltro.forEach((c) => { %>
+                        <option value="<%= c %>" <%= filtros.categoria === c ? 'selected' : '' %>><%= c %></option>
+                    <% }) %>
+                </select>
+            </label>
+            <label class="filtro-pildora<%= filtros.estado ? ' activo' : '' %>">
+                <span>En la tienda</span>
+                <select id="filtro-estado" name="estado" data-auto-envio>
+                    <option value="">Todos</option>
+                    <option value="activo" <%= filtros.estado === 'activo' ? 'selected' : '' %>>Visibles</option>
+                    <option value="inactivo" <%= filtros.estado === 'inactivo' ? 'selected' : '' %>>Ocultos</option>
+                </select>
+            </label>
+            <label class="filtro-pildora<%= filtros.stock ? ' activo' : '' %>">
+                <span>Existencias</span>
+                <select id="filtro-stock" name="stock" data-auto-envio>
+                    <option value="">Todas</option>
+                    <option value="agotado" <%= filtros.stock === 'agotado' ? 'selected' : '' %>>Agotados</option>
+                    <option value="bajo" <%= filtros.stock === 'bajo' ? 'selected' : '' %>>Poco stock (≤ 10)</option>
+                    <option value="con" <%= filtros.stock === 'con' ? 'selected' : '' %>>Con stock</option>
+                </select>
+            </label>
+            <% if (filtros.q || filtros.categoria || filtros.estado || filtros.stock) { %>
+                <a class="limpiar-filtros" href="/admin/habilitar-producto">✕ Quitar filtros</a>
+            <% } %>
+        </form>
+
         <div class="contenido-principal">
-
-            <!-- PANEL LATERAL -->
-            <div class="panel-lateral">
-                <div class="titulo-categoria">Filtros de Gestión</div>
-                <div class="linea-divisora"></div>
-
-                <div class="lista-filtros">
-                    <label class="filtro-select">Categoría
-                        <select id="filtro-categoria" name="categoria" form="filtrosPanel" data-auto-envio>
-                            <option value="">Todas</option>
-                            <% categoriasFiltro.forEach((c) => { %>
-                                <option value="<%= c %>" <%= filtros.categoria === c ? 'selected' : '' %>><%= c %></option>
-                            <% }) %>
-                        </select>
-                    </label>
-                    <label class="filtro-select">En la tienda
-                        <select id="filtro-estado" name="estado" form="filtrosPanel" data-auto-envio>
-                            <option value="">Todos</option>
-                            <option value="activo" <%= filtros.estado === 'activo' ? 'selected' : '' %>>Visibles en la tienda</option>
-                            <option value="inactivo" <%= filtros.estado === 'inactivo' ? 'selected' : '' %>>Ocultos</option>
-                        </select>
-                    </label>
-                    <label class="filtro-select">Existencias
-                        <select id="filtro-stock" name="stock" form="filtrosPanel" data-auto-envio>
-                            <option value="">Todas</option>
-                            <option value="agotado" <%= filtros.stock === 'agotado' ? 'selected' : '' %>>Agotados</option>
-                            <option value="bajo" <%= filtros.stock === 'bajo' ? 'selected' : '' %>>Poco stock (10 o menos)</option>
-                            <option value="con" <%= filtros.stock === 'con' ? 'selected' : '' %>>Con stock</option>
-                        </select>
-                    </label>
-                    <% if (filtros.q || filtros.categoria || filtros.estado || filtros.stock) { %>
-                        <a class="limpiar-filtros" href="/admin/habilitar-producto">Quitar filtros</a>
-                    <% } %>
-                </div>
-            </div>
-
-            <!-- REJILLA DE PRODUCTOS -->
             <!-- REJILLA DE PRODUCTOS -->
             <div class="rejilla-productos" id="contenedorProductos">
 

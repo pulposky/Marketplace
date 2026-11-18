@@ -9,6 +9,7 @@
         });
     </script>
     <link rel="stylesheet" href="/css/admin/gestionOfertas.css">
+    <link rel="stylesheet" href="/css/admin/barraFiltros.css">
     <link rel="stylesheet" href="/css/toast.css">
     <%- include('partials/estilosPanel') %>
 </head>
@@ -37,24 +38,35 @@
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="encabezado-seccion">
             <div class="titulo-catalogo">Configurar Descuentos y Ofertas <small class="total-listado"><%= total.toLocaleString('es-CO') %> resultado<%= total === 1 ? '' : 's' %></small></div>
+        </div>
 
-            <%# Filtros por GET: el servidor filtra y pagina (gestionOfertas.js envía al cambiar categoría u oferta). %>
-            <form class="barra-superior" method="get" action="/admin/ofertas" role="search">
-                <div class="campo-busqueda">
-                    <input type="search" id="busqueda-oferta" name="q" value="<%= filtros.q %>" placeholder="Buscar y presionar Enter...">
-                </div>
-                <select id="filtro-categoria-oferta" name="categoria" class="filtro-categoria" aria-label="Categoría" data-auto-envio>
-                    <option value="">Todas las categorías</option>
+        <%# Barra de filtros (GET), la misma de Productos (barraFiltros.css). gestionOfertas.js envía al cambiar un select. %>
+        <form class="barra-filtros" method="get" action="/admin/ofertas" role="search" aria-label="Filtrar productos">
+            <label class="filtro-buscar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <span class="solo-lector">Buscar</span>
+                <input type="search" id="busqueda-oferta" name="q" value="<%= filtros.q %>" placeholder="Buscar productos…">
+            </label>
+            <label class="filtro-pildora<%= filtros.categoria ? ' activo' : '' %>">
+                <span>Categoría</span>
+                <select id="filtro-categoria-oferta" name="categoria" data-auto-envio>
+                    <option value="">Todas</option>
                     <% categoriasFiltro.forEach((c) => { %>
                         <option value="<%= c %>" <%= filtros.categoria === c ? 'selected' : '' %>><%= c %></option>
                     <% }) %>
                 </select>
-                <label class="filtro-oferta">
-                    <input type="checkbox" id="filtro-solo-oferta" name="oferta" value="1" <%= filtros.oferta ? 'checked' : '' %> data-auto-envio>
-                    <span>Solo en oferta</span>
-                </label>
-            </form>
-        </div>
+            </label>
+            <label class="filtro-pildora<%= filtros.oferta ? ' activo' : '' %>">
+                <span>Descuento</span>
+                <select id="filtro-solo-oferta" name="oferta" data-auto-envio>
+                    <option value="">Todos</option>
+                    <option value="1" <%= filtros.oferta ? 'selected' : '' %>>En oferta</option>
+                </select>
+            </label>
+            <% if (filtros.q || filtros.categoria || filtros.oferta) { %>
+                <a class="limpiar-filtros" href="/admin/ofertas">✕ Quitar filtros</a>
+            <% } %>
+        </form>
 
         <p class="nota-instrucciones">
             Aquí puedes <strong>cambiar el precio</strong> de un producto o <strong>ponerle un descuento</strong>

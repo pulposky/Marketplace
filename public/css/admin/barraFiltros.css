@@ -1,0 +1,48 @@
+/* =============================================
+   BARRA DE FILTROS DEL PANEL (Productos y Ofertas)
+   Va a todo el ancho sobre la rejilla, como un navbar;
+   el servidor filtra y pagina (?q=&categoria=...).
+   ============================================= */
+
+.encabezado-seccion { margin-bottom: 14px; }
+.barra-filtros {
+    /* Fija justo debajo del encabezado del panel (.header-catalogo); cada página indica su alto */
+    position: sticky; top: calc(var(--alto-encabezado, 56px) + 8px); z-index: 50;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    margin-bottom: 22px; padding: 10px;
+    background: #fff; border: 1px solid var(--borde); border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+}
+.filtro-buscar {
+    flex: 1 1 280px; display: flex; align-items: center; gap: 8px;
+    height: 42px; padding: 0 14px; border-radius: 10px; background: var(--fondo, #f5f6f4);
+    border: 1px solid transparent; transition: border-color .2s, background-color .2s;
+}
+.filtro-buscar:focus-within { border-color: var(--marca); background: #fff; }
+.filtro-buscar svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--suave); stroke-width: 2; stroke-linecap: round; }
+.filtro-buscar input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font: inherit; font-size: .92rem; color: var(--tinta); }
+.filtro-pildora {
+    position: relative; display: inline-flex; flex-direction: column; justify-content: center;
+    height: 42px; padding: 0 30px 0 12px; border: 1px solid var(--borde-fuerte); border-radius: 10px;
+    background: #fff; cursor: pointer; transition: border-color .2s, background-color .2s;
+}
+.filtro-pildora:hover { border-color: var(--marca); }
+.filtro-pildora.activo { border-color: var(--marca); background: var(--marca-suave); }
+.filtro-pildora span { font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); line-height: 1.1; }
+.filtro-pildora select {
+    appearance: none; border: 0; outline: 0; padding: 0; background: transparent; cursor: pointer;
+    font: inherit; font-size: .88rem; font-weight: 600; color: var(--tinta); line-height: 1.2;
+}
+.filtro-pildora::after {
+    content: ""; position: absolute; right: 12px; top: 50%; width: 7px; height: 7px; margin-top: -5px;
+    border-right: 2px solid var(--suave); border-bottom: 2px solid var(--suave); transform: rotate(45deg); pointer-events: none;
+}
+.filtro-pildora:focus-within { outline: 2px solid var(--marca); outline-offset: 1px; }
+.barra-filtros .limpiar-filtros { margin-left: auto; padding: 0 6px; white-space: nowrap; text-decoration: none; }
+.barra-filtros .limpiar-filtros:hover { text-decoration: underline; }
+.solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 600px) {
+    .barra-filtros { position: static; }
+    .filtro-buscar { flex-basis: 100%; }
+    .filtro-pildora { flex: 1 1 calc(50% - 5px); }
+}
