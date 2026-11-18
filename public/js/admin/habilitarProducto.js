@@ -12,54 +12,8 @@
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias a los filtros del DOM
-    const inputBuscar = document.querySelector('.campo-busqueda input');
-    const selectEstado = document.getElementById('filtro-estado');
-    const selectStock = document.getElementById('filtro-stock');
-    const selectCategoria = document.getElementById('filtro-categoria');
-    const sinTildes = (t) => String(t || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-    const btnFiltrar = document.querySelector('.boton-filtrar');
-    const tarjetas = document.querySelectorAll('.tarjeta-producto');
-    const paginacion = window.crearPaginacionProductos('.tarjeta-producto', '#paginacionProductos', 10);
-
-    // -----------------------------------------------
-    // FILTRADO LOCAL DE PRODUCTOS
-    // -----------------------------------------------
-    // Filtra las tarjetas según la búsqueda, el estado
-    // seleccionado y si se quieren disponibles/agotados
-    function aplicarFiltros() {
-        const palabras = sinTildes(inputBuscar ? inputBuscar.value : '').split(/\s+/).filter(Boolean);
-        const estadoSeleccionado = selectEstado ? selectEstado.value : '';
-        const stockSeleccionado = selectStock ? selectStock.value : '';
-        const categoriaSeleccionada = selectCategoria ? selectCategoria.value : '';
-
-        const coincidencias = [];
-        tarjetas.forEach(tarjeta => {
-            const texto = sinTildes(`${tarjeta.dataset.nombre} ${tarjeta.dataset.categoria}`);
-            const estado = tarjeta.dataset.estado; // 'activo' o 'inactivo'
-            const cantidad = parseInt(tarjeta.dataset.cantidad, 10) || 0;
-
-            const coincideNombre = palabras.every((p) => texto.includes(p));
-            const coincideEstado = !estadoSeleccionado || estado === estadoSeleccionado;
-            const coincideCategoria = !categoriaSeleccionada || tarjeta.dataset.categoria === categoriaSeleccionada;
-            const coincideCantidad = !stockSeleccionado
-                || (stockSeleccionado === 'agotado' && cantidad <= 0)
-                || (stockSeleccionado === 'bajo' && cantidad > 0 && cantidad <= 10)
-                || (stockSeleccionado === 'con' && cantidad > 0);
-
-            if (coincideNombre && coincideEstado && coincideCategoria && coincideCantidad) {
-                coincidencias.push(tarjeta);
-            } else {
-                tarjeta.style.display = 'none';
-            }
-        });
-        paginacion.aplicarFiltro(coincidencias);
-    }
-
-    // Asigno los eventos de filtrado
-    if (inputBuscar) inputBuscar.addEventListener('input', aplicarFiltros);
-    [selectEstado, selectStock, selectCategoria].forEach((s) => s && s.addEventListener('change', aplicarFiltros));
-    if (btnFiltrar) btnFiltrar.addEventListener('click', aplicarFiltros);
+    // Filtros: los filtra y pagina el servidor (?q=&categoria=&estado=&stock=). Los selects se envían al cambiar.
+    document.querySelectorAll('[data-auto-envio]').forEach((s) => s.addEventListener('change', () => s.form.requestSubmit()));
 
     // -----------------------------------------------
     // CAMBIAR CANTIDAD A VENDER

@@ -25,7 +25,7 @@
         <div class="catalogo-cabeza"<%- _unaCategoria ? ` style="--k:${_unaCategoria.color}"` : '' %>>
             <div>
                 <h1><%= _unaCategoria ? _unaCategoria.nombre : (busqueda ? `Resultados para “${busqueda}”` : (soloOferta ? 'Ofertas' : `Todo el ${vocab.catalogo.toLowerCase()}`)) %></h1>
-                <p class="catalogo-total"><%= productos.length %> producto<%= productos.length === 1 ? '' : 's' %>
+                <p class="catalogo-total"><%= total.toLocaleString('es-CO') %> producto<%= total === 1 ? '' : 's' %>
                     <% if (_filtrado) { %> · <a href="/catalogo">Quitar filtros</a><% } %></p>
             </div>
 
@@ -65,7 +65,7 @@
         <p class="vacio" id="avisoSinResultados" <%- productos.length ? 'style="display:none;"' : '' %>>
             No hay productos con esos filtros. <a href="/catalogo">Ver todo el <%= vocab.catalogo.toLowerCase() %></a>
         </p>
-        <nav class="paginacion-productos" id="paginacionProductos" aria-label="Paginación de productos"></nav>
+        <%- include('partials/paginacion', { ruta: '/catalogo', consulta, pagina, totalPaginas }) %>
     </main>
 
     <%- include('partials/pie') %>
@@ -78,7 +78,6 @@
     <script src="/js/login.js"></script>
     <script src="/js/registro.js"></script>
     <script src="/js/olvide.js"></script>
-    <script src="/js/paginacionProductos.js"></script>
     <script src="/js/productos.js"></script>
 </body>
 

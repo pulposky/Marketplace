@@ -14,7 +14,10 @@ const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const { armarPasillos } = require('../../utils/pasillos');
 const { armarInicio } = require('../../utils/inicio');
+const { paginar } = require('../../utils/listados');
 const tiendaService = require('../../services/tiendaService');
+
+const POR_PAGINA = 24; // tarjetas por página del catálogo (múltiplo de 2, 3 y 4 columnas)
 
 // Descuento porcentual vigente según sus fechas
 const estaEnOferta = (producto) => {
@@ -190,14 +193,22 @@ const SitioVistasController = {
             } else if (orden === 'nombre') {
                 productosFiltrados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
             } else {
-                // Orden de la tienda: los agotados van al final (sort estable: el resto conserva su orden)
+                // Orden de la tienda: en el orden en que se cargaron (id), con los agotados al final
                 const agotado = (p) => ((Number(p.limite_venta) || 0) > 0 ? 0 : 1);
-                productosFiltrados.sort((a, b) => agotado(a) - agotado(b));
+                productosFiltrados.sort((a, b) => agotado(a) - agotado(b) || a.id_producto - b.id_producto);
             }
 
-            asociarImagenesAProductos(productosFiltrados, (productosConImagen) => {
+            // Paginación en el servidor: solo viaja (y busca foto y presentaciones) la página pedida
+            const { items: deLaPagina, pagina, totalPaginas, total } = paginar(productosFiltrados, req.query.pagina, POR_PAGINA);
+            const { pagina: _omitida, ...consulta } = req.query;
+
+            asociarImagenesAProductos(deLaPagina, (productosConImagen) => {
                 PresentacionModel.adjuntar(productosConImagen).catch(() => {}).then(() => res.render("productos", {
                     productos: productosConImagen,
+                    total,
+                    pagina,
+                    totalPaginas,
+                    consulta,
                     categorias,
                     pasillos: armarPasillos(listaProductosRaw),
                     categoriasSeleccionadas,

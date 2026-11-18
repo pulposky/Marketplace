@@ -36,23 +36,24 @@
 
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="encabezado-seccion">
-            <div class="titulo-catalogo">Configurar Descuentos y Ofertas</div>
+            <div class="titulo-catalogo">Configurar Descuentos y Ofertas <small class="total-listado"><%= total.toLocaleString('es-CO') %> resultado<%= total === 1 ? '' : 's' %></small></div>
 
-            <div class="barra-superior">
+            <%# Filtros por GET: el servidor filtra y pagina (gestionOfertas.js envía al cambiar categoría u oferta). %>
+            <form class="barra-superior" method="get" action="/admin/ofertas" role="search">
                 <div class="campo-busqueda">
-                    <input type="text" id="busqueda-oferta" placeholder="Buscar por nombre o categoría...">
+                    <input type="search" id="busqueda-oferta" name="q" value="<%= filtros.q %>" placeholder="Buscar y presionar Enter...">
                 </div>
-                <select id="filtro-categoria-oferta" class="filtro-categoria" aria-label="Categoría">
+                <select id="filtro-categoria-oferta" name="categoria" class="filtro-categoria" aria-label="Categoría" data-auto-envio>
                     <option value="">Todas las categorías</option>
-                    <% [...new Set((productos || []).map((p) => p.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')).forEach((c) => { %>
-                        <option value="<%= c %>"><%= c %></option>
+                    <% categoriasFiltro.forEach((c) => { %>
+                        <option value="<%= c %>" <%= filtros.categoria === c ? 'selected' : '' %>><%= c %></option>
                     <% }) %>
                 </select>
                 <label class="filtro-oferta">
-                    <input type="checkbox" id="filtro-solo-oferta">
+                    <input type="checkbox" id="filtro-solo-oferta" name="oferta" value="1" <%= filtros.oferta ? 'checked' : '' %> data-auto-envio>
                     <span>Solo en oferta</span>
                 </label>
-            </div>
+            </form>
         </div>
 
         <p class="nota-instrucciones">
@@ -103,7 +104,7 @@
                             <!-- Imagen del Producto -->
                             <div class="imagen-producto">
                                 <% if (producto.imagenUpload) { %>
-                                    <img src="<%= producto.imagenUpload %>" alt="<%= nombreMostrar %>">
+                                    <img src="<%= producto.imagenUpload %>" alt="<%= nombreMostrar %>" loading="lazy">
                                 <% } else { %>
                                     <span><%= nombreMostrar %></span>
                                 <% } %>
@@ -184,17 +185,16 @@
                         </div>
                         <% }) %>
                 <% } else { %>
-                    <p class="sin-resultados">No se encontraron productos en la base de datos.</p>
+                    <p class="sin-resultados">No hay productos con esos filtros.</p>
                 <% } %>
 
             </div>
-            <nav class="paginacion-productos" id="paginacionProductos" aria-label="Paginación de productos"></nav>
+            <%- include('../partials/paginacion', { ruta: '/admin/ofertas', consulta, pagina, totalPaginas }) %>
         </div>
     </div>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>
-    <script src="/js/paginacionProductos.js"></script>
     <script src="/js/admin/gestionOfertas.js"></script>
 </body>
 

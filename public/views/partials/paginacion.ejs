@@ -1,0 +1,23 @@
+<%# Paginación con enlaces (la hace el servidor). Recibe: ruta, consulta (filtros actuales, sin "pagina"),
+    pagina y totalPaginas. Muestra 1 … p-2 p-1 p p+1 p+2 … N y conserva los filtros en cada enlace. %>
+<% if (totalPaginas > 1) {
+    const _url = (n) => {
+        const p = new URLSearchParams();
+        Object.entries(consulta).forEach(([k, v]) => [].concat(v).forEach((x) => p.append(k, x))); // ?categoria=a&categoria=b
+        if (n > 1) p.set('pagina', n);
+        const q = p.toString();
+        return ruta + (q ? '?' + q : '');
+    };
+    const _nums = [...new Set([1, pagina - 2, pagina - 1, pagina, pagina + 1, pagina + 2, totalPaginas])]
+        .filter((n) => n >= 1 && n <= totalPaginas).sort((a, b) => a - b);
+%>
+<nav class="paginacion-productos" aria-label="Paginación de productos">
+    <span class="paginacion-resumen">Página <%= pagina %> de <%= totalPaginas %></span>
+    <% if (pagina > 1) { %><a class="boton-paginacion boton-paginacion-direccion" href="<%= _url(pagina - 1) %>" rel="prev">Anterior</a><% } %>
+    <% _nums.forEach((n, i) => { %>
+        <% if (i > 0 && n - _nums[i - 1] > 1) { %><span class="paginacion-salto" aria-hidden="true">…</span><% } %>
+        <a class="boton-paginacion" href="<%= _url(n) %>"<%- n === pagina ? ' aria-current="page"' : '' %>><%= n %></a>
+    <% }) %>
+    <% if (pagina < totalPaginas) { %><a class="boton-paginacion boton-paginacion-direccion" href="<%= _url(pagina + 1) %>" rel="next">Siguiente</a><% } %>
+</nav>
+<% } %>

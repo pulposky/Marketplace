@@ -296,6 +296,9 @@ button, input, select { font: inherit; color: inherit; }
 }
 .boton-paginacion[aria-current="page"] { background: var(--tinta); border-color: var(--tinta); color: #fff; }
 .boton-paginacion:disabled { opacity: .4; cursor: default; }
+a.boton-paginacion { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: var(--tinta); }
+a.boton-paginacion[aria-current="page"] { color: #fff; }
+.paginacion-salto { color: var(--suave); padding: 0 2px; }
 
 /* ---------- Ficha de producto ---------- */
 .ficha { gap: 20px; }

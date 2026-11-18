@@ -12,6 +12,11 @@ const CategoriaModel = require('../../models/categoriaModel');
 const { asociarImagenesAProductos } = require('../../utils/imagenes');
 const { esRolPanel } = require('../../utils/roles');
 const permisosService = require('../../services/permisosService');
+const { paginar, leerFiltrosAdmin, filtrarProductosAdmin, categoriasDe } = require('../../utils/listados');
+
+const POR_PAGINA_PANEL = 24;
+// Filtros actuales para los enlaces de paginación (la página la pone cada enlace)
+const consultaSinPagina = ({ pagina, ...resto }) => resto;
 
 const AdminVistasController = {
 
@@ -34,8 +39,10 @@ const AdminVistasController = {
 
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
+            const filtros = leerFiltrosAdmin(req.query);
+            const { items, pagina, totalPaginas, total } = paginar(filtrarProductosAdmin(listaProductosRaw, filtros), req.query.pagina, POR_PAGINA_PANEL);
 
-            asociarImagenesAProductos(listaProductosRaw, async (productosConImagen) => {
+            asociarImagenesAProductos(items, async (productosConImagen) => {
                 // Presentaciones de cada producto y categorías de la BD para el datalist
                 let categorias = [];
                 try {
@@ -47,7 +54,10 @@ const AdminVistasController = {
                 res.render('admin/habilitarProducto', {
                     usuario: usuarioSesion,
                     productos: productosConImagen,
-                    categorias
+                    categorias,
+                    categoriasFiltro: categoriasDe(listaProductosRaw),
+                    filtros, pagina, totalPaginas, total,
+                    consulta: consultaSinPagina(req.query)
                 });
             });
         });
@@ -64,11 +74,16 @@ const AdminVistasController = {
 
         ProductoModel.obtenerTodos((error, productos) => {
             const listaProductosRaw = (error || !Array.isArray(productos)) ? [] : productos;
+            const filtros = leerFiltrosAdmin(req.query);
+            const { items, pagina, totalPaginas, total } = paginar(filtrarProductosAdmin(listaProductosRaw, filtros), req.query.pagina, POR_PAGINA_PANEL);
 
-            asociarImagenesAProductos(listaProductosRaw, (productosConImagen) => {
+            asociarImagenesAProductos(items, (productosConImagen) => {
                 PresentacionModel.adjuntar(productosConImagen).catch(() => {}).then(() => res.render('admin/gestionOfertas', {
                     usuario: usuarioSesion,
-                    productos: productosConImagen
+                    productos: productosConImagen,
+                    categoriasFiltro: categoriasDe(listaProductosRaw),
+                    filtros, pagina, totalPaginas, total,
+                    consulta: consultaSinPagina(req.query)
                 }));
             });
         });

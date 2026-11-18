@@ -18,6 +18,7 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const dbConfig = require('../config/database');
 const { normalizeText } = require('../utils/imagenes');
+const { generarCatalogo } = require('./catalogoDemo');
 
 // Credenciales de la tienda demo: solo para demo/capturas. Nunca en producción.
 const DEMO_ADMIN = { nombre: 'Administrador Demo', usuario: 'admin', password: 'DemoAdmin2026' };
@@ -34,10 +35,10 @@ const TABLAS = ['carrito_items', 'apartados', 'notificaciones', 'notificaciones_
 // Ferretería de herrajes para muebles. Nombres y precios propios (aprox. COP);
 // cada dueño cambia categorías y productos desde el panel.
 const CATEGORIAS = ['Bisagras', 'Correderas', 'Manijas y botones', 'Cerraduras', 'Patas y rodachinas',
-    'Cocina', 'Closet', 'Herramientas', 'Tornillería', 'Pegantes y cantos', 'Iluminación LED'];
+    'Cocina', 'Closet', 'Herramientas', 'Tornillería', 'Pegantes y cantos', 'Iluminación LED', 'Pinturas'];
 
 // [nombre, unidad, precio, stock, categoría, descripción, extras]
-const PRODUCTOS = [
+const PRODUCTOS_A_MANO = [
     ['Bisagra cierre lento 110°', 'UND', 9500, 240, 'Bisagras', 'Bisagra de cazoleta de 35 mm con amortiguador: la puerta del mueble cierra suave y sin golpe.', { presentaciones: [['Unidad', 1], ['Par', 2], ['Caja x10', 10]] }],
     ['Bisagra de parche 180° negra', 'UND', 18000, 60, 'Bisagras', 'Se atornilla por encima, sin perforar cazoleta. Deja abrir la puerta por completo.', { descuento: 15 }],
     ['Dispositivo push blanco', 'UND', 3000, 150, 'Bisagras', 'Abre la puerta o el cajón con un toque, para muebles sin manija.'],
@@ -66,6 +67,11 @@ const PRODUCTOS = [
     ['Tira LED cálida 5 m', 'UND', 39000, 30, 'Iluminación LED', 'Tira de luz cálida con adaptador, para debajo de gabinetes y repisas.', { descuento: 25 }],
 ];
 
+// Los 26 de arriba (con pedidos y presentaciones) + catálogo generado hasta completar 2.000.
+const TOTAL_PRODUCTOS_DEMO = 2000;
+const PRODUCTOS = [...PRODUCTOS_A_MANO,
+    ...generarCatalogo(TOTAL_PRODUCTOS_DEMO - PRODUCTOS_A_MANO.length, PRODUCTOS_A_MANO.map((p) => p[0]))];
+
 // Ilustración sencilla por categoría; las fotos reales las sube cada tienda desde el panel.
 const DIBUJOS = {
     'Bisagras': '<rect x="120" y="130" width="70" height="140" rx="8"/><rect x="210" y="130" width="70" height="140" rx="8"/><rect x="188" y="120" width="24" height="160" rx="10"/><circle cx="155" cy="170" r="10"/><circle cx="155" cy="230" r="10"/><circle cx="245" cy="170" r="10"/><circle cx="245" cy="230" r="10"/>',
@@ -78,6 +84,7 @@ const DIBUJOS = {
     'Herramientas': '<rect x="100" y="150" width="150" height="70" rx="16"/><path d="M250 175 h70 M320 185 h-70"/><path d="M150 220 l-20 90 h60 l15 -90"/>',
     'Tornillería': '<path d="M150 110 h100 l-20 30 h-60 z"/><path d="M185 140 v150 l15 30 l15 -30 v-150"/><path d="M185 175 l30 -10 M185 205 l30 -10 M185 235 l30 -10 M185 265 l30 -10"/>',
     'Pegantes y cantos': '<path d="M178 100 h44 v50 h-44 z"/><path d="M150 150 h100 l15 30 v130 h-130 v-130 z"/><path d="M170 225 h60"/>',
+    'Pinturas': '<rect x="120" y="150" width="160" height="160" rx="14"/><path d="M120 190 h160 M150 150 a50 40 0 0 1 100 0"/><path d="M200 230 c-20 25 -20 45 0 50 c20 -5 20 -25 0 -50z"/>',
     'Iluminación LED': '<path d="M165 235 a60 60 0 1 1 70 0 v30 h-70 z"/><path d="M170 290 h60 M180 310 h40 M200 175 v45"/>',
 };
 const TONOS = ['#E8EEF4', '#F4ECE4', '#E6F0EA', '#F2E8EE', '#EEF0E2', '#E9E6F3'];
@@ -178,7 +185,7 @@ async function main() {
         const inicioOferta = diasAtras(2, 0);
         const finOferta = diasAtras(-7, 23);
         const filas = PRODUCTOS.map(([nombre, unidad, precio, stock, categoria, descripcion, x = {}], i) => [
-            `DEMO-${String(i + 1).padStart(3, '0')}`, nombre, unidad, 'Bodega principal', precio, stock, descripcion, categoria,
+            `DEMO-${String(i + 1).padStart(4, '0')}`, nombre, unidad, 'Bodega principal', precio, stock, descripcion, categoria,
             x.inactivo ? 'inactivo' : 'activo', stock,
             x.descuento || 0, x.descuento ? inicioOferta : null, x.descuento ? finOferta : null,
         ]);

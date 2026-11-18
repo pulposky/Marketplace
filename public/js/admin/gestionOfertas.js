@@ -8,46 +8,8 @@
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    const inputBuscar = document.getElementById('busqueda-oferta');
-    const sinTildes = (t) => String(t || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-    const tarjetas = document.querySelectorAll('.tarjeta-producto');
-    const paginacion = window.crearPaginacionProductos('.tarjeta-producto', '#paginacionProductos');
-
-    // -----------------------------------------------
-    // FILTROS: BÚSQUEDA + SOLO EN OFERTA
-    // -----------------------------------------------
-    function aplicarFiltros() {
-        const palabras = sinTildes(inputBuscar?.value).split(/\s+/).filter(Boolean);
-        const soloOferta = filtroSoloOferta?.checked;
-        const categoria = filtroCategoria?.value || '';
-
-        const coincidencias = [];
-        tarjetas.forEach((tarjeta) => {
-            const texto = sinTildes(`${tarjeta.dataset.nombre} ${tarjeta.dataset.categoria}`);
-            const enOferta = tarjeta.dataset.enOferta === 'true';
-
-            let visible = palabras.every((p) => texto.includes(p))
-                && (!categoria || tarjeta.dataset.categoria === categoria);
-            // Si está activo el filtro de ofertas, solo se muestran las que están en oferta
-            if (visible && soloOferta) {
-                visible = enOferta;
-            }
-            if (visible) coincidencias.push(tarjeta);
-            else tarjeta.style.display = 'none';
-        });
-        paginacion.aplicarFiltro(coincidencias);
-    }
-
-    const filtroSoloOferta = document.getElementById('filtro-solo-oferta');
-    const filtroCategoria = document.getElementById('filtro-categoria-oferta');
-    filtroCategoria?.addEventListener('change', aplicarFiltros);
-
-    if (inputBuscar) {
-        inputBuscar.addEventListener('input', aplicarFiltros);
-    }
-    if (filtroSoloOferta) {
-        filtroSoloOferta.addEventListener('change', aplicarFiltros);
-    }
+    // Filtros: los filtra y pagina el servidor (?q=&categoria=&oferta=1). Categoría y "solo en oferta" se envían al cambiar.
+    document.querySelectorAll('[data-auto-envio]').forEach((c) => c.addEventListener('change', () => c.form.requestSubmit()));
 
     // -----------------------------------------------
     // GUARDAR PRODUCTO (precio + oferta)

@@ -140,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
             items.push({ cifra: datos.pendientes.porVencer, texto: 'Vencen en menos de 15 min', href: '/admin/pedidos', alerta: datos.pendientes.porVencer > 0 });
         }
         if (datos.stock) {
-            items.push({ cifra: datos.stock.agotados, texto: 'Productos agotados', href: '/admin/habilitar-producto', alerta: datos.stock.agotados > 0 });
-            items.push({ cifra: datos.stock.bajo.filter((p) => p.disponibles > 0).length, texto: 'Con 10 o menos disponibles', href: '/admin/habilitar-producto', alerta: false });
+            items.push({ cifra: datos.stock.agotados, texto: 'Productos agotados', href: '/admin/habilitar-producto?stock=agotado', alerta: datos.stock.agotados > 0 });
+            items.push({ cifra: datos.stock.bajo.filter((p) => p.disponibles > 0).length, texto: 'Con 10 o menos disponibles', href: '/admin/habilitar-producto?stock=bajo', alerta: false });
         }
         if (!items.length) { bloque.hidden = true; return; }
         bloque.hidden = false;
