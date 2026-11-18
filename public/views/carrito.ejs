@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <%- include('partials/headMeta', { titulo: 'Carrito' }) %>
+    <%- include('partials/estilosTienda') %>
+</head>
+
+<body>
+    <%- include('partials/encabezado', { conModalLogin: !usuario }) %>
+
+    <main class="contenedor carrito-pagina" data-sesion="<%= usuario ? '1' : '' %>">
+        <%- include('partials/volver', { destino: '/catalogo' }) %>
+        <h1>Tu carrito</h1>
+
+        <div class="carrito-vacio-pagina" id="carritoVacio" hidden>
+            <h2>Tu carrito está vacío</h2>
+            <p>Busca en el <%= vocab.catalogo.toLowerCase() %> y agrega lo que necesites.</p>
+            <a href="/catalogo" class="btn">Ver el <%= vocab.catalogo.toLowerCase() %></a>
+        </div>
+
+        <div class="carrito-columnas" id="carritoContenido" hidden>
+            <section aria-labelledby="tituloProductos">
+                <h2 id="tituloProductos" class="solo-lector">Productos</h2>
+                <ul class="carrito-lineas" id="carritoLineas"></ul>
+            </section>
+
+            <aside class="carrito-resumen" aria-label="Resumen del pedido">
+                <p class="carrito-total"><span id="carritoUnidades">0 artículos</span><b id="carritoTotal">$0</b></p>
+
+                <%# Paso 1: revisar. Paso 2 (tras "Continuar"): cómo lo recibe y confirmar. %>
+                <button type="button" class="btn btn-grande btn-ancho" id="btnContinuar">Continuar con el pedido</button>
+
+                <div class="carrito-paso-entrega" id="pasoEntrega" hidden>
+                    <h2>Entrega</h2>
+                    <%- include('partials/opcionesEntrega') %>
+                    <p class="carrito-nota">Pagas al recibir tu pedido. El precio final se confirma al procesarlo.</p>
+                    <button type="button" class="btn btn-grande btn-ancho" id="btnConfirmarPedido">Confirmar pedido</button>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <%- include('partials/pie') %>
+    <%- include('partials/modalesCuenta') %>
+
+    <script src="/js/csrf.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/login.js"></script>
+    <script src="/js/registro.js"></script>
+    <script src="/js/olvide.js"></script>
+    <script src="/js/carritoPagina.js"></script>
+</body>
+
+</html>

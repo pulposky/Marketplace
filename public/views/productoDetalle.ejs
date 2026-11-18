@@ -64,12 +64,7 @@
 
                 <% if (producto.descripcion) { %><p class="ficha-descripcion"><%= producto.descripcion %></p><% } %>
 
-                <% if (!usuario) { %>
-                    <% if (presentaciones.length) { %>
-                        <p class="ficha-se-vende">Se vende por: <%= presentaciones.map((p) => `${p.nombre} (${p.factor} ${unidad})`).join(', ') %></p>
-                    <% } %>
-                    <a href="/catalogo?login=1&amp;desde=producto" class="btn btn-grande">Entra para hacer tu pedido</a>
-                <% } else if (stock < factor) { %>
+                <% if (stock < factor) { %>
                     <p class="ficha-agotado">Agotado por ahora.</p>
                 <% } else { %>
                     <div class="ficha-compra">
@@ -81,24 +76,33 @@
                                         <label>
                                             <input type="radio" name="presentacionDetalle" value="<%= p.id %>"
                                                 data-factor="<%= p.factor %>" data-nombre="<%= p.nombre %>" <%= i === 0 ? 'checked' : '' %>>
-                                            <span><b><%= p.nombre %></b><small><%= p.factor %> <%= unidad %></small></span>
+                                            <span><b><%= p.nombre %></b><small><%= p.factor %> <%= Number(p.factor) === 1 ? unidad : (unidad === 'unidad' ? 'unidades' : unidad) %></small></span>
                                         </label>
                                     <% }) %>
                                 </div>
                             </fieldset>
                         <% } %>
 
-                        <%- include('partials/opcionesEntrega') %>
                         <div class="ficha-cantidad">
                             <div class="campo">
                                 <label for="cantidadDetalle">Cantidad</label>
-                                <input type="number" id="cantidadDetalle" value="1" min="1" max="<%= Math.floor(stock / factor) %>" required>
+                                <div class="selector-cantidad">
+                                    <button type="button" data-paso="-1" aria-label="Uno menos">&minus;</button>
+                                    <input type="number" id="cantidadDetalle" value="1" min="1" max="<%= Math.floor(stock / factor) %>" inputmode="numeric" required>
+                                    <button type="button" data-paso="1" aria-label="Uno más">&plus;</button>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-grande" id="btnApartarDetalle"
-                                data-id="<%= producto.id_producto %>"
-                                data-precio-unitario="<%= precioUnidad %>"
-                                data-unidad="<%= unidad %>"
-                                data-limite="<%= stock %>">Pedir ahora</button>
+                            <p class="ficha-subtotal">Subtotal <b id="fichaSubtotal"><%= cop(precioUnidad * factor) %></b></p>
+                        </div>
+                        <div class="ficha-botones" id="fichaCompra"
+                            data-id="<%= producto.id_producto %>"
+                            data-nombre="<%= producto.nombre %>"
+                            data-imagen="<%= producto.imagenUpload || '' %>"
+                            data-precio-unitario="<%= precioUnidad %>"
+                            data-unidad="<%= unidad %>"
+                            data-limite="<%= stock %>">
+                            <button type="button" class="btn btn-grande" id="btnAgregarCarrito">Agregar al carrito</button>
+                            <button type="button" class="btn btn-grande btn-suave" id="btnComprarAhora">Comprar ahora</button>
                         </div>
                         <%# Solo avisa cuando quedan pocas (productoDetalle.js lo recalcula por presentación) %>
                         <p class="ficha-disponibles" id="textoDisponiblesDetalle" data-mostrar="<%= vocab.mostrarStock ? '1' : '' %>"<%- vocab.mostrarStock && Math.floor(stock / factor) <= 5 ? '' : ' hidden' %>>
@@ -110,7 +114,7 @@
 
                 <dl class="ficha-datos">
                     <% if (tienda.minutos_expiracion_apartado > 0) { %><div><dt>Te lo guardamos</dt><dd><%- include('partials/duracionApartado') %></dd></div><% } %>
-                    <% if (tienda.entrega !== 'domicilio') { %><div><dt>Recoges en</dt><dd><%= tienda.direccion || 'El punto de venta' %></dd></div><% } %>
+                    <div><dt>Entrega</dt><dd><%= tienda.entrega === 'ambos' ? 'Recoges en la tienda o a domicilio: lo eliges al hacer el pedido' : (tienda.entrega === 'domicilio' ? 'A domicilio' : 'Recoges en ' + (tienda.direccion || 'el punto de venta')) %></dd></div>
                     <div><dt>Pago</dt><dd>Al recibir tu pedido</dd></div>
                     <% if (tienda.horario) { %><div><dt>Horario</dt><dd><%= tienda.horario %></dd></div><% } %>
                 </dl>

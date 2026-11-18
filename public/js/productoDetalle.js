@@ -1,103 +1,73 @@
 // =============================================
-// FICHA DE PRODUCTO - JAVASCRIPT
+// PÁGINA DEL PRODUCTO
 // =============================================
-// Permite apartar el producto desde la ficha.
-// Valida la cantidad, envía la petición a
-// /api/apartar-producto y muestra el resultado.
+// Presentación y cantidad -> "Agregar al carrito" o "Comprar ahora"
+// (agrega y lleva a /carrito). La entrega y el pedido se hacen en el
+// carrito. El precio es informativo: el servidor lo recalcula al pedir.
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-
-    const botonApartar = document.getElementById('btnApartarDetalle');
+    const caja = document.getElementById('fichaCompra');
     const inputCantidad = document.getElementById('cantidadDetalle');
+    if (!caja || !inputCantidad || !window.Carrito) return;
 
-    if (!botonApartar || !inputCantidad) return;
-
-    // Stock en unidades mínimas; la presentación elegida (si hay) define el factor
-    const stockUnidades = Number(botonApartar.dataset.limite) || 0;
-    const precioUnitario = Number(botonApartar.dataset.precioUnitario) || 0;
-    // Presentación elegida (botones de radio); sin presentaciones se vende por unidad mínima
+    const stockUnidades = Number(caja.dataset.limite) || 0;
+    const precioUnitario = Number(caja.dataset.precioUnitario) || 0;
     const elegida = () => document.querySelector('input[name="presentacionDetalle"]:checked');
-    const textoCantidad = document.getElementById('cantDisponiblesDetalle');
-    const textoUnidad = document.getElementById('unidadDisponiblesDetalle');
-    const textoPrecio = document.getElementById('fichaPrecio');
-    const textoEtiqueta = document.getElementById('fichaEtiqueta');
+    const cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
+    const texto = (id, valor) => { const el = document.getElementById(id); if (el) el.textContent = valor; };
     let maximo = stockUnidades;
+    let factor = 1;
+    let etiqueta = caja.dataset.unidad || 'unidad';
 
-    // Recalcula máximo, disponibles y precio según la presentación elegida.
-    // El precio es solo informativo: el servidor lo recalcula al apartar.
-    const actualizarPresentacion = () => {
+    const cantidad = () => Math.min(maximo, Math.max(1, Math.floor(Number(inputCantidad.value) || 1)));
+
+    // Máximo, precio y subtotal según la presentación y la cantidad
+    const actualizar = () => {
         const opcion = elegida();
-        const factor = opcion ? Number(opcion.dataset.factor) || 1 : 1;
-        const nombre = opcion ? opcion.dataset.nombre : (botonApartar.dataset.unidad || 'unidad');
+        factor = opcion ? Number(opcion.dataset.factor) || 1 : 1;
+        etiqueta = opcion ? opcion.dataset.nombre : (caja.dataset.unidad || 'unidad');
         maximo = Math.floor(stockUnidades / factor);
         inputCantidad.max = maximo;
         if (Number(inputCantidad.value) > maximo) inputCantidad.value = Math.max(1, maximo);
-        if (textoCantidad) textoCantidad.textContent = maximo;
         const linea = document.getElementById('textoDisponiblesDetalle');
         if (linea) linea.hidden = !(linea.dataset.mostrar && maximo <= 5);
-        if (textoUnidad) textoUnidad.textContent = nombre;
-        if (textoPrecio) textoPrecio.textContent = `$${(precioUnitario * factor).toLocaleString('es-CO')}`;
-        if (textoEtiqueta) textoEtiqueta.textContent = `/ ${nombre}`;
+        texto('cantDisponiblesDetalle', maximo);
+        texto('unidadDisponiblesDetalle', etiqueta);
+        texto('fichaPrecio', cop(precioUnitario * factor));
+        texto('fichaEtiqueta', `/ ${etiqueta}`);
+        texto('fichaSubtotal', cop(precioUnitario * factor * cantidad()));
     };
-    document.querySelectorAll('input[name="presentacionDetalle"]').forEach((radio) => {
-        radio.addEventListener('change', actualizarPresentacion);
+    document.querySelectorAll('input[name="presentacionDetalle"]').forEach((r) => r.addEventListener('change', actualizar));
+    inputCantidad.addEventListener('input', actualizar);
+    document.querySelectorAll('.selector-cantidad [data-paso]').forEach((b) => b.addEventListener('click', () => {
+        inputCantidad.value = Math.min(maximo, Math.max(1, cantidad() + Number(b.dataset.paso)));
+        actualizar();
+    }));
+    actualizar();
+
+    const agregar = () => {
+        if (maximo < 1) { toast('advertencia', 'Este producto está agotado.'); return false; }
+        const opcion = elegida();
+        const antes = Number(inputCantidad.value) || 1;
+        const final = window.Carrito.agregar({
+            id: caja.dataset.id,
+            presentacionId: opcion ? opcion.value : null,
+            nombre: caja.dataset.nombre + (opcion ? ` (${etiqueta})` : ''),
+            imagen: caja.dataset.imagen,
+            precioNum: precioUnitario * factor,
+            unidad: etiqueta,
+            limite: maximo
+        }, cantidad());
+        if (antes > maximo) toast('advertencia', `Solo hay ${maximo} disponibles.`);
+        return final;
+    };
+
+    document.getElementById('btnAgregarCarrito').addEventListener('click', () => {
+        const total = agregar();
+        if (total) toast('exito', `Agregado al carrito (${total} en total).`);
     });
-    actualizarPresentacion();
-
-    botonApartar.addEventListener('click', async () => {
-
-        const cantidad = Math.max(1, Math.floor(Number(inputCantidad.value) || 1));
-
-        if (maximo > 0 && cantidad > maximo) {
-            toast('advertencia', `Solo hay ${maximo} disponibles.`);
-            return;
-        }
-        const envio = window.leerEntrega ? window.leerEntrega() : {};
-        if (envio.error) {
-            toast('advertencia', envio.error);
-            if (envio.campo) envio.campo.focus();
-            return;
-        }
-
-        botonApartar.disabled = true;
-        botonApartar.textContent = 'Enviando...';
-
-        try {
-            const respuesta = await fetch('/api/apartar-producto', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    productoId: botonApartar.dataset.id,
-                    cantidad,
-                    presentacionId: elegida() ? Number(elegida().value) : undefined,
-                    entrega: envio.entrega,
-                    domicilio: envio.domicilio
-                })
-            });
-
-            let data = {};
-            try {
-                data = await respuesta.json();
-            } catch (errorJSON) {
-                console.error('Respuesta no JSON:', errorJSON);
-            }
-
-            if (respuesta.ok) {
-                toast('exito', data.mensaje || '¡Pedido recibido!');
-                setTimeout(() => {
-                    window.location.href = '/verApartados';
-                }, 1600);
-            } else {
-                botonApartar.disabled = false;
-                botonApartar.textContent = 'Pedir ahora';
-                toast('error', data.error || data.mensaje || 'No se pudo hacer el pedido.');
-            }
-        } catch (error) {
-            console.error('Error al apartar:', error);
-            botonApartar.disabled = false;
-            botonApartar.textContent = 'Pedir ahora';
-            toast('error', 'Error de conexión con el servidor.');
-        }
+    document.getElementById('btnComprarAhora').addEventListener('click', () => {
+        if (agregar()) window.location.href = '/carrito';
     });
 });

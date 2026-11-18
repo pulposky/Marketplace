@@ -2,7 +2,7 @@
 <html lang="es">
 
 <head>
-    <!-- Catálogo: pasillos, filtros, tarjetas, modal de cantidad y carrito -->
+    <!-- Catálogo: filtros y tarjetas (cada una lleva a la página del producto) -->
     <%- include('partials/headMeta', { titulo: 'Catálogo' }) %>
     <script nonce="<%= cspNonce %>">
         window.addEventListener('pageshow', function(e) {
@@ -59,7 +59,7 @@
 
         <section class="rejilla rejilla-productos" aria-label="Productos">
             <% productos.forEach((producto) => { %>
-                <%- include('partials/tarjetaProducto', { producto, pasillos, modo: 'agregar' }) %>
+                <%- include('partials/tarjetaProducto', { producto, pasillos, modo: 'ver' }) %>
             <% }) %>
         </section>
         <p class="vacio" id="avisoSinResultados" <%- productos.length ? 'style="display:none;"' : '' %>>
@@ -70,74 +70,8 @@
 
     <%- include('partials/pie') %>
 
-    <!-- MODAL: ELEGIR PRESENTACIÓN Y CANTIDAD -->
-    <div class="modal-fondo" id="modalApartarProducto">
-        <div class="modal-contenido modal-producto" role="dialog" aria-modal="true" aria-labelledby="apartarNombreProducto">
-            <button type="button" class="cerrar-modal" id="cerrarModalProducto" aria-label="Cerrar">&times;</button>
-            <img id="apartarImagenProducto" src="" alt="" class="modal-producto-foto">
-            <h2 id="apartarNombreProducto">Producto</h2>
-            <p class="modal-ayuda" id="apartarDescripcionProducto"></p>
-            <p class="modal-producto-precio"><span id="apartarPrecioProducto">$0</span> <small id="apartarPrecioDetalle"></small></p>
-
-            <form id="formConfirmarApartado" class="formulario">
-                <input type="hidden" id="apartarProductoId" name="productoId">
-                <div class="campo" id="campoPresentacionModal" style="display:none;">
-                    <label for="presentacionApartar">Presentación</label>
-                    <select id="presentacionApartar"></select>
-                </div>
-                <div class="campo">
-                    <label for="cantidadApartar" id="labelCantidadModal">Cantidad</label>
-                    <input type="number" id="cantidadApartar" name="cantidad" value="1" min="1" max="1" required>
-                    <small id="textoDisponibles">Disponibles: <span id="cantDisponiblesModal">0</span> <span id="unidadDisponiblesModal"></span></small>
-                </div>
-                <button type="submit" class="btn btn-ancho" id="btnAgregarCarrito">Agregar al carrito</button>
-            </form>
-        </div>
-    </div>
-
     <%- include('partials/modalesCuenta') %>
 
-    <!-- BOTÓN FLOTANTE DEL CARRITO -->
-    <div class="carrito-fijo" id="carritoAnimado" role="button" tabindex="0" aria-label="Ver tu carrito">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20.5" r="1.2"/><circle cx="18" cy="20.5" r="1.2"/></svg>
-        <span>Carrito</span>
-        <span class="badge-carrito-fijo" id="badgeCarritoFijo">0</span>
-    </div>
-
-    <!-- CARRITO LATERAL -->
-    <div class="carrito-fondo" id="carritoFondo"></div>
-    <aside class="carrito-drawer" id="carritoDrawer" aria-hidden="true" aria-labelledby="tituloCarrito">
-        <div class="carrito-cabecera">
-            <h2 id="tituloCarrito">Tu carrito</h2>
-            <button type="button" class="cerrar-carrito" id="cerrarCarrito" aria-label="Cerrar carrito">&times;</button>
-        </div>
-        <div class="carrito-vacio" id="carritoVacio">
-            <p>Todavía no has agregado productos.</p>
-        </div>
-        <ul class="carrito-lista" id="carritoLista"></ul>
-        <div class="carrito-pie">
-            <div class="carrito-totales">
-                <span id="carritoTotalUnidades">0 artículos</span>
-                <b id="carritoTotalPrecio">$0</b>
-            </div>
-            <%- include('partials/opcionesEntrega') %>
-            <button type="button" class="btn btn-ancho" id="btnConfirmarCarrito">Hacer pedido</button>
-            <button type="button" class="btn btn-ancho btn-texto" id="btnVaciarCarrito">Vaciar carrito</button>
-            <p class="carrito-nota">Pagas al recibir tu pedido.</p>
-            <a href="/verApartados" class="carrito-link">Ver mis pedidos</a>
-        </div>
-    </aside>
-
-    <!-- AVISO DE DURACIÓN DEL APARTADO (una vez por pestaña; solo si los apartados vencen) -->
-    <% if (tienda.minutos_expiracion_apartado > 0) { %>
-    <div class="alerta-fondo" id="alertaApartado">
-        <div class="alerta-contenido" role="alertdialog" aria-labelledby="tituloAlertaApartado">
-            <h2 id="tituloAlertaApartado">Antes de pedir</h2>
-            <p>Tu pedido se reserva por <strong><%- include('partials/duracionApartado') %></strong>. Si no se confirma en ese tiempo, se cancela.</p>
-            <button type="button" class="btn btn-ancho" id="cerrarAlertaApartado">Entendido</button>
-        </div>
-    </div>
-    <% } %>
 
     <script src="/js/csrf.js"></script>
     <script src="/js/toast.js"></script>

@@ -1,5 +1,5 @@
 <%# Tarjeta de producto del inicio y del catálogo.
-    Recibe: producto, pasillos y modo ('ver' = enlace a la ficha, 'agregar' = botón que abre el modal del catálogo).
+    Recibe: producto y pasillos; lleva a la página del producto.
     El stock está en la unidad mínima; si hay presentaciones, el precio se muestra por la primera. %>
 <%
     const _p = producto;
@@ -57,19 +57,5 @@
         <p class="producto-stock">¡Quedan <%= _disponibles %>!</p>
     <% } %>
 
-    <% if (modo === 'agregar') { %>
-        <button type="button" class="btn btn-ancho btn-accion-apartar" <%= _disponibles < 1 ? 'disabled' : '' %>
-            data-id="<%= _p.id_producto %>"
-            data-nombre="<%= _p.nombre %>"
-            data-precio="<%= _cop(_precioUnidad) %>"
-            data-precio-num="<%= _precioUnidad.toFixed(2) %>"
-            data-precio-unitario="<%= _precioUnidad %>"
-            data-unidad="<%= _unidad %>"
-            data-presentaciones="<%= JSON.stringify(_presentaciones) %>"
-            data-imagen="<%= _p.imagenUpload || '' %>"
-            data-descripcion="<%= _p.descripcion || '' %>"
-            data-limite="<%= _stock %>">Agregar</button>
-    <% } else { %>
-        <a class="btn btn-ancho btn-suave" href="/producto/<%= _p.id_producto %>">Ver producto</a>
-    <% } %>
+    <a class="btn btn-ancho btn-suave" href="/producto/<%= _p.id_producto %>">Ver producto</a>
 </article>

@@ -26,6 +26,8 @@ router.get('/catalogo', SitioVistasController.mostrarCatalogo);
 
 // Vista: ficha de detalle de un producto
 router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
+// Carrito: se arma en el navegador (localStorage); el pedido pide sesión al confirmar
+router.get('/carrito', (req, res) => res.render('carrito', { usuario: req.session?.usuario || null }));
 
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
