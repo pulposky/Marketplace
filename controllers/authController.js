@@ -12,6 +12,7 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const UsuarioModel = require('../models/usuarioModel');
+const CarritoController = require('./carritoController');
 const { EQUIVALENCIAS_ROL, normalizarRol, esRolPanel } = require('../utils/roles');
 
 // Nueva sesión al autenticar (evita fijación de sesión) con token CSRF nuevo.
@@ -131,6 +132,8 @@ const loginUsuarioController = async (req, res) => {
 
         // Guardo los datos del cliente en la sesión con rol de cliente
         // (en la BD la llave es id_cliente; uso ?? por si cambia el nombre)
+        // El carrito del visitante se pierde al regenerar la sesión: lo guardo y lo paso a su cuenta
+        const carritoVisitante = req.session.carrito;
         await iniciarSesion(req, {
             id: clienteBD.id_cliente ?? clienteBD.id,
             documento: clienteBD.documento,
@@ -139,6 +142,8 @@ const loginUsuarioController = async (req, res) => {
             telefono: clienteBD.telefono || '',
             role: 'cliente'
         });
+        await CarritoController.fusionar(clienteBD.id_cliente ?? clienteBD.id, carritoVisitante)
+            .catch((e) => console.error('[Carrito] No se pudo pasar el carrito a la cuenta:', e.message));
 
         return res.json({ ok: true, mensaje: 'Login correcto' });
     } catch (error) {

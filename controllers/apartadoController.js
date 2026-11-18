@@ -27,6 +27,7 @@ const PresentacionModel = require('../models/presentacionModel');
 const { calcularUnidades, describir } = require('../utils/presentaciones');
 const { resolverEntrega, validarDomicilio } = require('../utils/entrega');
 const tiendaService = require('../services/tiendaService');
+const CarritoController = require('./carritoController');
 
 // Convierte la cantidad pedida a unidades mínimas según la presentación
 // (opcional). La presentación debe ser del mismo producto y estar activa.
@@ -188,11 +189,22 @@ const ApartadoController = {
     // Valida que todos los productos existan, estén activos y tengan
     // stock suficiente ANTES de escribir nada; luego crea un apartado
     // por ítem y descuenta el stock de cada uno.
-    apartarLote: (req, res) => {
+    apartarLote: async (req, res) => {
         if (!req.session || !req.session.usuario) {
             return res.status(401).json({ error: 'Debes iniciar sesión para hacer un pedido.' });
         }
 
+        // Pedido desde /carrito: los productos salen del carrito guardado en la BD, no del navegador
+        const idClienteCarrito = req.body.desdeCarrito ? idClienteDeSesion(req.session.usuario) : null;
+        if (req.body.desdeCarrito) {
+            if (!idClienteCarrito) return res.status(403).json({ error: 'Solo los clientes pueden hacer pedidos.' });
+            try {
+                req.body.items = await CarritoController.paraPedido(idClienteCarrito);
+            } catch (e) {
+                console.error('[Carrito] Error leyendo el carrito para el pedido:', e);
+                return res.status(500).json({ error: 'No se pudo leer tu carrito.' });
+            }
+        }
         const { items } = req.body;
         const { entrega, error: errorEntrega } = resolverEntrega(tiendaService.obtener().entrega, req.body.entrega);
         if (errorEntrega) return res.status(400).json({ error: errorEntrega });
@@ -301,6 +313,11 @@ const ApartadoController = {
                         `Recibimos tu pedido de ${listaValidada.length} producto(s). Te avisaremos cuando lo confirmemos.`,
                         () => {}
                     );
+
+                    // El pedido ya está hecho: el carrito queda vacío (como en Amazon)
+                    if (idClienteCarrito) {
+                        CarritoController.vaciar(idClienteCarrito).catch((e) => console.error('[Carrito] No se pudo vaciar:', e.message));
+                    }
 
                     return res.status(200).json({
                         mensaje: '¡Pedido recibido!',

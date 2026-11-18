@@ -46,28 +46,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     actualizar();
 
-    const agregar = () => {
+    // Agrega al carrito del servidor; devuelve true si quedó agregado
+    const botones = [document.getElementById('btnAgregarCarrito'), document.getElementById('btnComprarAhora')];
+    const agregar = async () => {
         if (maximo < 1) { toast('advertencia', 'Este producto está agotado.'); return false; }
         const opcion = elegida();
-        const antes = Number(inputCantidad.value) || 1;
-        const final = window.Carrito.agregar({
-            id: caja.dataset.id,
-            presentacionId: opcion ? opcion.value : null,
-            nombre: caja.dataset.nombre + (opcion ? ` (${etiqueta})` : ''),
-            imagen: caja.dataset.imagen,
-            precioNum: precioUnitario * factor,
-            unidad: etiqueta,
-            limite: maximo
-        }, cantidad());
-        if (antes > maximo) toast('advertencia', `Solo hay ${maximo} disponibles.`);
-        return final;
+        botones.forEach((b) => { b.disabled = true; });
+        try {
+            const r = await window.Carrito.agregar(Number(caja.dataset.id), opcion ? Number(opcion.value) : undefined, cantidad());
+            if (r.aviso) toast('advertencia', r.aviso);
+            return true;
+        } catch (e) {
+            toast('error', e.message);
+            return false;
+        } finally {
+            botones.forEach((b) => { b.disabled = false; });
+        }
     };
 
-    document.getElementById('btnAgregarCarrito').addEventListener('click', () => {
-        const total = agregar();
-        if (total) toast('exito', `Agregado al carrito (${total} en total).`);
+    botones[0].addEventListener('click', async () => {
+        if (await agregar()) toast('exito', 'Agregado al carrito.');
     });
-    document.getElementById('btnComprarAhora').addEventListener('click', () => {
-        if (agregar()) window.location.href = '/carrito';
+    botones[1].addEventListener('click', async () => {
+        if (await agregar()) window.location.href = '/carrito';
     });
 });

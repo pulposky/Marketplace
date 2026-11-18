@@ -117,6 +117,16 @@ app.use(iniciarCsrf);
 // Registro de visitas para las estadísticas
 app.use(require('./middleware/contadorVisitas'));
 
+// Unidades en el carrito para el contador del encabezado (solo páginas, no la API)
+const CarritoController = require('./controllers/carritoController');
+app.use(async (req, res, next) => {
+    res.locals.cantidadCarrito = 0;
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/admin')) {
+        try { res.locals.cantidadCarrito = await CarritoController.contar(req); } catch (e) { /* sin contador, la página sigue */ }
+    }
+    next();
+});
+
 // Protección CSRF: valida el token en toda petición que cambie estado
 app.use(verificarCsrf);
 

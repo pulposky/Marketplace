@@ -10,6 +10,7 @@ const AuditoriaModel = require('../models/auditoriaModel');
 const RecuperacionModel = require('../models/recuperacionModel');
 const ApartadoModel = require('../models/apartadoModel');
 const PresentacionModel = require('../models/presentacionModel');
+const CarritoModel = require('../models/carritoModel');
 
 async function iniciar() {
     try {
@@ -26,6 +27,7 @@ async function iniciar() {
 
     try {
         await PresentacionModel.asegurarTabla();
+        await CarritoModel.asegurarTabla();
     } catch (error) {
         console.error('[Modulos] No se pudo preparar producto_presentacion:', error.message);
     }

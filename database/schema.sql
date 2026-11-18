@@ -364,3 +364,16 @@ CREATE TABLE IF NOT EXISTS `producto_presentacion` (
     REFERENCES `producto` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_presentacion_factor` CHECK (`factor` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Carrito de compras del cliente (una fila por producto + presentación; 0 = unidad mínima).
+-- Se vacía al hacer el pedido. El carrito del visitante vive en su sesión.
+CREATE TABLE IF NOT EXISTS `carrito_items` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_cliente` int NOT NULL,
+  `id_producto` int NOT NULL,
+  `id_presentacion` int NOT NULL DEFAULT 0,
+  `cantidad` int NOT NULL,
+  `actualizado` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_carrito_linea` (`id_cliente`, `id_producto`, `id_presentacion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

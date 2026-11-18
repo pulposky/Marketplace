@@ -1,9 +1,10 @@
 // =============================================
 // PÁGINA DEL CARRITO (/carrito)
 // =============================================
-// Paso 1: revisar productos y cantidades. "Continuar" pide sesión (modal
-// de login) y abre el paso 2: cómo lo recibe (partials/opcionesEntrega)
-// y "Confirmar pedido" -> POST /api/apartar-lote.
+// El carrito está en el servidor (/api/carrito). Paso 1: revisar productos
+// y cantidades. "Continuar" pide sesión (modal de login; el carrito del
+// visitante pasa a su cuenta) y abre el paso 2: cómo lo recibe y
+// "Confirmar pedido", que pide sobre el carrito guardado y lo vacía.
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,59 +17,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const ventanaLogin = document.getElementById('modalLogin');
     const cop = (n) => '$' + Math.round(Number(n) || 0).toLocaleString('es-CO');
     const escapar = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    let hayDisponibles = false;
 
-    function pintar() {
-        const carrito = C.leer();
-        document.getElementById('carritoVacio').hidden = carrito.length > 0;
-        document.getElementById('carritoContenido').hidden = carrito.length === 0;
-        lista.innerHTML = carrito.map((i) => `
-            <li class="carrito-linea" data-clave="${escapar(i.clave)}">
-                <a class="carrito-linea-foto" href="/producto/${encodeURIComponent(i.id)}">
-                    ${i.imagen ? `<img src="${escapar(i.imagen)}" alt="">` : `<span>${escapar(String(i.nombre || '?').charAt(0))}</span>`}
-                </a>
+    function pintar({ items = [], cantidad = 0, total = 0 }) {
+        document.getElementById('carritoVacio').hidden = items.length > 0;
+        document.getElementById('carritoContenido').hidden = items.length === 0;
+        hayDisponibles = items.some((i) => i.disponible);
+        btnContinuar.disabled = !hayDisponibles;
+        lista.innerHTML = items.map((i) => {
+            const datos = `data-producto="${i.productoId}" data-presentacion="${i.presentacionId || ''}"`;
+            const foto = `<a class="carrito-linea-foto" href="/producto/${i.productoId}">${i.imagen ? `<img src="${escapar(i.imagen)}" alt="">` : `<span>${escapar(String(i.nombre).charAt(0))}</span>`}</a>`;
+            if (!i.disponible) {
+                return `<li class="carrito-linea no-disponible" ${datos}>${foto}
+                    <div class="carrito-linea-info"><span class="carrito-linea-nombre">${escapar(i.nombre)}</span>
+                        <span class="carrito-linea-aviso">Ya no está disponible. No se incluirá en el pedido.</span>
+                        <div class="carrito-linea-controles"><button type="button" class="btn-texto" data-accion="quitar">Eliminar</button></div></div></li>`;
+            }
+            const cant = Math.min(i.cantidad, i.limite);
+            return `<li class="carrito-linea" ${datos}>${foto}
                 <div class="carrito-linea-info">
-                    <a href="/producto/${encodeURIComponent(i.id)}" class="carrito-linea-nombre">${escapar(i.nombre)}</a>
-                    <span class="carrito-linea-precio">${cop(i.precioNum)} / ${escapar(i.unidad || 'unidad')}</span>
+                    <a href="/producto/${i.productoId}" class="carrito-linea-nombre">${escapar(i.nombre)}${i.presentacion ? ` <small>(${escapar(i.presentacion)})</small>` : ''}</a>
+                    <span class="carrito-linea-precio">${cop(i.precio)} / ${escapar(i.unidad)}</span>
+                    ${i.cantidad > i.limite ? `<span class="carrito-linea-aviso">Solo quedan ${i.limite}; ajustamos la cantidad.</span>` : ''}
                     <div class="carrito-linea-controles">
                         <div class="selector-cantidad">
                             <button type="button" data-accion="menos" aria-label="Uno menos">&minus;</button>
-                            <input type="number" value="${Number(i.cantidad)}" min="1" max="${Number(i.limite)}" inputmode="numeric" aria-label="Cantidad de ${escapar(i.nombre)}">
+                            <input type="number" value="${cant}" min="1" max="${i.limite}" inputmode="numeric" aria-label="Cantidad de ${escapar(i.nombre)}">
                             <button type="button" data-accion="mas" aria-label="Uno más">&plus;</button>
                         </div>
                         <button type="button" class="btn-texto" data-accion="quitar">Eliminar</button>
                     </div>
                 </div>
-                <b class="carrito-linea-subtotal">${cop(i.cantidad * i.precioNum)}</b>
-            </li>`).join('');
-        const n = C.contar(carrito);
-        document.getElementById('carritoUnidades').textContent = `${n} artículo${n === 1 ? '' : 's'}`;
-        document.getElementById('carritoTotal').textContent = cop(C.total(carrito));
+                <b class="carrito-linea-subtotal">${cop(cant * i.precio)}</b></li>`;
+        }).join('');
+        document.getElementById('carritoUnidades').textContent = `${cantidad} artículo${cantidad === 1 ? '' : 's'}`;
+        document.getElementById('carritoTotal').textContent = cop(total);
     }
 
-    // Cambia la cantidad de una línea (0 = quitar), sin pasar del límite
-    function cambiar(clave, nueva) {
-        const carrito = C.leer();
-        const linea = carrito.find((i) => i.clave === clave);
-        if (!linea) return;
-        if (nueva < 1) carrito.splice(carrito.indexOf(linea), 1);
-        else {
-            if (nueva > linea.limite) toast('advertencia', `Solo hay ${linea.limite} disponibles.`);
-            linea.cantidad = Math.min(linea.limite, Math.floor(nueva));
+    // Cambia la cantidad de una línea en el servidor (0 = quitar) y repinta
+    async function cambiar(li, nueva) {
+        li.classList.add('cargando');
+        try {
+            const r = await C.fijar(Number(li.dataset.producto), li.dataset.presentacion ? Number(li.dataset.presentacion) : undefined, Math.max(0, nueva));
+            if (r.aviso) toast('advertencia', r.aviso);
+            pintar(r);
+        } catch (e) {
+            toast('error', e.message);
+            li.classList.remove('cargando');
         }
-        C.guardar(carrito);
-        pintar();
     }
 
     lista.addEventListener('click', (e) => {
         const boton = e.target.closest('[data-accion]');
         if (!boton) return;
         const li = boton.closest('.carrito-linea');
-        const actual = Number(li.querySelector('input').value) || 1;
+        const input = li.querySelector('input');
+        const actual = input ? Number(input.value) || 1 : 0;
         const accion = boton.dataset.accion;
-        cambiar(li.dataset.clave, accion === 'quitar' ? 0 : actual + (accion === 'mas' ? 1 : -1));
+        cambiar(li, accion === 'quitar' ? 0 : actual + (accion === 'mas' ? 1 : -1));
     });
     lista.addEventListener('change', (e) => {
-        if (e.target.matches('input')) cambiar(e.target.closest('.carrito-linea').dataset.clave, Number(e.target.value) || 1);
+        if (e.target.matches('input')) cambiar(e.target.closest('.carrito-linea'), Math.floor(Number(e.target.value) || 1));
     });
 
     // Paso 2 (con sesión). Sin sesión: login y se vuelve directo al paso 2.
@@ -84,8 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnConfirmar.addEventListener('click', async () => {
-        const carrito = C.leer();
-        if (!carrito.length) return;
+        if (!hayDisponibles) return;
         const envio = window.leerEntrega ? window.leerEntrega() : {};
         if (envio.error) {
             toast('advertencia', envio.error);
@@ -98,15 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const respuesta = await fetch('/api/apartar-lote', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    items: carrito.map((i) => ({ productoId: Number(i.id), cantidad: Number(i.cantidad), presentacionId: i.presentacionId ? Number(i.presentacionId) : undefined })),
-                    entrega: envio.entrega,
-                    domicilio: envio.domicilio
-                })
+                body: JSON.stringify({ desdeCarrito: true, entrega: envio.entrega, domicilio: envio.domicilio })
             });
             const datos = await respuesta.json().catch(() => ({}));
             if (respuesta.ok) {
-                C.guardar([]);
                 toast('exito', datos.mensaje || '¡Pedido recibido!');
                 setTimeout(() => { window.location.href = '/verApartados'; }, 1200);
                 return;
@@ -128,6 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cerrarModal')?.addEventListener('click', () => { ventanaLogin.style.display = 'none'; });
     window.addEventListener('click', (e) => { if (e.target === ventanaLogin) ventanaLogin.style.display = 'none'; });
 
-    pintar();
-    if (pagina.dataset.sesion && new URLSearchParams(location.search).get('paso') === 'entrega' && C.leer().length) mostrarEntrega();
+    C.obtener().then((r) => {
+        pintar(r);
+        if (pagina.dataset.sesion && hayDisponibles && new URLSearchParams(location.search).get('paso') === 'entrega') mostrarEntrega();
+    }).catch((e) => toast('error', e.message));
 });

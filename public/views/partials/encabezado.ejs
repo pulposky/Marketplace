@@ -28,7 +28,8 @@
                 <a href="/carrito" class="barra-carrito" aria-label="Carrito">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20.5" r="1.2"/><circle cx="18" cy="20.5" r="1.2"/></svg>
                     <span>Carrito</span>
-                    <b class="barra-carrito-contador" data-contador-carrito hidden>0</b>
+                    <% const _enCarrito = typeof cantidadCarrito !== 'undefined' ? cantidadCarrito : 0; %>
+                    <b class="barra-carrito-contador" data-contador-carrito<%- _enCarrito ? '' : ' hidden' %>><%= _enCarrito > 99 ? '99+' : _enCarrito %></b>
                 </a>
             <% } %>
             <% if (_usuario && esRolPanel(_usuario.role)) { %>

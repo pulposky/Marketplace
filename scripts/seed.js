@@ -28,7 +28,7 @@ const MAX_CLIENTES_DEMO = 50;
 const FORCE = process.argv.includes('--force');
 const IMG_DESTINO = path.join(__dirname, '..', 'public', 'img', 'upload');
 
-const TABLAS = ['apartados', 'notificaciones', 'notificaciones_cliente', 'producto_presentacion', 'producto',
+const TABLAS = ['carrito_items', 'apartados', 'notificaciones', 'notificaciones_cliente', 'producto_presentacion', 'producto',
     'categorias', 'clientes', 'usuarios', 'page_views', 'auditoria', 'sessions'];
 
 // Ferretería de herrajes para muebles. Nombres y precios propios (aprox. COP);

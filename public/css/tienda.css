@@ -783,3 +783,7 @@ main.contenedor > *, .rejilla > * { animation: sube .6s cubic-bezier(.2, .8, .2,
 
 /* "hidden" siempre oculta, aunque la clase defina display */
 [hidden] { display: none !important; }
+.carrito-linea-aviso { font-size: 13px; color: var(--aviso); font-weight: 600; }
+.carrito-linea.no-disponible { opacity: .7; }
+.carrito-linea.cargando { opacity: .55; pointer-events: none; }
+.carrito-linea-nombre small { font-weight: 400; color: var(--suave); }

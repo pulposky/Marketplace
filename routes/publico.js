@@ -15,6 +15,7 @@ const SitioApiController = require('../controllers/sitio/sitioApiController');
 const RecuperacionApiController = require('../controllers/sitio/recuperacionApiController');
 const ProductoController = require('../controllers/productoController');
 const AuthController = require('../controllers/authController');
+const CarritoController = require('../controllers/carritoController');
 const { limiteAuth } = require('../config/rateLimit');
 const { validarLogin, validarRegistro } = require('../middleware/validar');
 
@@ -26,8 +27,11 @@ router.get('/catalogo', SitioVistasController.mostrarCatalogo);
 
 // Vista: ficha de detalle de un producto
 router.get('/producto/:id', SitioVistasController.mostrarDetalleProducto);
-// Carrito: se arma en el navegador (localStorage); el pedido pide sesión al confirmar
 router.get('/carrito', (req, res) => res.render('carrito', { usuario: req.session?.usuario || null }));
+// Carrito: en la BD si hay sesión de cliente; si no, en la sesión del visitante
+router.get('/api/carrito', CarritoController.obtener);
+router.post('/api/carrito', CarritoController.agregar);
+router.put('/api/carrito', CarritoController.fijar);
 
 // Autenticación: login, logout y registro de nuevos clientes
 // límite estricto para frenar fuerza bruta + validación de inputs
