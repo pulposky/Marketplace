@@ -99,8 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     // Actualizo los atributos data de la tarjeta para que los filtros funcionen
                     tarjeta.dataset.cantidad = data.limite;
-                    tarjeta.dataset.estado = data.estado;
-                    if (checkbox) checkbox.checked = (data.estado === 'activo');
                 } else {
                     toast('error', data.error || 'Error al actualizar la cantidad');
                 }
@@ -115,13 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // CAMBIAR ESTADO DE UN PRODUCTO (ACTIVO / INACTIVO)
     // -----------------------------------------------
     // Hace PATCH a la API para cambiar el estado manualmente.
-    // Se llama desde el switch de habilitar/deshabilitar.
-    async function actualizarEstadoProducto(idProducto, nuevoEstado, cantidad) {
+    // Se llama desde el switch "Mostrar en la tienda".
+    async function actualizarEstadoProducto(idProducto, nuevoEstado) {
         try {
             const response = await fetch(`/api/admin/productos/estado/${idProducto}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ activo: nuevoEstado === 'activo', cantidad })
+                body: JSON.stringify({ activo: nuevoEstado === 'activo' })
             });
 
             const data = await response.json();
@@ -131,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (tarjeta) {
                     tarjeta.dataset.estado = data.estado;
                 }
-                toast('exito', data.mensaje || `Producto ${nuevoEstado === 'activo' ? 'habilitado' : 'deshabilitado'} correctamente.`);
+                toast('exito', nuevoEstado === 'activo' ? 'El producto ya se ve en la tienda.' : 'El producto quedó oculto de la tienda.');
             } else {
                 toast('error', data.error || 'Error al actualizar el estado del producto');
                 // Revertir el switch si falló
@@ -147,27 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------
-    // SWITCH DE HABILITAR / DESHABILITAR
+    // SWITCH "MOSTRAR EN LA TIENDA"
     // -----------------------------------------------
-    // Cuando el admin cambia el switch de estado de un producto,
-    // verifico que no esté intentando activar con cantidad 0.
+    // Independiente del stock: un producto visible sin cantidad sale como "Agotado".
     document.querySelectorAll('.check-habilitar').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
-            const idProducto = e.target.dataset.id;
-            const inputCantidad = document.querySelector(`.campo-cantidad[data-id="${idProducto}"]`);
-                        const cantidad = Number(inputCantidad?.value || 0);
-
-            // No permito activar un producto con cantidad 0
-            if (e.target.checked && cantidad <= 0) {
-                e.preventDefault();
-                e.target.checked = false;
-                toast('advertencia', 'No puedes habilitar un producto con cantidad 0 o vacía. Ingresa una cantidad válida primero.');
-                
-                if (inputCantidad) inputCantidad.focus();
-                return;
-            }
-
-            actualizarEstadoProducto(idProducto, e.target.checked ? 'activo' : 'inactivo', cantidad);
+            actualizarEstadoProducto(e.target.dataset.id, e.target.checked ? 'activo' : 'inactivo');
         });
     });
 

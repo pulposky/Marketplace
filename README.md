@@ -454,7 +454,7 @@ El marketplace se conecta con el **Sistema de Punto de Venta (POS)**, una aplica
 
 - Confirmar apartado → el stock se reduce permanentemente.
 - Cancelar apartado → las unidades regresan al stock.
-- Si el stock llega a 0, el producto se deshabilita solo.
+- Si el stock llega a 0, el producto sigue visible en la tienda como "Agotado". Para ocultarlo se usa el interruptor "Mostrar en la tienda" del panel.
 
 ### 🏷️ Ofertas y descuentos
 

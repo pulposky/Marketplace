@@ -142,9 +142,10 @@ const ProductoModel = {
 
     // Actualiza el límite de venta y el estado de un producto.
     // Se usa cuando el admin cambia la cantidad manualmente
-    actualizarLimiteVenta: (id, limite, estado, callback) => {
-        const sql = 'UPDATE producto SET limite_venta = ?, estado = ? WHERE id_producto = ?';
-        conexion.query(sql, [limite, estado, id], callback);
+    // Solo cambia la cantidad: si el producto se muestra o no en la tienda lo decide el admin (estado), no el stock.
+    actualizarLimiteVenta: (id, limite, callback) => {
+        const sql = 'UPDATE producto SET limite_venta = ? WHERE id_producto = ?';
+        conexion.query(sql, [limite, id], callback);
     },
 
     // Descuenta unidades de limite_venta al apartar un producto.
@@ -153,11 +154,10 @@ const ProductoModel = {
     restarLimiteVenta: (id, cantidad, callback) => {
         const sql = `
             UPDATE producto 
-            SET estado = CASE WHEN (limite_venta - ?) > 0 THEN 'activo' ELSE 'inactivo' END,
-                limite_venta = limite_venta - ?
+            SET limite_venta = limite_venta - ?
             WHERE id_producto = ? AND limite_venta >= ?
         `;
-        conexion.query(sql, [cantidad, cantidad, id, cantidad], callback);
+        conexion.query(sql, [cantidad, id, cantidad], callback);
     },
 
     // Cambia solo el estado del producto (activo/inactivo)
@@ -177,8 +177,7 @@ const ProductoModel = {
     devolverStockProducto: (idProducto, cantidad, callback) => {
         const sql = `
             UPDATE producto 
-            SET limite_venta = limite_venta + ?, 
-                estado = 'activo' 
+            SET limite_venta = limite_venta + ?
             WHERE id_producto = ?
         `;
         conexion.query(sql, [cantidad, idProducto], callback);

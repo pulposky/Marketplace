@@ -248,6 +248,17 @@ button, input, select { font: inherit; color: inherit; }
 .producto-presentaciones span { font-size: 12px; padding: 3px 8px; border: 1px solid var(--borde-fuerte); border-radius: 6px; color: var(--suave); }
 .producto-stock { font-size: 13px; color: var(--suave); }
 .producto-stock.agotado { color: var(--oferta); font-weight: 600; }
+.producto-descripcion {
+    margin: 0; font-size: 13px; line-height: 1.45; color: var(--suave);
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* Agotado: solo se apaga la foto; nombre y precio siguen legibles */
+.producto-agotado .producto-foto img, .producto-agotado .producto-sin-foto { filter: grayscale(1); opacity: .5; }
+.producto-sello-agotado {
+    position: absolute; left: 50%; top: 50%; translate: -50% -50%; font: 700 13px/1 var(--f-titulo); font-style: normal;
+    letter-spacing: .08em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px;
+    background: var(--tinta); color: #fff;
+}
 .producto > .btn { margin-top: auto; }
 
 /* ---------- Cómo apartar ---------- */
@@ -514,36 +525,79 @@ button, input, select { font: inherit; color: inherit; }
 .panel-suave { background: transparent; }
 
 /* ---------- Pie ---------- */
-.pie { background: var(--tinta); color: #b9c2be; margin-top: 32px; border-top: 4px solid var(--marca); font-size: 14px; }
+.pie { background: var(--tinta); color: #b9c2be; margin-top: 48px; font-size: 14px; }
 .pie a { color: inherit; text-decoration: none; }
-.pie a:hover, .pie a:focus-visible { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.pie a:hover, .pie a:focus-visible { color: #fff; }
+.pie-ico { width: 18px; height: 18px; flex: none; }
+
+/* Franja de beneficios: clara, separada del pie oscuro por el color de la marca */
+.pie-beneficios-fondo { background: var(--superficie); border-top: 1px solid var(--borde); border-bottom: 4px solid var(--marca); }
+.pie-beneficios {
+    list-style: none; margin: 0 auto; padding: 22px max(16px, env(safe-area-inset-right, 0px)) 22px var(--gutter);
+    max-width: var(--ancho); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px 28px;
+    color: var(--tinta);
+}
+.pie-beneficios li { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.pie-beneficios b { display: block; font: 700 15px/1.25 var(--f-titulo); }
+.pie-beneficios small { display: block; color: var(--suave); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.pie-beneficio-ico {
+    width: 46px; height: 46px; flex: none; border-radius: 50%; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--marca) 12%, transparent); color: var(--marca);
+}
+.pie-beneficio-ico .pie-ico { width: 24px; height: 24px; }
+
 .pie-interior {
     max-width: var(--ancho); margin: 0 auto;
     padding: 44px max(16px, env(safe-area-inset-right, 0px)) 36px var(--gutter);
-    display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 32px 40px;
+    display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 32px 40px;
 }
 @media (max-width: 900px) { .pie-interior { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pie-marca { grid-column: 1 / -1; } }
 @media (max-width: 480px) { .pie-interior { grid-template-columns: 1fr; } }
-.pie-marca { display: grid; gap: 10px; align-content: start; justify-items: start; }
+.pie-marca { display: grid; gap: 12px; align-content: start; justify-items: start; }
 .pie .pie-nombre { font: 800 24px/1.1 var(--f-titulo); color: #fff; letter-spacing: -0.02em; }
-.pie-marca p { max-width: 42ch; line-height: 1.5; }
+.pie-marca p { max-width: 42ch; line-height: 1.55; margin: 0; }
+.pie-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 6px; }
 .pie .pie-whatsapp {
-    margin-top: 4px; padding: 9px 14px; border-radius: 999px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; font-weight: 600;
     background: var(--marca); color: var(--sobre-marca);
 }
 .pie .pie-whatsapp:hover { color: var(--sobre-marca); filter: brightness(1.1); }
-.pie-col h2 { font: 700 12px/1.4 var(--f-titulo); letter-spacing: .1em; text-transform: uppercase; color: #fff; margin: 0 0 12px; }
-.pie-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pie-redes { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+.pie-redes a {
+    width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .2); color: #d5dbd8; transition: background .15s, border-color .15s;
+}
+.pie-redes a:hover, .pie-redes a:focus-visible { background: var(--marca); border-color: var(--marca); color: var(--sobre-marca); }
+.pie-redes svg { width: 18px; height: 18px; }
+
+.pie-col h2 {
+    font: 700 12px/1.4 var(--f-titulo); letter-spacing: .1em; text-transform: uppercase; color: #fff; margin: 0 0 14px;
+    padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+.pie-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
 .pie-col li { overflow-wrap: anywhere; line-height: 1.45; }
+.pie-enlaces a { display: inline-flex; align-items: center; gap: 4px; transition: color .15s, transform .15s; }
+.pie-enlaces .pie-ico { width: 14px; height: 14px; opacity: .55; }
+.pie-enlaces a:hover { transform: translateX(3px); }
+.pie-enlaces a:hover .pie-ico { opacity: 1; }
+.pie-contacto li { display: flex; gap: 10px; align-items: flex-start; }
+.pie-contacto .pie-ico { margin-top: 1px; color: #fff; opacity: .7; }
+.pie .pie-mapa {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .25); color: #fff; font-weight: 600;
+}
+.pie .pie-mapa:hover { background: #fff; color: var(--tinta); }
+
 .pie-base {
     max-width: var(--ancho); margin: 0 auto;
     padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) var(--gutter);
     border-top: 1px solid rgba(255, 255, 255, .1); font-size: 13px; color: #8f9a95;
-    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 20px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; /* a la izquierda: el botón flotante de WhatsApp ocupa la derecha */
 }
-.pie-redes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.pie-redes a { display: inline-block; padding: 5px 12px; border: 1px solid rgba(255, 255, 255, .18); border-radius: 999px; color: #d5dbd8; }
-.pie-redes a:hover { border-color: #fff; text-decoration: none; }
+.pie-base p { margin: 0; }
+.pie .pie-arriba { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.pie-arriba .pie-ico { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: reduce) { .pie-enlaces a:hover { transform: none; } }
 
 /* ---------- Página de error ---------- */
 .pagina-error { justify-content: center; }

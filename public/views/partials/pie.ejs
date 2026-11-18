@@ -1,62 +1,104 @@
-<%# Pie de la tienda pública: navegación fija + los datos de contacto que el dueño haya configurado. %>
+<%# Pie de la tienda pública: franja de beneficios (solo lo que la tienda realmente ofrece según su
+    configuración), navegación y los datos de contacto que el dueño haya llenado. %>
 <%
     const _wa = String(tienda.whatsapp || '').replace(/\D/g, '');
-    const _redes = [['Facebook', tienda.facebook], ['Instagram', tienda.instagram], ['TikTok', tienda.tiktok]].filter((r) => r[1]);
     const _usuarioPie = typeof usuario !== 'undefined' ? usuario : null;
     const _cats = (typeof pasillos !== 'undefined' && Array.isArray(pasillos)) ? pasillos.slice(0, 6) : [];
     const _hayContacto = tienda.direccion || tienda.horario || tienda.telefono || _wa || tienda.correo;
+    const _hayPasosPie = (tienda.bloques_inicio || []).some((b) => b.tipo === 'pasos');
+
+    // Iconos de trazo (24x24). Las marcas de redes van rellenas.
+    const _trazos = {
+        camion: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+        tienda: '<path d="M4 10v10h16V10M3 10l2-6h14l2 6M3 10h18M9 20v-6h6v6"/>',
+        chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>',
+        reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        ubicacion: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+        telefono: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/>',
+        correo: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+        flecha: '<path d="m9 6 6 6-6 6"/>',
+        arriba: '<path d="M12 19V5M5 12l7-7 7 7"/>',
+        mapa: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2ZM9 4v14M15 6v14"/>'
+    };
+    const _ico = (n) => '<svg class="pie-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + _trazos[n] + '</svg>';
+    const _marcas = {
+        Facebook: '<path d="M14 8.5V6.8c0-.8.5-1 1-1h2V2.5h-2.8C11.1 2.5 10 4.4 10 6.7v1.8H7.5V12H10v9.5h4V12h2.8l.5-3.5H14Z"/>',
+        Instagram: '<path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4ZM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4ZM12 2c-2.7 0-3 0-4.1.1C4.3 2.2 2.2 4.3 2.1 7.9 2 9 2 9.3 2 12s0 3 .1 4.1c.1 3.6 2.2 5.7 5.8 5.8 1.1.1 1.4.1 4.1.1s3 0 4.1-.1c3.6-.1 5.7-2.2 5.8-5.8.1-1.1.1-1.4.1-4.1s0-3-.1-4.1c-.1-3.6-2.2-5.7-5.8-5.8C15 2 14.7 2 12 2Zm0 1.8c2.7 0 3 0 4 .1 2.6.1 3.9 1.4 4 4 .1 1 .1 1.3.1 4s0 3-.1 4c-.1 2.6-1.4 3.9-4 4-1 .1-1.3.1-4 .1s-3 0-4-.1c-2.6-.1-3.9-1.4-4-4-.1-1-.1-1.3-.1-4s0-3 .1-4c.1-2.6 1.4-3.9 4-4 1-.1 1.3-.1 4-.1Z"/>',
+        TikTok: '<path d="M16.6 2h-3.4v13.4a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.3 6.3 0 1 0 5.4 6.3V8.6a7.7 7.7 0 0 0 4.4 1.4V6.6a4.4 4.4 0 0 1-4.4-4.6Z"/>'
+    };
+    const _redes = [['Facebook', tienda.facebook], ['Instagram', tienda.instagram], ['TikTok', tienda.tiktok]].filter((r) => r[1]);
+
+    const _beneficios = [];
+    if (tienda.entrega !== 'recoger') _beneficios.push(['camion', 'Envío a domicilio', tienda.nota_entrega || 'Te lo llevamos a donde nos digas']);
+    if (tienda.entrega !== 'domicilio') _beneficios.push(['tienda', 'Recoge en la tienda', tienda.direccion || 'Pasa por tu pedido cuando esté listo']);
+    if (_wa) _beneficios.push(['chat', 'Pide por WhatsApp', 'Te asesoramos antes de comprar']);
+    if (tienda.horario) _beneficios.push(['reloj', 'Horario de atención', tienda.horario]);
+    const _mapa = tienda.direccion ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(tienda.direccion + ' ' + tienda.nombre) : '';
 %>
 <footer class="pie" id="contacto">
+    <% if (_beneficios.length) { %>
+    <div class="pie-beneficios-fondo">
+        <ul class="pie-beneficios" aria-label="Por qué comprar aquí">
+            <% _beneficios.forEach((b) => { %>
+                <li><span class="pie-beneficio-ico"><%- _ico(b[0]) %></span><span><b><%= b[1] %></b><small><%= b[2] %></small></span></li>
+            <% }) %>
+        </ul>
+    </div>
+    <% } %>
+
     <div class="pie-interior">
         <div class="pie-marca">
             <a href="/" class="pie-nombre"><%= tienda.nombre %></a>
             <% if (tienda.eslogan || tienda.descripcion) { %><p><%= tienda.eslogan || tienda.descripcion %></p><% } %>
-            <% if (_wa) { %>
-                <a class="pie-whatsapp" href="https://wa.me/<%= _wa %>" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
-            <% } %>
+            <div class="pie-acciones">
+                <% if (_wa) { %>
+                    <a class="pie-whatsapp" href="https://wa.me/<%= _wa %>" target="_blank" rel="noopener noreferrer"><%- _ico('chat') %>Escríbenos</a>
+                <% } %>
+                <% if (_redes.length) { %>
+                    <ul class="pie-redes" aria-label="Redes sociales">
+                        <% _redes.forEach((r) => { %><li><a href="<%= r[1] %>" target="_blank" rel="noopener noreferrer" aria-label="<%= r[0] %>" title="<%= r[0] %>"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><%- _marcas[r[0]] %></svg></a></li><% }) %>
+                    </ul>
+                <% } %>
+            </div>
         </div>
 
         <nav class="pie-col" aria-labelledby="pieTienda">
             <h2 id="pieTienda">Compra</h2>
-            <ul>
-                <li><a href="/catalogo">Todo el <%= vocab.catalogo.toLowerCase() %></a></li>
-                <% _cats.forEach((c) => { %><li><a href="/catalogo?categoria=<%= encodeURIComponent(c.nombre) %>"><%= c.nombre %></a></li><% }) %>
+            <ul class="pie-enlaces">
+                <li><a href="/catalogo"><%- _ico('flecha') %>Todo el <%= vocab.catalogo.toLowerCase() %></a></li>
+                <li><a href="/catalogo?soloOferta=1"><%- _ico('flecha') %>Ofertas</a></li>
+                <% _cats.forEach((c) => { %><li><a href="/catalogo?categoria=<%= encodeURIComponent(c.nombre) %>"><%- _ico('flecha') %><%= c.nombre %></a></li><% }) %>
             </ul>
         </nav>
 
         <nav class="pie-col" aria-labelledby="pieCuenta">
             <h2 id="pieCuenta">Tu cuenta</h2>
-            <ul>
-                <% if (_usuarioPie) { %>
-                    <li><a href="/verApartados">Mis pedidos</a></li>
-                    <li><a href="/perfil">Mi perfil</a></li>
-                <% } else { %>
-                    <li><a href="/catalogo?login=1">Entrar</a></li>
-                    <li><a href="/verApartados">Mis pedidos</a></li>
-                <% } %>
+            <ul class="pie-enlaces">
+                <% if (!_usuarioPie) { %><li><a href="/catalogo?login=1"><%- _ico('flecha') %>Entrar o registrarme</a></li><% } %>
+                <li><a href="/carrito"><%- _ico('flecha') %>Mi carrito</a></li>
+                <li><a href="/verApartados"><%- _ico('flecha') %>Mis pedidos</a></li>
+                <% if (_usuarioPie) { %><li><a href="/perfil"><%- _ico('flecha') %>Mi perfil</a></li><% } %>
+                <% if (_hayPasosPie) { %><li><a href="/#como-comprar"><%- _ico('flecha') %>Cómo comprar</a></li><% } %>
             </ul>
         </nav>
 
         <% if (_hayContacto) { %>
         <div class="pie-col">
             <h2>Contacto</h2>
-            <ul>
-                <% if (tienda.direccion) { %><li><%= tienda.direccion %></li><% } %>
-                <% if (tienda.horario) { %><li><%= tienda.horario %></li><% } %>
-                <% if (tienda.telefono) { %><li><a href="tel:<%= String(tienda.telefono).replace(/[^\d+]/g, '') %>"><%= tienda.telefono %></a></li><% } %>
-                <% if (tienda.correo) { %><li><a href="mailto:<%= tienda.correo %>"><%= tienda.correo %></a></li><% } %>
+            <ul class="pie-contacto">
+                <% if (tienda.direccion) { %><li><%- _ico('ubicacion') %><span><%= tienda.direccion %></span></li><% } %>
+                <% if (tienda.horario) { %><li><%- _ico('reloj') %><span><%= tienda.horario %></span></li><% } %>
+                <% if (tienda.telefono) { %><li><%- _ico('telefono') %><a href="tel:<%= String(tienda.telefono).replace(/[^\d+]/g, '') %>"><%= tienda.telefono %></a></li><% } %>
+                <% if (tienda.correo) { %><li><%- _ico('correo') %><a href="mailto:<%= tienda.correo %>"><%= tienda.correo %></a></li><% } %>
             </ul>
+            <% if (_mapa) { %><a class="pie-mapa" href="<%= _mapa %>" target="_blank" rel="noopener noreferrer"><%- _ico('mapa') %>Cómo llegar</a><% } %>
         </div>
         <% } %>
     </div>
 
     <div class="pie-base">
-        <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %></p>
-        <% if (_redes.length) { %>
-            <ul class="pie-redes" aria-label="Redes sociales">
-                <% _redes.forEach((r) => { %><li><a href="<%= r[1] %>" target="_blank" rel="noopener noreferrer"><%= r[0] %></a></li><% }) %>
-            </ul>
-        <% } %>
+        <p>&copy; <%= new Date().getFullYear() %> <%= tienda.nombre %>. Todos los derechos reservados.</p>
+        <a href="#" class="pie-arriba"><%- _ico('arriba') %>Volver arriba</a>
     </div>
 </footer>
 <% if (_wa) { %>

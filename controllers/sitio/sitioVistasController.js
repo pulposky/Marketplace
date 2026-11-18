@@ -189,6 +189,10 @@ const SitioVistasController = {
                 productosFiltrados.sort((a, b) => calcularPrecioEfectivo(b) - calcularPrecioEfectivo(a));
             } else if (orden === 'nombre') {
                 productosFiltrados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+            } else {
+                // Orden de la tienda: los agotados van al final (sort estable: el resto conserva su orden)
+                const agotado = (p) => ((Number(p.limite_venta) || 0) > 0 ? 0 : 1);
+                productosFiltrados.sort((a, b) => agotado(a) - agotado(b));
             }
 
             asociarImagenesAProductos(productosFiltrados, (productosConImagen) => {

@@ -176,8 +176,7 @@ const ApartadoController = {
                     return res.status(200).json({
                         mensaje: '¡Pedido recibido!',
                         idInsertado: resultado.insertId,
-                        unidadesRestantes: stockDisponible - unidadesARestar,
-                        estado: (stockDisponible - unidadesARestar) > 0 ? 'activo' : 'inactivo'
+                        unidadesRestantes: stockDisponible - unidadesARestar
                     });
                 });
             });

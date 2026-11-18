@@ -22,7 +22,7 @@
     const _disponibles = Math.floor(_stock / _factor);
     const _cop = (n) => '$' + Math.round(n).toLocaleString('es-CO');
 %>
-<article class="producto tarjeta-producto" data-categoria="<%= _p.categoria || '' %>"<%- _pasillo ? ` style="--k:${_pasillo.color}"` : '' %>>
+<article class="producto tarjeta-producto<%= _disponibles < 1 ? ' producto-agotado' : '' %>" data-categoria="<%= _p.categoria || '' %>"<%- _pasillo ? ` style="--k:${_pasillo.color}"` : '' %>>
     <a class="producto-foto" href="/producto/<%= _p.id_producto %>" tabindex="-1" aria-hidden="true">
         <% if (_p.imagenUpload) { %>
             <img src="<%= _p.imagenUpload %>" alt="" loading="lazy">
@@ -31,6 +31,7 @@
         <% } %>
         <% if (_pasillo) { %><i class="producto-pasillo"><%= _pasillo.nombre %></i><% } %>
         <% if (_enOferta) { %><i class="producto-oferta">−<%= Math.round(_descuento) %>%</i><% } %>
+        <% if (_disponibles < 1) { %><i class="producto-sello-agotado">Agotado</i><% } %>
     </a>
 
     <div class="producto-linea">
@@ -41,6 +42,7 @@
             <span>/ <%= _etiqueta %></span>
         </p>
     </div>
+    <% if (_p.descripcion) { %><p class="producto-descripcion"><%= _p.descripcion %></p><% } %>
 
     <% if (_enOferta) { %>
         <p class="producto-ahorro">Ahorras <%= _cop((_precioBase - _precioUnidad) * _factor) %></p>

@@ -50,7 +50,7 @@ const ProductoController = {
             categoria: String(categoria || 'Otros').trim() || 'Otros',
             stock: limite,
             limiteVenta: limite,
-            estado: limite > 0 ? 'activo' : 'inactivo',
+            estado: 'activo',
             descripcion: String(descripcion || '').trim()
         }, (error, resultado) => {
             if (error) {
@@ -63,7 +63,7 @@ const ProductoController = {
             return res.status(201).json({
                 ok: true,
                 id: resultado.insertId,
-                estado: limite > 0 ? 'activo' : 'inactivo',
+                estado: 'activo',
                 mensaje: 'Producto creado correctamente.'
             });
         });
@@ -242,58 +242,33 @@ const ProductoController = {
             return res.status(400).json({ error: 'Cantidad inválida' });
         }
 
-        const nuevoEstado = limite > 0 ? 'activo' : 'inactivo';
-
-        ProductoModel.actualizarLimiteVenta(id, limite, nuevoEstado, (error) => {
+        ProductoModel.actualizarLimiteVenta(id, limite, (error) => {
             if (error) {
                 console.error('Error actualizando límite:', error);
                 return res.status(500).json({ error: 'Error en el servidor al guardar cantidad.' });
             }
 
-            auditoriaService.registrar(req, 'producto_stock', `Cambió el stock online del producto id ${id} a ${limite} (${nuevoEstado}).`);
+            auditoriaService.registrar(req, 'producto_stock', `Cambió el stock online del producto id ${id} a ${limite}.`);
 
-            return res.json({
-                ok: true,
-                limite,
-                estado: nuevoEstado
-            });
+            return res.json({ ok: true, limite });
         });
     },
 
     // PATCH /api/admin/productos/estado/:id
-    // Cambia el estado manual de un producto (activo/inactivo).
-    // Si viene 'cantidad', actualiza también el límite de venta.
+    // Muestra u oculta un producto en la tienda (activo/inactivo). Es independiente del stock:
+    // un producto visible sin stock sale como "Agotado".
     actualizarEstadoManual: (req, res) => {
         const { id } = req.params;
-        const { activo, cantidad } = req.body;
-        const nuevoEstado = activo ? 'activo' : 'inactivo';
+        const nuevoEstado = req.body.activo ? 'activo' : 'inactivo';
 
-        // Si se proporciona cantidad, actualizo tanto el límite como el estado
-        if (cantidad !== undefined) {
-            const limite = parseInt(cantidad, 10);
-            if (isNaN(limite) || limite < 0) {
-                return res.status(400).json({ error: 'Cantidad inválida.' });
+        ProductoModel.actualizarEstado(id, nuevoEstado, (error) => {
+            if (error) {
+                console.error('Error actualizando estado:', error);
+                return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
             }
-            const estadoFinal = limite > 0 ? nuevoEstado : 'inactivo';
-
-            ProductoModel.actualizarLimiteVenta(id, limite, estadoFinal, (error) => {
-                if (error) {
-                    console.error('Error actualizando estado y cantidad:', error);
-                    return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
-                }
-                auditoriaService.registrar(req, 'producto_estado', `Cambió el estado/stock del producto id ${id} a ${estadoFinal} (cantidad ${limite}).`);
-                return res.json({ ok: true, estado: estadoFinal });
-            });
-        } else {
-            ProductoModel.actualizarEstado(id, nuevoEstado, (error) => {
-                if (error) {
-                    console.error('Error actualizando estado:', error);
-                    return res.status(500).json({ error: 'Error en el servidor al cambiar estado.' });
-                }
-                auditoriaService.registrar(req, 'producto_estado', `Cambió el estado del producto id ${id} a ${nuevoEstado}.`);
-                return res.json({ ok: true, estado: nuevoEstado });
-            });
-        }
+            auditoriaService.registrar(req, 'producto_estado', `${nuevoEstado === 'activo' ? 'Mostró' : 'Ocultó'} en la tienda el producto id ${id}.`);
+            return res.json({ ok: true, estado: nuevoEstado });
+        });
     },
 
     // GET /api/admin/ofertas
