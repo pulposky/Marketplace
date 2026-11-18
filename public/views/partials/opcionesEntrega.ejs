@@ -1,6 +1,6 @@
-<%# Cómo recibe el pedido el cliente. Con 'ambos' se elige (radio name="entrega"); los datos de
-    envío se muestran al elegir domicilio (CSS :has) y salen prellenados con los de su cuenta.
-    tiendaAnimaciones.js (window.leerEntrega) los lee y valida antes de enviar. %>
+<%# Cómo recibe el pedido el cliente. Con 'ambos' se elige (radio name="entrega").
+    Los datos de envío van en un modal (#modalDomicilio) que se abre al elegir domicilio; salen prellenados
+    con los de su cuenta. tiendaAnimaciones.js maneja el modal y window.leerEntrega los valida antes de enviar. %>
 <%
     const _dir = tienda.direccion || 'el punto de venta';
     const _u = typeof usuario !== 'undefined' && usuario ? usuario : {};
@@ -20,20 +20,41 @@
     <% } %>
 
     <% if (_hayDomicilio) { %>
-        <fieldset class="datos-domicilio">
-            <legend>Datos de envío</legend>
-            <label>Dirección
-                <input type="text" name="domicilio_direccion" maxlength="200" autocomplete="street-address"
-                    placeholder="Calle 10 # 5-20, barrio Centro" value="<%= _u.direccion || '' %>">
-            </label>
-            <label>Teléfono de contacto
-                <input type="tel" name="domicilio_telefono" maxlength="20" autocomplete="tel" inputmode="tel"
-                    placeholder="300 000 0000" value="<%= _u.telefono || '' %>">
-            </label>
-            <label>Indicaciones <small>(opcional)</small>
-                <input type="text" name="domicilio_indicaciones" maxlength="200" placeholder="Apto 301, portería, casa de rejas verdes…">
-            </label>
-        </fieldset>
+        <%# Resumen de los datos guardados en el modal (lo llena tiendaAnimaciones.js) %>
+        <div class="domicilio-resumen" id="domicilioResumen">
+            <p id="domicilioTexto">Falta la dirección de entrega.</p>
+            <button type="button" class="btn-texto" id="btnCambiarDomicilio">Agregar dirección</button>
+        </div>
     <% } %>
     <% if (tienda.nota_entrega && _hayDomicilio) { %><p class="entrega-nota"><%= tienda.nota_entrega %></p><% } %>
 </div>
+
+<% if (_hayDomicilio) { %>
+<div class="modal-fondo" id="modalDomicilio">
+    <div class="modal-contenido modal-domicilio" role="dialog" aria-modal="true" aria-labelledby="tituloDomicilio">
+        <button type="button" class="cerrar-modal" data-cerrar-domicilio aria-label="Cerrar">&times;</button>
+        <p class="modal-marca"><%= tienda.nombre %></p>
+        <h2 id="tituloDomicilio">¿A dónde te lo llevamos?</h2>
+        <p class="modal-ayuda">Revisa los datos de envío de este pedido.<% if (tienda.nota_entrega) { %> <%= tienda.nota_entrega %><% } %></p>
+
+        <form class="datos-domicilio" id="formDomicilio" novalidate>
+            <label>Dirección
+                <input type="text" name="domicilio_direccion" maxlength="200" autocomplete="street-address" required
+                    placeholder="Calle 10 # 5-20, barrio Centro" value="<%= _u.direccion || '' %>">
+            </label>
+            <label>Teléfono de contacto
+                <input type="tel" name="domicilio_telefono" maxlength="20" autocomplete="tel" inputmode="tel" required
+                    placeholder="300 000 0000" value="<%= _u.telefono || '' %>">
+            </label>
+            <label><span>Indicaciones <small>(opcional)</small></span>
+                <input type="text" name="domicilio_indicaciones" maxlength="200" placeholder="Apto 301, portería, casa de rejas verdes…">
+            </label>
+            <p class="mensaje-error" id="errorDomicilio" role="alert"></p>
+            <div class="modal-acciones">
+                <button type="button" class="btn btn-suave" data-cerrar-domicilio>Cancelar</button>
+                <button type="submit" class="btn">Guardar dirección</button>
+            </div>
+        </form>
+    </div>
+</div>
+<% } %>

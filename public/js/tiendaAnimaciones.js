@@ -53,17 +53,88 @@
     });
 
     // Forma de entrega y datos de envío del pedido (partials/opcionesEntrega.ejs).
-    // Devuelve { entrega, domicilio } o { error, campo } para avisar antes de enviar; el servidor vuelve a validar.
+    // Los datos de domicilio se piden en un modal (#modalDomicilio) que se abre al elegir "Envío a domicilio".
+    const bloqueEntrega = document.querySelector('.entrega-bloque');
+    const modalDomicilio = document.getElementById('modalDomicilio');
+    const campoDomicilio = (n) => document.querySelector(`[name="domicilio_${n}"]`);
+    const datosDomicilio = () => ({
+        direccion: campoDomicilio('direccion').value.trim(),
+        telefono: campoDomicilio('telefono').value.trim(),
+        indicaciones: campoDomicilio('indicaciones').value.trim(),
+    });
+    // { error, campo } si falta algo; null si está bien (el servidor vuelve a validar)
+    const errorDomicilio = (d) => {
+        if (d.direccion.length < 5) return { error: 'Escribe la dirección de entrega.', campo: campoDomicilio('direccion') };
+        if (!/^\+?[\d\s()-]{7,20}$/.test(d.telefono)) return { error: 'Escribe un teléfono de contacto válido.', campo: campoDomicilio('telefono') };
+        return null;
+    };
+    let domicilioGuardado = false;
+    let alCerrarFoco = null;
+
+    const pintarResumenDomicilio = () => {
+        const texto = document.getElementById('domicilioTexto');
+        const boton = document.getElementById('btnCambiarDomicilio');
+        if (!texto) return;
+        const d = datosDomicilio();
+        texto.textContent = domicilioGuardado
+            ? `Enviar a: ${d.direccion} · Tel. ${d.telefono}${d.indicaciones ? ` · ${d.indicaciones}` : ''}`
+            : 'Falta la dirección de entrega.';
+        boton.textContent = domicilioGuardado ? 'Cambiar' : 'Agregar dirección';
+    };
+    const abrirDomicilio = (enfocar) => {
+        if (!modalDomicilio) return;
+        alCerrarFoco = document.activeElement;
+        document.getElementById('errorDomicilio').textContent = '';
+        modalDomicilio.style.display = 'flex';
+        (enfocar || campoDomicilio('direccion')).focus();
+    };
+    const cerrarDomicilio = () => {
+        modalDomicilio.style.display = 'none';
+        // Si cerró sin guardar una dirección válida, vuelve a "Recoger" (solo cuando la tienda ofrece ambas)
+        const recoger = bloqueEntrega.querySelector('input[name="entrega"][value="recoger"]');
+        if (!domicilioGuardado && recoger) recoger.checked = true;
+        if (alCerrarFoco && alCerrarFoco.focus) alCerrarFoco.focus();
+    };
+
+    if (modalDomicilio && bloqueEntrega) {
+        // Al body: dentro del carrito un contenedor con transform recortaría el fondo del modal
+        document.body.appendChild(modalDomicilio);
+        // Si la cuenta ya trae datos válidos, el resumen arranca lleno (igual se confirman en el modal al elegir domicilio)
+        domicilioGuardado = !errorDomicilio(datosDomicilio()) && bloqueEntrega.dataset.entregaTienda === 'domicilio';
+        pintarResumenDomicilio();
+        bloqueEntrega.addEventListener('change', (ev) => {
+            if (ev.target.name === 'entrega' && ev.target.value === 'domicilio') abrirDomicilio();
+        });
+        document.getElementById('btnCambiarDomicilio').addEventListener('click', () => abrirDomicilio());
+        modalDomicilio.querySelectorAll('[data-cerrar-domicilio]').forEach((b) => b.addEventListener('click', cerrarDomicilio));
+        modalDomicilio.addEventListener('click', (ev) => { if (ev.target === modalDomicilio) cerrarDomicilio(); });
+        document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && modalDomicilio.style.display === 'flex') cerrarDomicilio(); });
+        document.getElementById('formDomicilio').addEventListener('submit', (ev) => {
+            ev.preventDefault();
+            const fallo = errorDomicilio(datosDomicilio());
+            if (fallo) {
+                document.getElementById('errorDomicilio').textContent = fallo.error;
+                fallo.campo.focus();
+                return;
+            }
+            domicilioGuardado = true;
+            pintarResumenDomicilio();
+            cerrarDomicilio();
+        });
+    }
+
+    // Devuelve { entrega, domicilio } o { error } para avisar antes de enviar (si faltan datos abre el modal).
     window.leerEntrega = () => {
-        const bloque = document.querySelector('.entrega-bloque');
-        if (!bloque) return {};
-        const elegida = bloque.querySelector('input[name="entrega"]:checked');
-        const entrega = elegida ? elegida.value : bloque.dataset.entregaTienda;
+        if (!bloqueEntrega) return {};
+        const elegida = bloqueEntrega.querySelector('input[name="entrega"]:checked');
+        const entrega = elegida ? elegida.value : bloqueEntrega.dataset.entregaTienda;
         if (entrega !== 'domicilio') return { entrega };
-        const campo = (n) => bloque.querySelector(`[name="domicilio_${n}"]`);
-        const domicilio = { direccion: campo('direccion').value.trim(), telefono: campo('telefono').value.trim(), indicaciones: campo('indicaciones').value.trim() };
-        if (domicilio.direccion.length < 5) return { error: 'Escribe la dirección de entrega.', campo: campo('direccion') };
-        if (!/^\+?[\d\s()-]{7,20}$/.test(domicilio.telefono)) return { error: 'Escribe un teléfono de contacto válido.', campo: campo('telefono') };
+        const domicilio = datosDomicilio();
+        const fallo = errorDomicilio(domicilio);
+        if (fallo || !domicilioGuardado) {
+            abrirDomicilio(fallo && fallo.campo);
+            return { error: fallo ? fallo.error : 'Confirma los datos de envío.' };
+        }
         return { entrega, domicilio };
     };
 

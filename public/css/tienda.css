@@ -779,15 +779,21 @@ main.contenedor > *, .rejilla > * { animation: sube .6s cubic-bezier(.2, .8, .2,
 .entrega-opciones small { color: var(--suave); }
 .entrega-info, .entrega-nota { font-size: 14px; color: var(--suave); margin: 0; }
 .entrega-bloque { display: grid; gap: 10px; }
-.datos-domicilio { margin: 0; padding: 12px; border: 1.5px solid var(--borde); border-radius: var(--radio); display: grid; gap: 10px; background: var(--superficie); }
-.datos-domicilio legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
+/* Datos de envío: van en el modal #modalDomicilio (se abre al elegir domicilio) */
+.modal-domicilio { max-width: 480px; }
+.datos-domicilio { margin: 0; display: grid; gap: 12px; }
 .datos-domicilio label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
 .datos-domicilio small { font-weight: 400; color: var(--suave); }
-.datos-domicilio input { height: 40px; padding: 0 10px; border: 1.5px solid var(--borde-fuerte); border-radius: var(--radio); background: var(--superficie); font: inherit; font-weight: 400; }
+.datos-domicilio input { height: 44px; padding: 0 12px; border: 1.5px solid var(--borde-fuerte); border-radius: var(--radio); background: var(--superficie); font: inherit; font-weight: 400; }
 .datos-domicilio input:focus { outline: 2px solid var(--marca); outline-offset: 1px; }
-/* con "ambos", los datos de envío solo aparecen al elegir domicilio */
-.entrega-bloque[data-entrega-tienda="ambos"] .datos-domicilio, .entrega-bloque[data-entrega-tienda="ambos"] .entrega-nota { display: none; }
-.entrega-bloque[data-entrega-tienda="ambos"]:has(input[value="domicilio"]:checked) .datos-domicilio { display: grid; }
+.modal-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+/* Resumen de la dirección guardada, con botón para cambiarla */
+.domicilio-resumen { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px dashed var(--borde-fuerte); border-radius: var(--radio); font-size: 14px; }
+.domicilio-resumen p { margin: 0; overflow-wrap: anywhere; }
+.domicilio-resumen .btn-texto { flex: none; }
+/* con "ambos", el resumen y la nota solo aparecen al elegir domicilio */
+.entrega-bloque[data-entrega-tienda="ambos"] .domicilio-resumen, .entrega-bloque[data-entrega-tienda="ambos"] .entrega-nota { display: none; }
+.entrega-bloque[data-entrega-tienda="ambos"]:has(input[value="domicilio"]:checked) .domicilio-resumen { display: flex; }
 .entrega-bloque[data-entrega-tienda="ambos"]:has(input[value="domicilio"]:checked) .entrega-nota { display: block; }
 
 

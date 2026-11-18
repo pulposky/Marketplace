@@ -96,8 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!hayDisponibles) return;
         const envio = window.leerEntrega ? window.leerEntrega() : {};
         if (envio.error) {
-            toast('advertencia', envio.error);
-            if (envio.campo) envio.campo.focus();
+            toast('advertencia', envio.error); // leerEntrega ya abrió el modal de domicilio con el campo a corregir
             return;
         }
         btnConfirmar.disabled = true;
